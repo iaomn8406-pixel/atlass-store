@@ -31,7 +31,7 @@ export function Footer({ categories }: { categories: Category[] }) {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="relative mt-auto overflow-hidden border-t border-veil/8 bg-deep/92">
+    <footer className="site-footer relative mt-auto overflow-hidden border-t border-veil/8 bg-deep/92">
       <div
         aria-hidden="true"
         className="aurora aurora-c -bottom-40 -left-32 h-[420px] w-[420px] opacity-40"

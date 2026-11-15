@@ -58,8 +58,9 @@ SOURCES = [
      'own_hanger': True},
     {'slug': 'tshirt-1975-print', 'key': 'olive', 'src': 'public/img/print1975-4.webp', 'color': None,
      'own_hanger': True, 'crop': (0.15, 0.135, 0.88, 0.85), 'bg_holes': True, 'bg_holes_top': 0.22},
-    {'slug': 'on-cloud-tracksuit', 'key': 'navy', 'src': 'public/img/oncloud-1.webp', 'color': 'كحلي',
-     'keep_parts': True},
+    # الطقم (on-cloud-tracksuit) اتشال من هنا: صورة 1 كانت بتتقص كقصاصة واحدة
+    # (تيشيرت + بنطلون ملزوقين) وده مرفوض. الطقم بقى بيتجهّز في
+    # scripts/set-sample.py — شغّله بعد السكربت ده.
     {'slug': 'hooded-embroidered-abaya', 'key': 'white', 'src': 'public/img/abaya-2.webp', 'color': 'أبيض',
      'bg_holes': True},
     {'slug': 'hooded-embroidered-abaya', 'key': 'beige', 'src': 'public/img/abaya-3.webp', 'color': 'بيج',

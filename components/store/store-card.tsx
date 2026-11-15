@@ -35,18 +35,21 @@ const norm = (s: string) => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').tr
 
 type Phase = 'idle' | 'busy' | 'done'
 
-export function RoomCard({
+export function StoreCard({
   product,
   piece,
   mobile,
   onClose,
   onPickColor,
+  pieceRect,
 }: {
   product: RoomProduct
   piece: RoomPiece
   mobile: boolean
   onClose: () => void
   onPickColor: (color: string) => void
+  /** مكان القطعة على الشاشة دلوقتي — من المشهد (للطيران للسلة) */
+  pieceRect: () => { x: number; y: number; w: number; h: number } | null
 }) {
   const { addItem, openCart, count } = useCart()
 
@@ -118,7 +121,8 @@ export function RoomCard({
     if (phase !== 'busy') return
 
     if (count > before.current) {
-      flyToCart(piece.id, piece.src)
+      // الطيران بيبدأ بعد ما السلة اتأكدت — مش قبلها
+      flyToCart(pieceRect(), piece.srcSm)
       setPhase('done')
       return
     }
@@ -128,36 +132,36 @@ export function RoomCard({
       setError('ما قدرناش نضيفها للسلة — جرّب تاني')
     }, 1500)
     return () => window.clearTimeout(t)
-  }, [count, phase, piece.id, piece.src])
+  }, [count, phase, piece.srcSm, pieceRect])
 
   const colorLine = color ?? (colorGroup ? 'اختار اللون' : null)
 
   return (
     <aside
-      className="vs-ui vs-card"
+      className="st-card"
       data-sheet={mobile}
       role="dialog"
       aria-label={product.name}
     >
-      <button type="button" className="vs-card__close" onClick={onClose} aria-label="رجوع للمحل">
+      <button type="button" className="st-card__close" onClick={onClose} aria-label="رجوع للمحل">
         <CloseIcon className="h-4 w-4" />
       </button>
 
-      <p className="vs-card__cat">{product.categoryName}</p>
-      <h2 className="vs-card__name">{product.name}</h2>
+      <p className="st-card__cat">{product.categoryName}</p>
+      <h2 className="st-card__name">{product.name}</h2>
 
-      <div className="vs-card__price">
+      <div className="st-card__price">
         <span className="nums">{formatPrice(product.price)}</span>
         {product.compareAtPrice && product.compareAtPrice > product.price && (
           <s className="nums">{formatPrice(product.compareAtPrice)}</s>
         )}
       </div>
 
-      {colorLine && <p className="vs-card__line">{colorLine}</p>}
+      {colorLine && <p className="st-card__line">{colorLine}</p>}
 
       {/* ---------- الألوان ---------- */}
       {colorGroup && (
-        <div className="vs-card__colors" role="radiogroup" aria-label="اللون">
+        <div className="st-card__colors" role="radiogroup" aria-label="اللون">
           {colorGroup.options.map((c) => {
             const hex = colorOf(c)
             const on = color === c
@@ -184,11 +188,11 @@ export function RoomCard({
       {/* ---------- المقاسات ---------- */}
       {sizeGroup && (
         <>
-          <div className="vs-card__head">
+          <div className="st-card__head">
             <span>اختار المقاس</span>
             <span>رجالي</span>
           </div>
-          <div className="vs-card__sizes" role="radiogroup" aria-label="المقاس">
+          <div className="st-card__sizes" role="radiogroup" aria-label="المقاس">
             {sizeGroup.options.map((s) => {
               const off = allowed ? !allowed.has(s) : false
               const on = picked[SIZE] === s
@@ -214,10 +218,10 @@ export function RoomCard({
       {/* أي اختيارات تانية (لو المنتج ليه) */}
       {others.map((g) => (
         <div key={g.name} className="mt-4">
-          <p className="vs-card__head">
+          <p className="st-card__head">
             <span>{g.name}</span>
           </p>
-          <div className="vs-card__sizes" role="radiogroup" aria-label={g.name}>
+          <div className="st-card__sizes" role="radiogroup" aria-label={g.name}>
             {g.options.map((o) => (
               <button
                 key={o}
@@ -235,7 +239,7 @@ export function RoomCard({
       ))}
 
       {error && (
-        <p className="vs-card__error" role="alert">
+        <p className="st-card__error" role="alert">
           <AlertIcon className="h-3.5 w-3.5 shrink-0" />
           {error}
         </p>
@@ -244,7 +248,7 @@ export function RoomCard({
       {/* ---------- الزرار ---------- */}
       <button
         type="button"
-        className="vs-card__add"
+        className="st-card__add"
         data-phase={phase}
         disabled={soldOut || phase === 'busy'}
         onClick={add}
@@ -268,13 +272,13 @@ export function RoomCard({
       </button>
 
       {phase === 'done' && (
-        <button type="button" className="vs-card__view" onClick={openCart}>
+        <button type="button" className="st-card__view" onClick={openCart}>
           <span>عرض السلة</span>
           <ArrowLeftIcon className="h-3.5 w-3.5" />
         </button>
       )}
 
-      <Link href={`/product/${product.slug}`} className="vs-card__more">
+      <Link href={`/product/${product.slug}`} className="st-card__more">
         كل تفاصيل المنتج
         {product.images.length > 1 && (
           <span className="nums"> · {product.images.length} صور</span>
@@ -288,16 +292,17 @@ export function RoomCard({
    القطعة بتطير للسلة — نسخة من صورتها بتتحرك لأيقونة السلة
    في الهيدر. transform و opacity بس، فبتفضل ناعمة.
    ------------------------------------------------------------ */
-function flyToCart(pieceId: string, src: string) {
+function flyToCart(rect: { x: number; y: number; w: number; h: number } | null, src: string) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-  const img = document.querySelector<HTMLElement>(
-    `[data-piece="${CSS.escape(pieceId)}"] .vs-body`
+  const canvas = document.querySelector<HTMLElement>('.st-canvas')
+  const target = [...document.querySelectorAll<HTMLElement>('[data-cart-target]')].find(
+    (el) => el.getBoundingClientRect().width > 0
   )
-  const target = document.querySelector<HTMLElement>('[data-cart-target]')
-  if (!img || !target) return
+  if (!rect || !canvas || !target) return
 
-  const from = img.getBoundingClientRect()
+  const box = canvas.getBoundingClientRect()
+  const from = { left: box.left + rect.x, top: box.top + rect.y, width: rect.w, height: rect.h }
   const to = target.getBoundingClientRect()
   if (!from.width || !to.width) return
 

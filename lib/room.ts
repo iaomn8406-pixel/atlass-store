@@ -28,6 +28,10 @@ type Asset = {
   hookX: number
   top: number
   shoulder: number
+  /** قطعة تانية من نفس المنتج متطبّقة (بنطلون الطقم) — بتتحط على رف */
+  fold?: { src: string; w: number; h: number; clipY: number; clipX0: number; clipX1: number }
+  /** عينة مستنية موافقة صاحب المشروع */
+  sample?: boolean
 }
 
 const MANIFEST = assets as Record<string, Asset[]>
@@ -58,10 +62,25 @@ export type RoomProduct = Pick<
   available: Record<string, string[]> | null
 }
 
+/**
+ * نوع العرض بيتحدد من القطعة نفسها مش من اسم القسم:
+ *  • set  → فيه بنطلون متطبّق → تيشيرت على شماعة + رف
+ *  • long → طولها أكتر من ٢٫٦ مرة عرض كتافها (عباية/جلابية) → قضيب عالي
+ *  • top  → تيشيرت/بولو → قضيب عادي
+ */
+export type ZoneKind = 'top' | 'long' | 'set'
+
 export type RoomZone = {
   slug: string
   name: string
+  kind: ZoneKind
   pieces: RoomPiece[]
+}
+
+function kindOf(pieces: RoomPiece[]): ZoneKind {
+  if (pieces.some((p) => p.fold)) return 'set'
+  const long = pieces.filter((p) => p.h / (p.shoulder * p.w) > 2.6).length
+  return long > pieces.length / 2 ? 'long' : 'top'
 }
 
 export type Room = {
@@ -112,7 +131,7 @@ export async function getRoom(): Promise<Room> {
       }
     }
 
-    if (pieces.length) zones.push({ slug: category.slug, name: category.name, pieces })
+    if (pieces.length) zones.push({ slug: category.slug, name: category.name, kind: kindOf(pieces), pieces })
   }
 
   /* أكتر قسم فيه قطع بياخد الحيطة اللي قدام الشعار */

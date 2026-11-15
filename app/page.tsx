@@ -1,183 +1,45 @@
-import Link from 'next/link'
-import { CategoryShowcase } from '@/components/home/category-showcase'
-import { Closing } from '@/components/home/closing'
-import { Editorial } from '@/components/home/editorial'
-import { Process } from '@/components/home/process'
-import { ProductRail } from '@/components/product/product-card'
-import { VirtualStore } from '@/components/room/virtual-store'
-import { ArrowLeftIcon } from '@/components/ui/icons'
-import { Band, SectionHead } from '@/components/ui/section'
+import { VirtualStore } from '@/components/store/virtual-store'
 import { site } from '@/data/site'
-import {
-  getBestSellers,
-  getCategoryCounts,
-  getCategoryRail,
-  getCategoryTree,
-  getFeaturedProducts,
-  getSaleProducts,
-} from '@/lib/catalog'
 import { getRoom } from '@/lib/room'
+
+/* ============================================================
+   الرئيسية = المتجر الافتراضي نفسه
+   ------------------------------------------------------------
+   مفيش بانرات ولا أقسام تسويقية تحت الأوضة. كل المنتجات ليها
+   روابط حقيقية جوه المتجر (ولقارئ الشاشة ومحركات البحث)، و/shop
+   و/category/* لسه موجودين للتصفّح العادي.
+
+   الواجهة القديمة محفوظة في تاريخ git (main قبل الفرع ده).
+   ============================================================ */
 
 /* الصفحة بتتبني كل ساعة أو أول ما تعدّل حاجة من اللوحة */
 export const revalidate = 3600
 
 export default async function HomePage() {
-  const [tree, counts, showcase, best, onSale, room] = await Promise.all([
-    getCategoryTree(),
-    getCategoryCounts(),
-    getFeaturedProducts(3),
-    getBestSellers(8),
-    getSaleProducts(4),
-    getRoom(),
-  ])
+  const room = await getRoom()
+  const products = Object.values(room.products)
 
-  /**
-   * صف لكل قسم رئيسي فيه منتجات — بيتولّد من الأقسام نفسها
-   * من غير أي حد أقصى، فأي قسم جديد تعمله (بناطيل مثلًا)
-   * بيبقى ليه صف في الصفحة الرئيسية لوحده.
-   */
-  const rails = await Promise.all(
-    tree.map(async (category) => ({
-      category,
-      items: await getCategoryRail(category.slug),
-    }))
-  )
-
-  const withItems = rails.filter((r) => r.items.length > 0)
-
-  /* أرقام السكاشن بتكمّل على بعض مهما زاد عدد الأقسام */
-  let step = 3
-  const nextIndex = () => String(++step).padStart(2, '0')
+  /* قايمة المنتجات اللي في المتجر — بيانات منظّمة لجوجل */
+  const itemList = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: site.nameFull,
+    itemListElement: products.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `${site.url}/product/${p.slug}`,
+      name: p.name,
+    })),
+  }
 
   return (
     <>
-      {/* المتجر الافتراضي — أول شاشة. لو المتصفح مابيدعمش 3D بيرجع للواجهة العادية */}
-      <VirtualStore room={room} showcase={showcase} />
-
-      {/* ============================================================
-          01 — الأقسام
-          ============================================================ */}
-      {tree.length > 0 && (
-        <Band>
-          <SectionHead
-            index="01"
-            eyebrow="Categories"
-            title="تسوّق حسب القسم"
-            description="كل قسم متجمّع فيه القطع اللي بتكمّل بعضها — تختار أسرع وتلبس أظبط."
-            href="/shop"
-          />
-          <CategoryShowcase categories={tree} counts={counts} />
-        </Band>
-      )}
-
-      {/* ============================================================
-          02 — الأكثر مبيعًا
-          ============================================================ */}
-      {best.length > 0 && (
-        <Band id="best" className={tree.length ? '!pt-0' : ''}>
-          <SectionHead
-            index="02"
-            eyebrow="Best Sellers"
-            title="الأكثر مبيعًا"
-            description="القطع اللي بتخلص من المخزن أول بأول."
-            href="/shop"
-          />
-          <ProductRail products={best} priorityCount={2} />
-        </Band>
-      )}
-
-      {/* ============================================================
-          03 — الشريط التحريري
-          ============================================================ */}
-      <Editorial />
-
-      {/* ============================================================
-          صف لكل قسم
-          ============================================================ */}
-      {withItems.map((rail) => (
-        <Band key={rail.category.slug} className="!pt-14 lg:!pt-20">
-          <SectionHead
-            index={nextIndex()}
-            eyebrow={rail.category.slug}
-            title={rail.category.name}
-            description={rail.category.description}
-            href={`/category/${rail.category.slug}`}
-            hrefLabel={`تسوّق ${rail.category.name}`}
-          />
-          <ProductRail
-            products={rail.items}
-            columns={rail.items.length <= 3 ? 3 : 4}
-          />
-        </Band>
-      ))}
-
-      {/* ============================================================
-          العروض
-          ============================================================ */}
-      {onSale.length > 0 && (
-        <Band className="!pt-14 lg:!pt-20">
-          <SectionHead
-            index={nextIndex()}
-            eyebrow="On Sale"
-            title="عليها خصم دلوقتي"
-            description="نفس الخامة ونفس القصّة — بسعر أقل."
-            href="/shop?sale=1"
-          />
-          <ProductRail products={onSale} />
-        </Band>
-      )}
-
-      {/* ============================================================
-          08 — إزاي بيشتغل
-          ============================================================ */}
-      <Band className="!pt-14 lg:!pt-20">
-        <SectionHead
-          index={nextIndex()}
-          eyebrow="How It Works"
-          title="الطلب في ٣ خطوات"
-          description="من غير بطاقة ائتمان ولا خطوات معقّدة — بتدفع لما يوصلك."
-          align="center"
-        />
-        <Process />
-      </Band>
-
-      {/* ============================================================
-          09 — أسئلة + تواصل
-          ============================================================ */}
-      <Band className="!pt-14 lg:!pt-20">
-        <SectionHead index={nextIndex()} eyebrow="Questions" title="أسئلة بتتسأل كتير" />
-        <Closing />
-      </Band>
-
-      {/* ============================================================
-          دعوة أخيرة
-          ============================================================ */}
-      <section className="shell pb-20 lg:pb-28">
-        <div
-          data-reveal=""
-          className="relative overflow-hidden rounded-[26px] border border-veil/8 bg-gradient-to-l from-brand-950/60 via-deep to-deep px-6 py-12 text-center lg:px-16 lg:py-16"
-        >
-          <span
-            aria-hidden="true"
-            className="aurora aurora-b -bottom-24 left-1/4 h-[300px] w-[300px]"
-          />
-
-          <div className="relative">
-            <p className="tag">{site.hero.eyebrow}</p>
-            <h2 className="display mx-auto mt-4 max-w-[20ch] text-[clamp(1.5rem,4.6vw,2.4rem)]">
-              جاهز تختار قطعتك الجاية؟
-            </h2>
-            <p className="mx-auto mt-4 max-w-[46ch] text-[13.5px] leading-[2] text-mist">
-              المجموعة كلها قدامك — فلتر حسب القسم أو السعر، وأضف اللي يعجبك للسلة.
-            </p>
-
-            <Link href="/shop" className="btn btn-primary btn-lg mt-8">
-              <span>ابدأ التسوّق</span>
-              <ArrowLeftIcon className="btn-arrow h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
+      <h1 className="sr-only">{site.nameFull} — المتجر الافتراضي</h1>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }}
+      />
+      <VirtualStore room={room} />
     </>
   )
 }

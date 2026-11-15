@@ -72,17 +72,27 @@
   ],
   "on-cloud-tracksuit": [
     {
-      "src": "/room/on-cloud-tracksuit--navy.webp",
-      "srcSm": "/room/on-cloud-tracksuit--navy-sm.webp",
-      "from": "/img/oncloud-1.webp",
+      "src": "/room/sample/oncloud-navy-tee.webp",
+      "srcSm": "/room/sample/oncloud-navy-tee.webp",
+      "from": "/img/oncloud-2.webp",
       "color": "كحلي",
-      "shadow": "/room/on-cloud-tracksuit--navy-shadow.webp",
+      "shadow": "/room/sample/oncloud-navy-tee-shadow.webp",
       "ownHanger": false,
-      "w": 320,
-      "h": 399,
-      "hookX": 0.5031,
-      "top": 0.0201,
-      "shoulder": 0.5875
+      "w": 655,
+      "h": 576,
+      "hookX": 0.4863,
+      "top": 0.0017,
+      "shoulder": 0.6107,
+      "fold": {
+        "src": "/room/sample/oncloud-navy-pants.webp",
+        "w": 358,
+        "h": 484,
+        "clipY": 0.0455,
+        "clipX0": 0.4274,
+        "clipX1": 0.9358
+      },
+      "sample": true,
+      "note": "تعديل منظور + تصحيح عمق 0.819 متظبّط على نسبة نفس التيشيرت في /img/oncloud-1.webp"
     }
   ],
   "hooded-embroidered-abaya": [

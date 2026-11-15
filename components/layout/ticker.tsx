@@ -8,7 +8,7 @@ import { site } from '@/data/site'
    ============================================================ */
 export function Ticker() {
   return (
-    <div className="glass relative overflow-hidden border-b py-2.5">
+    <div className="site-ticker glass relative overflow-hidden border-b py-2.5">
       <div className="marquee">
         {[0, 1].map((pass) => (
           <div key={pass} className="flex items-center" aria-hidden={pass === 1}>

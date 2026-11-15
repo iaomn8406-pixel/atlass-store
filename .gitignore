@@ -19,3 +19,6 @@ tsconfig.tsbuildinfo
 
 # ملفات قفل Office المؤقتة
 ~$*
+
+# أدلة مراجعة إعادة التصميم (صور/فيديو) — محلي بس
+/docs/redesign/

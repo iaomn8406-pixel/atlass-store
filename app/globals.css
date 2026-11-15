@@ -1546,557 +1546,410 @@ body.has-bar .wa {
 }
 
 /* ============================================================
-   المتجر الافتراضي — أوضة CSS 3D
+   المتجر الافتراضي — الرئيسية (المشهد في WebGL)
    ------------------------------------------------------------
-   مفيش blur ولا filter جوه المشهد خالص: الظلال تدرّجات مرسومة
-   مرة واحدة، والحركة كلها transform و opacity — فالمتصفح
-   بيحرّكها على كارت الشاشة من غير إعادة رسم.
+   كل اللي هنا طبقة تحكّم فوق الكانفاس: أزرار القطع، شريط
+   الأقسام، الرجوع، والبطاقة الزجاجية. ألوان الأوضة فاتحة دافية
+   زي المرجع، والسماوي/الكحلي في الهوية بس.
    ============================================================ */
-.vs {
+.st {
+  --st-wall: #ebe8e3;
+  --st-ink: #14171f;
+  --st-glass: rgba(255, 255, 255, 0.58);
+  --st-line: rgba(255, 255, 255, 0.7);
   position: relative;
-  height: clamp(560px, calc(100svh - var(--nav-h) - 36px), 940px);
-  /* clip مش hidden: hidden بيخلّي المشهد قابل للتمرير من جوه، والمتصفح
-     كان بيزقّه لفوق لما يوصّل التركيز لزرار جوّاه. clip ماينفعش يتمرّر */
-  overflow: hidden;
+  height: calc(100dvh - var(--nav-h));
+  min-height: 460px;
   overflow: clip;
-  background: linear-gradient(to bottom, #f4f3ef 0%, #ecebe6 100%);
-  perspective-origin: 50% 46%;
-  touch-action: pan-y;
-  user-select: none;
-  -webkit-user-select: none;
-  cursor: grab;
+  background: var(--st-wall);
+  isolation: isolate;
 }
 
-.vs:active {
+.st-stage {
+  position: absolute;
+  inset: 0;
+  /* سحب الصباع بيحرّك الكاميرا؛ التكبير بصباعين لسه شغّال */
+  touch-action: pinch-zoom;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.st-stage:active {
   cursor: grabbing;
 }
 
-.vs-world {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform-style: preserve-3d;
-  will-change: transform;
-  transition: opacity 0.7s var(--ease-atlas);
+.st[data-mode='product'] .st-stage {
+  cursor: default;
 }
 
-.vs[data-ready='false'] .vs-world {
+.st-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
   opacity: 0;
+  transition: opacity 0.6s var(--ease-atlas);
 }
 
-/* الحيطان: أبيض دافي بنقط خفيفة، وأغمق شوية عند الأرض */
-.vs-wall {
+.st-stage[data-gl='on'] .st-canvas {
+  opacity: 1;
+}
+
+/* لحد ما المشهد يجهز */
+.st-poster {
   position: absolute;
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
-  /* زي حيطة المرجع: فاتحة بنقط رمادي خفيفة — بس أغمق شعرة من
-     الأبيض الصافي عشان التيشرتات البيضا تبان بظلها */
+  inset: 0;
+  display: grid;
+  place-items: center;
   background:
-    linear-gradient(to bottom, transparent calc(100% - 20px), #d4d0c7 calc(100% - 20px)),
-    radial-gradient(circle at center, rgba(16, 20, 28, 0.14) 1.4px, transparent 1.9px) 0 0 / 28px 28px,
-    linear-gradient(to bottom, #ecebe7 0%, #e7e5e0 60%, #dedbd4 100%);
+    radial-gradient(120% 70% at 50% 0%, rgba(255, 255, 255, 0.6), transparent 60%),
+    linear-gradient(to bottom, var(--st-wall) 0 68%, #dcd7cf 68% 100%);
 }
 
-.vs-floor {
-  position: absolute;
-  transform: rotateX(90deg);
-  backface-visibility: hidden;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 40%, rgba(255, 255, 255, 0.55), transparent 70%),
-    linear-gradient(to bottom, #e4e0d7, #d9d4c9);
-}
-
-.vs-logo {
-  position: absolute;
-  display: flex;
-  align-items: flex-end;
-  gap: 22px;
-  transform: translateX(-50%);
-  direction: ltr;
-  white-space: nowrap;
-}
-
-.vs-logo img {
-  height: 132px;
-  width: 132px;
-  align-self: center;
-}
-
-.vs-logo__name {
-  font-family: var(--font-display);
-  font-size: 112px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  line-height: 0.92;
-  color: #0b4fae;
-}
-
-.vs-logo__sub {
-  margin-bottom: 8px;
-  font-family: var(--font-label);
-  font-size: 34px;
-  font-weight: 500;
-  letter-spacing: 0.42em;
-  text-transform: uppercase;
-  color: #0a8fd0;
-}
-
-/* كارت المنتج مفتوح → زرار الواتساب العايم بيستخبى عشان مايغطيش
-   زرار الإضافة (على الفون بالذات) */
-body:has(.vs[data-mode='product']) .wa {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* على الفون الشعار أصغر عشان يدخل في عرض الشاشة */
-@media (max-width: 767px) {
-  .vs-logo {
-    gap: 14px;
-  }
-
-  .vs-logo img {
-    height: 80px;
-    width: 80px;
-  }
-
-  .vs-logo__name {
-    font-size: 66px;
-  }
-
-  .vs-logo__sub {
-    margin-bottom: 4px;
-    font-size: 20px;
-  }
-}
-
-.vs-zone {
-  position: absolute;
-  width: 0;
-  height: 0;
-  transform-style: preserve-3d;
-}
-
-/* ظل القطعة على الحيطة — صورة جاهزة، بتضيق مع لفّة القطعة */
-.vs-shadow {
-  position: absolute;
+.st-poster img {
+  width: 56px;
   height: auto;
-  pointer-events: none;
-  transform-origin: 50% 0;
-  transition:
-    transform 0.95s var(--ease-atlas),
-    opacity 0.6s var(--ease-atlas);
+  opacity: 0.5;
+  animation: st-breathe 1.6s ease-in-out infinite alternate;
 }
 
-.vs-shadow[data-hidden='true'] {
-  opacity: 0 !important;
+@keyframes st-breathe {
+  to {
+    opacity: 0.9;
+  }
 }
 
-/* القضيب المعدني */
-.vs-rail {
+/* زرار فوق كل قطعة — شفاف، الشكل كله من المشهد */
+.st-spots {
+  display: contents;
+}
+
+.st-spot {
   position: absolute;
-  top: -7px;
-  height: 14px;
-  border-radius: 7px;
-  background: linear-gradient(to bottom, #eef0f2 0%, #a8aeb6 50%, #747a83 100%);
-  box-shadow: 0 10px 14px -8px rgba(16, 20, 28, 0.35);
-}
-
-/* الأرجل اللي ماسكة القضيب في الحيطة */
-.vs-bracket {
-  position: absolute;
-  top: -5px;
-  height: 10px;
-  transform-origin: 0 50%;
-  border-radius: 3px;
-  background: linear-gradient(to bottom, #d5d9de, #858b94);
-}
-
-/* القطعة المتعلقة */
-.vs-piece {
-  position: absolute;
+  top: 0;
   left: 0;
-  display: block;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-  /* عشان شرايح القطعة تنحني في 3D جوّاها */
-  transform-style: preserve-3d;
-  transition:
-    transform 0.95s var(--ease-atlas),
-    opacity 0.5s var(--ease-atlas);
-}
-
-/* جسم القطعة: شرايح بتنحني، أو صورة واحدة على الأجهزة الضعيفة */
-.vs-body {
-  position: relative;
-  display: block;
-  transform-style: preserve-3d;
-  pointer-events: none;
-}
-
-.vs-body img {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-/* الشريحة بتقص جزءها من الصورة — من غير mask عشان تترسم على كل الأجهزة */
-.vs-slice {
-  position: absolute;
-  top: 0;
-  display: block;
-  overflow: hidden;
-}
-
-.vs-slice img {
-  position: absolute;
-  top: 0;
-  display: block;
-  max-width: none;
-  pointer-events: none;
-}
-
-.vs-slice[data-side='start'] {
-  transform-origin: 100% 50%;
-}
-
-.vs-slice[data-side='end'] {
-  transform-origin: 0 50%;
-}
-
-.vs-hanger {
-  position: absolute;
-  top: 0;
-  display: block;
-}
-
-.vs-hanger svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.vs-piece[data-hidden='true'] {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* القطعة (بشماعتها وظلها) مابتظهرش غير لما صورتها توصل — عشان
-   مايبانش قضيب عليه شماعات فاضية على النت الضعيف */
-.vs-piece[data-loaded='false'],
-.vs-shadow[data-loaded='false'] {
-  opacity: 0 !important;
-  pointer-events: none;
-}
-
-.vs-piece:focus-visible {
-  outline: 3px solid var(--color-brand-500);
-  outline-offset: 10px;
   border-radius: 14px;
+  background: transparent;
+  cursor: pointer;
+  will-change: transform;
 }
 
-/* اسم القطعة تحتها — بيظهر بس لما تبقى مختارة */
-.vs-caption {
-  display: block;
-  margin-top: 26px;
-  text-align: center;
-  font-size: 22px;
-  font-weight: 600;
-  color: #5d6470;
-  opacity: 0;
-  transition: opacity 0.5s var(--ease-atlas);
+.st-spot[data-off='true'] {
+  /* مش ظاهرة على الشاشة: تفضل موجودة للكيبورد بس من غير ما تتشاف */
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden;
+  clip-path: inset(50%);
+  transform: none !important;
 }
 
-.vs-piece[data-focused='true'] .vs-caption {
-  opacity: 1;
+.st-spot:focus-visible {
+  outline: 2px solid var(--st-ink);
+  outline-offset: 6px;
 }
 
-.vs[data-mode='product'] .vs-caption {
-  opacity: 0;
+.st[data-mode='product'] .st-spot[data-sel='true'] {
+  cursor: default;
 }
 
-/* دايرة «+» جنب القطعة المختارة */
-.vs-plus {
+/* رجوع */
+.st-back {
   position: absolute;
-  top: 46%;
-  inset-inline-start: -52px;
-  display: flex;
-  height: 54px;
-  width: 54px;
+  top: 16px;
+  inset-inline-start: 16px;
+  z-index: 4;
+  display: inline-flex;
+  min-height: 44px;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
   border-radius: 999px;
-  border: 1px solid rgba(16, 20, 28, 0.14);
-  background: rgba(255, 255, 255, 0.92);
-  color: #14171f;
-  box-shadow: 0 10px 22px -12px rgba(16, 20, 28, 0.45);
-  opacity: 0;
-  transform: scale(0.6);
-  transition:
-    opacity 0.45s var(--ease-atlas),
-    transform 0.6s var(--ease-atlas);
-}
-
-.vs-plus svg {
-  height: 26px;
-  width: 26px;
-}
-
-.vs[data-mode='focus'] .vs-piece[data-focused='true'] .vs-plus {
-  opacity: 1;
-  transform: none;
-}
-
-/* ---------------- الواجهة فوق المشهد ---------------- */
-.vs-ui {
-  cursor: auto;
-}
-
-.vs-pills {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 22px;
-  z-index: 5;
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: center;
-  gap: 10px;
-  padding-inline: 16px;
-  pointer-events: none;
-}
-
-.vs-pills__track {
-  display: flex;
-  max-width: 100%;
-  gap: 4px;
-  overflow-x: auto;
-  padding: 5px;
-  border-radius: 999px;
-  border: 1px solid rgba(16, 20, 28, 0.08);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 14px 30px -18px rgba(16, 20, 28, 0.4);
-  pointer-events: auto;
-}
-
-.vs-pills__track button {
-  flex-shrink: 0;
-  border-radius: 999px;
-  padding: 10px 18px;
+  border: 1px solid var(--st-line);
+  background: var(--st-glass);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 10px 26px -18px rgba(16, 20, 28, 0.5);
   font-size: 13px;
   font-weight: 700;
-  color: rgba(20, 23, 31, 0.78);
+  color: var(--st-ink);
+}
+
+/* ---------------- شريط الأقسام (زي المرجع: كبسولة بيضا تحت) ---------------- */
+.st-pills {
+  position: absolute;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  left: 50%;
+  z-index: 5;
+  max-width: calc(100% - 32px);
+  transform: translateX(-50%);
+  transition:
+    opacity 0.35s var(--ease-atlas),
+    transform 0.35s var(--ease-atlas);
+}
+
+.st-pills[data-hide='true'] {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 16px);
+}
+
+.st-pills__track {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 5px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  box-shadow: 0 14px 34px -22px rgba(16, 20, 28, 0.55);
+}
+
+.st-pills__track::-webkit-scrollbar {
+  display: none;
+}
+
+.st-pills__track button {
+  flex-shrink: 0;
+  min-height: 40px;
+  border-radius: 999px;
+  padding: 0 18px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: rgba(20, 23, 31, 0.62);
   white-space: nowrap;
   transition:
     background-color 0.35s var(--ease-atlas),
     color 0.35s var(--ease-atlas);
 }
 
-.vs-pills__track button:hover {
-  color: #14171f;
-  background: rgba(16, 20, 28, 0.06);
+.st-pills__track button:hover {
+  color: var(--st-ink);
 }
 
-.vs-pills__track button[data-active='true'] {
-  background: #14171f;
+.st-pills__track button[data-active='true'] {
+  background: var(--st-ink);
   color: #fff;
 }
 
-.vs-pills__info {
-  display: flex;
-  align-items: center;
-  padding-inline: 12px !important;
+.st-pills__sep {
+  width: 1px;
+  height: 20px;
+  margin-inline: 4px;
+  background: rgba(16, 20, 28, 0.14);
 }
 
-.vs-help {
-  max-width: 420px;
-  padding: 10px 16px;
-  border-radius: 14px;
-  background: #14171f;
-  color: #fff;
-  font-size: 12.5px;
-  line-height: 1.8;
-  text-align: center;
-  pointer-events: auto;
-}
-
-/* أسهم التنقل بين القطع */
-.vs-steps {
-  position: absolute;
-  top: 50%;
-  inset-inline: 18px;
-  z-index: 4;
+.st-pills__info {
   display: flex;
-  justify-content: space-between;
-  pointer-events: none;
-  transform: translateY(-50%);
-}
-
-.vs-steps button {
-  display: flex;
-  height: 46px;
-  width: 46px;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  padding: 0 !important;
+}
+
+/* لوحة «i» */
+.st-info {
+  position: absolute;
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 64px);
+  left: 50%;
+  z-index: 6;
+  width: min(440px, calc(100% - 32px));
+  padding: 20px 20px 18px;
+  border-radius: 22px;
+  border: 1px solid var(--st-line);
+  background: rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+  box-shadow: 0 30px 60px -34px rgba(16, 20, 28, 0.5);
+  transform: translateX(-50%);
+  animation: st-rise 0.35s var(--ease-atlas) both;
+  outline: none;
+}
+
+.st-info__close {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
-  border: 1px solid rgba(16, 20, 28, 0.12);
-  background: rgba(255, 255, 255, 0.92);
-  color: #14171f;
-  box-shadow: 0 10px 22px -14px rgba(16, 20, 28, 0.45);
-  pointer-events: auto;
-  transition: transform 0.35s var(--ease-atlas);
+  color: var(--st-ink);
 }
 
-.vs-steps button:hover {
-  transform: scale(1.06);
+.st-info__lead {
+  padding-inline-end: 34px;
+  font-size: 13px;
+  line-height: 1.9;
+  color: #3a404c;
 }
 
-@media (min-width: 768px) {
-  /* في وضع المنتج الأسهم حوالين القطعة بس — الكارت واخد الشمال */
-  .vs-steps[data-product='true'] {
-    inset-inline-end: 46%;
+.st-info__links {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.st-info__links a {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(16, 20, 28, 0.06);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--st-ink);
+}
+
+.st-info__links a:hover {
+  background: rgba(16, 20, 28, 0.12);
+}
+
+@keyframes st-rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
   }
 }
 
-@media (max-width: 767px) {
-  .vs-steps[data-product='true'] {
-    top: 22%;
-  }
-}
-
-/* ---------------- كارت المنتج ---------------- */
-.vs-card {
+/* ---------------- البطاقة الزجاجية (زي المرجع) ---------------- */
+.st-card {
   position: absolute;
   top: 50%;
-  inset-inline-end: 4%;
+  inset-inline-start: clamp(16px, 5vw, 72px);
   z-index: 6;
-  width: min(390px, 40%);
-  max-height: calc(100% - 40px);
+  width: min(380px, 38%);
+  max-height: calc(100% - 48px);
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 26px 24px 22px;
   border-radius: 26px;
-  border: 1px solid rgba(16, 20, 28, 0.08);
+  border: 1px solid var(--st-line);
   background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 34px 70px -34px rgba(16, 20, 28, 0.42);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 34px 70px -36px rgba(16, 20, 28, 0.45);
   transform: translateY(-50%);
-  animation: vs-card-in 0.6s var(--ease-atlas) both;
+  animation: st-card-in 0.55s var(--ease-atlas) both;
 }
 
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  @media (min-width: 768px) {
-    .vs-card {
-      background: rgba(255, 255, 255, 0.72);
-      -webkit-backdrop-filter: blur(18px) saturate(150%);
-      backdrop-filter: blur(18px) saturate(150%);
-    }
+  .st-card {
+    background: rgba(255, 255, 255, 0.55);
+    -webkit-backdrop-filter: blur(26px) saturate(160%);
+    backdrop-filter: blur(26px) saturate(160%);
   }
 }
 
-@keyframes vs-card-in {
+@keyframes st-card-in {
   from {
     opacity: 0;
-    transform: translate(-18px, -50%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(0, -50%);
+    transform: translate(-16px, -50%);
   }
 }
 
-/* على الفون: درج من تحت */
-.vs-card[data-sheet='true'] {
+/* الفون: نفس الزجاج بس درج من تحت */
+.st-card[data-sheet='true'] {
   top: auto;
   bottom: 0;
   inset-inline: 0;
   width: auto;
-  max-height: 64%;
-  padding: 22px 18px 20px;
+  max-height: 58%;
+  padding: 20px 18px calc(18px + env(safe-area-inset-bottom));
   border-radius: 24px 24px 0 0;
-  background: #fff;
   transform: none;
-  animation-name: vs-sheet-in;
+  animation-name: st-sheet-in;
 }
 
-@keyframes vs-sheet-in {
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .st-card[data-sheet='true'] {
+    background: rgba(255, 255, 255, 0.72);
+  }
+}
+
+@keyframes st-sheet-in {
   from {
     opacity: 0;
     transform: translateY(40px);
   }
-  to {
-    opacity: 1;
-    transform: none;
-  }
 }
 
-.vs-card__close {
+.st-card__close {
   position: absolute;
   top: 14px;
   inset-inline-end: 14px;
   display: flex;
-  height: 34px;
-  width: 34px;
+  height: 40px;
+  width: 40px;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
   background: rgba(16, 20, 28, 0.06);
-  color: #14171f;
-  transition: background-color 0.3s var(--ease-atlas);
+  color: var(--st-ink);
 }
 
-.vs-card__close:hover {
+.st-card__close:hover {
   background: rgba(16, 20, 28, 0.12);
 }
 
-.vs-card__cat {
+.st-card__cat {
   font-size: 12px;
   font-weight: 600;
-  color: #6b7280;
+  color: #5f6672;
 }
 
-.vs-card__name {
+.st-card__name {
   margin-top: 6px;
-  padding-inline-end: 34px;
+  padding-inline-end: 40px;
   font-family: var(--font-display);
   font-size: 19px;
   font-weight: 700;
   line-height: 1.45;
-  color: #14171f;
+  color: var(--st-ink);
   text-wrap: balance;
 }
 
-.vs-card__price {
+.st-card__price {
   margin-top: 10px;
   display: flex;
   align-items: baseline;
   gap: 10px;
   font-size: 18px;
   font-weight: 800;
-  color: #14171f;
+  color: var(--st-ink);
 }
 
-.vs-card__price s {
+.st-card__price s {
   font-size: 13px;
   font-weight: 600;
-  color: #6b7280;
+  color: #5f6672;
 }
 
-.vs-card__line {
+.st-card__line {
   margin-top: 4px;
   font-size: 12.5px;
-  color: #5d6470;
+  color: #4d5460;
 }
 
-.vs-card__colors {
+.st-card__colors {
   margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
-.vs-card__colors button {
+.st-card__colors button {
   display: flex;
-  height: 34px;
-  width: 34px;
+  height: 40px;
+  width: 40px;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
@@ -2104,79 +1957,79 @@ body:has(.vs[data-mode='product']) .wa {
   transition: border-color 0.3s var(--ease-atlas);
 }
 
-.vs-card__colors button[data-on='true'] {
-  border-color: #14171f;
+.st-card__colors button[data-on='true'] {
+  border-color: var(--st-ink);
 }
 
-.vs-card__colors span {
+.st-card__colors span {
   display: flex;
-  height: 24px;
-  width: 24px;
+  height: 26px;
+  width: 26px;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
   box-shadow: inset 0 0 0 1px rgba(16, 20, 28, 0.18);
   font-size: 11px;
   font-weight: 700;
-  color: #14171f;
+  color: var(--st-ink);
 }
 
-.vs-card__colors span[data-empty='true'] {
+.st-card__colors span[data-empty='true'] {
   background: #f1efea !important;
 }
 
-.vs-card__head {
+.st-card__head {
   margin-top: 18px;
   display: flex;
   justify-content: space-between;
   font-size: 12.5px;
   font-weight: 700;
-  color: #14171f;
+  color: var(--st-ink);
 }
 
-.vs-card__head span + span {
+.st-card__head span + span {
   font-weight: 600;
-  color: #6b7280;
+  color: #5f6672;
 }
 
-.vs-card__sizes {
+.st-card__sizes {
   margin-top: 10px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
-.vs-card__sizes button {
-  height: 42px;
+.st-card__sizes button {
+  height: 44px;
   border-radius: 12px;
   border: 1px solid rgba(16, 20, 28, 0.14);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.75);
   font-size: 13px;
   font-weight: 700;
-  color: #14171f;
+  color: var(--st-ink);
   transition:
     background-color 0.3s var(--ease-atlas),
     color 0.3s var(--ease-atlas),
     border-color 0.3s var(--ease-atlas);
 }
 
-.vs-card__sizes button:hover:not(:disabled) {
+.st-card__sizes button:hover:not(:disabled) {
   border-color: rgba(16, 20, 28, 0.4);
 }
 
-.vs-card__sizes button[data-on='true'] {
-  border-color: #14171f;
-  background: #14171f;
+.st-card__sizes button[data-on='true'] {
+  border-color: var(--st-ink);
+  background: var(--st-ink);
   color: #fff;
 }
 
-.vs-card__sizes button:disabled {
+.st-card__sizes button:disabled {
   opacity: 0.38;
   text-decoration: line-through;
   cursor: not-allowed;
 }
 
-.vs-card__error {
+.st-card__error {
   margin-top: 12px;
   display: flex;
   align-items: center;
@@ -2186,7 +2039,7 @@ body:has(.vs[data-mode='product']) .wa {
   color: var(--color-sale);
 }
 
-.vs-card__add {
+.st-card__add {
   margin-top: 16px;
   display: flex;
   width: 100%;
@@ -2195,7 +2048,7 @@ body:has(.vs[data-mode='product']) .wa {
   justify-content: center;
   gap: 8px;
   border-radius: 999px;
-  background: #14171f;
+  background: var(--st-ink);
   color: #fff;
   font-size: 14px;
   font-weight: 800;
@@ -2205,53 +2058,109 @@ body:has(.vs[data-mode='product']) .wa {
   touch-action: manipulation;
 }
 
-.vs-card__add:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-
-.vs-card__add:active:not(:disabled) {
+.st-card__add:active:not(:disabled) {
   transform: scale(0.98);
 }
 
-.vs-card__add:disabled {
+.st-card__add:disabled {
   cursor: not-allowed;
 }
 
-.vs-card__add[data-phase='busy'] {
+.st-card__add[data-phase='busy'] {
   background: #2a2f3a;
 }
 
-.vs-card__add[data-phase='done'] {
+.st-card__add[data-phase='done'] {
   background: #1e9d5c;
 }
 
-.vs-card__view {
+.st-card__view {
   margin: 10px auto 0;
   display: flex;
+  min-height: 40px;
   align-items: center;
   gap: 6px;
   font-size: 13px;
   font-weight: 700;
-  color: #14171f;
+  color: var(--st-ink);
 }
 
-.vs-card__view:hover span {
+.st-card__view:hover span {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
 
-.vs-card__more {
-  margin-top: 14px;
+.st-card__more {
+  margin-top: 10px;
   display: block;
+  padding: 6px 0;
   text-align: center;
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--color-brand-300);
+  color: #0b5fc4;
   text-underline-offset: 4px;
 }
 
-.vs-card__more:hover {
+.st-card__more:hover {
   text-decoration: underline;
+}
+
+/* ---------------- البديل (من غير WebGL) ---------------- */
+.st-fallback {
+  padding: 28px 16px 40px;
+  background: var(--st-wall, #ebe8e3);
+}
+
+.st-fallback__zone + .st-fallback__zone {
+  margin-top: 28px;
+}
+
+.st-fallback h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.st-fallback ul {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.st-fallback li a {
+  display: block;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.st-fallback img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+}
+
+/* ---------------- الرئيسية: الأوضة بس ---------------- */
+/* الشريط المتحرك والفوتر الكبير مش جزء من الرئيسية الجديدة — روابطهم في لوحة «i» */
+body:has(.st-home) .site-ticker,
+body:has(.st-home) .site-footer {
+  display: none;
+}
+
+/* واتساب: فوق شريط الأقسام على الفون، ومستخبي وقت البطاقة */
+@media (max-width: 767px) {
+  body:has(.st-home) .wa {
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 66px) !important;
+  }
+}
+
+body:has(.st[data-mode='product']) .wa {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* ============================================================
@@ -2284,4 +2193,11 @@ body:has(.vs[data-mode='product']) .wa {
     animation: none !important;
   }
 }
+}
+
+@media (max-width: 420px) {
+  .st-pills__track button {
+    padding: 0 13px;
+    font-size: 13px;
+  }
 }
