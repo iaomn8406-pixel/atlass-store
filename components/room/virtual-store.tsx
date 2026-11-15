@@ -179,26 +179,24 @@ const SLICES = [
   { from: 0.76, to: 1, side: 'end' as const },
 ]
 
-function Body({ p, flat }: { p: LaidPiece; flat: boolean }) {
+function Body({ p, flat, src }: { p: LaidPiece; flat: boolean; src: string }) {
   if (flat) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={p.src} alt="" width={p.w} height={p.h} decoding="async" draggable={false} />
+      <img src={src} alt="" width={p.w} height={p.h} decoding="async" draggable={false} />
     )
   }
 
+  /* كل شريحة صندوق بيقص جزء من نفس الصورة (overflow: hidden) — من غير
+     mask. الماسك جوه مشهد 3D مابيترسمش على بعض الأجهزة (لما تسريع
+     كارت الشاشة يكون مقفول مثلًا) والقطعة كانت بتختفي خالص. الصورة
+     نفسها شفافة حوالين القطعة، فمش محتاجين قص بشكلها */
   return (
     <>
       {SLICES.map((s) => {
         /* بكسل تداخل بين الشرايح عشان ما يبانش خط بينهم */
         const x0 = Math.max(0, s.from * p.w - 1)
         const x1 = Math.min(p.w, s.to * p.w + 1)
-        const shade =
-          s.side === 'start'
-            ? 'linear-gradient(to right, #d6d3cd, #f6f5f3 75%, #fff)'
-            : s.side === 'end'
-              ? 'linear-gradient(to left, #d6d3cd, #f6f5f3 75%, #fff)'
-              : 'linear-gradient(to bottom, #fff 0%, #fff 60%, #efede9 100%)'
 
         return (
           <span
@@ -209,15 +207,6 @@ function Body({ p, flat }: { p: LaidPiece; flat: boolean }) {
               left: x0,
               width: x1 - x0,
               height: p.h,
-              backgroundImage: `${shade}, url(${p.src})`,
-              backgroundSize: `100% 100%, ${p.w}px ${p.h}px`,
-              backgroundPosition: `0 0, ${-x0}px 0`,
-              WebkitMaskImage: `url(${p.src})`,
-              maskImage: `url(${p.src})`,
-              WebkitMaskSize: `${p.w}px ${p.h}px`,
-              maskSize: `${p.w}px ${p.h}px`,
-              WebkitMaskPosition: `${-x0}px 0`,
-              maskPosition: `${-x0}px 0`,
               transform:
                 s.side === 'start'
                   ? `rotateY(${-BEND}deg)`
@@ -225,7 +214,18 @@ function Body({ p, flat }: { p: LaidPiece; flat: boolean }) {
                     ? `rotateY(${BEND}deg)`
                     : undefined,
             }}
-          />
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={src}
+              alt=""
+              width={p.w}
+              height={p.h}
+              decoding="async"
+              draggable={false}
+              style={{ left: -x0, width: p.w, height: p.h }}
+            />
+          </span>
         )
       })}
     </>
@@ -538,12 +538,73 @@ export function VirtualStore({ room, showcase }: { room: Room; showcase: Product
     else goZone(best)
   }
 
+  const zooming = mode === 'focus' || mode === 'product'
+
+  /* ---------------- تحميل الصور ----------------
+     القطعة مابتظهرش (ولا ظلها) غير لما صورتها تتحمّل — من غير كده،
+     على النت الضعيف الشماعات كانت بتبان فاضية لحد ما الصور توصل.
+     الصور ممكن تكون اتحمّلت قبل ما رياكت يشتغل (الصفحة جاية جاهزة من
+     السيرفر)، فبنتأكد من complete الأول قبل ما نستنى الحدث */
+  const [loaded, setLoaded] = useState<Record<string, 'ok' | 'fail'>>({})
+
+  useEffect(() => {
+    const root = world.current
+    if (!root) return
+    const undo: (() => void)[] = []
+
+    root.querySelectorAll<HTMLElement>('.vs-piece').forEach((el) => {
+      const id = el.dataset.piece
+      const img = el.querySelector<HTMLImageElement>('.vs-body img')
+      if (!id || !img) return
+
+      const done = (ok: boolean) =>
+        setLoaded((s) => (s[id] === 'ok' ? s : { ...s, [id]: ok ? 'ok' : 'fail' }))
+
+      if (img.complete) {
+        done(img.naturalWidth > 0)
+        return
+      }
+      const onLoad = () => done(true)
+      const onError = () => done(false)
+      img.addEventListener('load', onLoad, { once: true })
+      img.addEventListener('error', onError, { once: true })
+      undo.push(() => {
+        img.removeEventListener('load', onLoad)
+        img.removeEventListener('error', onError)
+      })
+    })
+
+    return () => undo.forEach((u) => u())
+  }, [pieces, flat])
+
+  /* النسخة الكبيرة بتتحمّل بس للقطعة اللي اتختارت، وبتتبدّل لما تجهز
+     فعلًا — من غير ما القطعة تختفي لحظة التبديل */
+  const [sharp, setSharp] = useState<Record<string, true>>({})
+
+  useEffect(() => {
+    if (!zooming || !piece || sharp[piece.id]) return
+    let alive = true
+    const id = piece.id
+    const img = new window.Image()
+    img.src = piece.src
+    const ready = img.decode ? img.decode() : Promise.resolve()
+    ready
+      .then(() => {
+        if (alive) setSharp((s) => ({ ...s, [id]: true }))
+      })
+      .catch(() => {
+        /* بنفضل على النسخة الصغيرة */
+      })
+    return () => {
+      alive = false
+    }
+  }, [zooming, piece, sharp])
+
   /* لو المتصفح مابيدعمش 3D — الواجهة العادية */
   if (!supported) return <Hero showcase={showcase} />
 
   const activeSlug = mode === 'store' ? 'store' : zone?.slug
   const product = piece ? room.products[piece.productId] : undefined
-  const zooming = mode === 'focus' || mode === 'product'
 
   /* مكان كل قطعة: المختارة بتطلع لقدام، واللي جنبها بتوسّع وتلف شوية */
   const place = (p: LaidPiece) => {
@@ -636,6 +697,7 @@ export function VirtualStore({ room, showcase }: { room: Room; showcase: Product
                   aria-hidden="true"
                   className="vs-shadow"
                   data-hidden={hidden}
+                  data-loaded={loaded[p.id] === 'ok'}
                   decoding="async"
                   draggable={false}
                   style={{
@@ -686,6 +748,7 @@ export function VirtualStore({ room, showcase }: { room: Room; showcase: Product
                   data-piece={p.id}
                   data-focused={focused}
                   data-hidden={hidden}
+                  data-loaded={loaded[p.id] === 'ok'}
                   aria-label={label}
                   aria-pressed={focused}
                   tabIndex={mode === 'store' ? -1 : 0}
@@ -715,7 +778,7 @@ export function VirtualStore({ room, showcase }: { room: Room; showcase: Product
                     data-flat={flat}
                     style={{ width: p.w, height: p.h, marginTop: p.ownHanger ? 0 : hh * 0.54 }}
                   >
-                    <Body p={p} flat={flat} />
+                    <Body p={p} flat={flat} src={sharp[p.id] ? p.src : p.srcSm} />
                   </span>
 
                   <span className="vs-caption">{name}</span>

@@ -1741,15 +1741,20 @@ body:has(.vs[data-mode='product']) .wa {
   height: 100%;
 }
 
+/* الشريحة بتقص جزءها من الصورة — من غير mask عشان تترسم على كل الأجهزة */
 .vs-slice {
   position: absolute;
   top: 0;
   display: block;
-  background-repeat: no-repeat;
-  background-blend-mode: multiply, normal;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.vs-slice img {
+  position: absolute;
+  top: 0;
+  display: block;
+  max-width: none;
+  pointer-events: none;
 }
 
 .vs-slice[data-side='start'] {
@@ -1774,6 +1779,14 @@ body:has(.vs[data-mode='product']) .wa {
 
 .vs-piece[data-hidden='true'] {
   opacity: 0;
+  pointer-events: none;
+}
+
+/* القطعة (بشماعتها وظلها) مابتظهرش غير لما صورتها توصل — عشان
+   مايبانش قضيب عليه شماعات فاضية على النت الضعيف */
+.vs-piece[data-loaded='false'],
+.vs-shadow[data-loaded='false'] {
+  opacity: 0 !important;
   pointer-events: none;
 }
 

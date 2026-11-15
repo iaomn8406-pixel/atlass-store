@@ -2,6 +2,7 @@
   "loewe-mens-tshirt": [
     {
       "src": "/room/loewe-mens-tshirt--white.webp",
+      "srcSm": "/room/loewe-mens-tshirt--white-sm.webp",
       "from": "/img/loewe-1.webp",
       "color": "أبيض",
       "shadow": "/room/loewe-mens-tshirt--white-shadow.webp",
@@ -14,6 +15,7 @@
     },
     {
       "src": "/room/loewe-mens-tshirt--black.webp",
+      "srcSm": "/room/loewe-mens-tshirt--black-sm.webp",
       "from": "/img/loewe-2.webp",
       "color": "اسود",
       "shadow": "/room/loewe-mens-tshirt--black-shadow.webp",
@@ -28,6 +30,7 @@
   "massimo-dutti-oversize": [
     {
       "src": "/room/massimo-dutti-oversize--white.webp",
+      "srcSm": "/room/massimo-dutti-oversize--white-sm.webp",
       "from": "/img/massimo-1.webp",
       "color": "أبيض",
       "shadow": "/room/massimo-dutti-oversize--white-shadow.webp",
@@ -40,6 +43,7 @@
     },
     {
       "src": "/room/massimo-dutti-oversize--black.webp",
+      "srcSm": "/room/massimo-dutti-oversize--black-sm.webp",
       "from": "/img/massimo-2.webp",
       "color": "اسود",
       "shadow": "/room/massimo-dutti-oversize--black-shadow.webp",
@@ -54,6 +58,7 @@
   "tshirt-1975-print": [
     {
       "src": "/room/tshirt-1975-print--olive.webp",
+      "srcSm": "/room/tshirt-1975-print--olive-sm.webp",
       "from": "/img/print1975-4.webp",
       "color": null,
       "shadow": "/room/tshirt-1975-print--olive-shadow.webp",
@@ -68,6 +73,7 @@
   "on-cloud-tracksuit": [
     {
       "src": "/room/on-cloud-tracksuit--navy.webp",
+      "srcSm": "/room/on-cloud-tracksuit--navy-sm.webp",
       "from": "/img/oncloud-1.webp",
       "color": "كحلي",
       "shadow": "/room/on-cloud-tracksuit--navy-shadow.webp",
@@ -82,6 +88,7 @@
   "hooded-embroidered-abaya": [
     {
       "src": "/room/hooded-embroidered-abaya--white.webp",
+      "srcSm": "/room/hooded-embroidered-abaya--white-sm.webp",
       "from": "/img/abaya-2.webp",
       "color": "أبيض",
       "shadow": "/room/hooded-embroidered-abaya--white-shadow.webp",
@@ -94,6 +101,7 @@
     },
     {
       "src": "/room/hooded-embroidered-abaya--beige.webp",
+      "srcSm": "/room/hooded-embroidered-abaya--beige-sm.webp",
       "from": "/img/abaya-3.webp",
       "color": "بيج",
       "shadow": "/room/hooded-embroidered-abaya--beige-shadow.webp",
@@ -106,6 +114,7 @@
     },
     {
       "src": "/room/hooded-embroidered-abaya--black.webp",
+      "srcSm": "/room/hooded-embroidered-abaya--black-sm.webp",
       "from": "/img/abaya-4.webp",
       "color": "اسود",
       "shadow": "/room/hooded-embroidered-abaya--black-shadow.webp",
@@ -118,6 +127,7 @@
     },
     {
       "src": "/room/hooded-embroidered-abaya--blue.webp",
+      "srcSm": "/room/hooded-embroidered-abaya--blue-sm.webp",
       "from": "/img/abaya-1.webp",
       "color": null,
       "shadow": "/room/hooded-embroidered-abaya--blue-shadow.webp",

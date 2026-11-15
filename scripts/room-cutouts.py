@@ -243,6 +243,12 @@ def main():
         name = f"{s['slug']}--{s['key']}.webp"
         img.save(os.path.join(OUT_DIR, name), 'WEBP', quality=86, method=6)
 
+        # نسخة صغيرة للقضيب — هي اللي بتتحمّل الأول، والكبيرة بتتحمّل بس
+        # لما العميل يختار القطعة. على النت الضعيف ده بيفرق جدًا
+        sm = img.resize((round(img.width * 420 / img.height), 420), Image.LANCZOS) if img.height > 420 else img
+        sm_name = f"{s['slug']}--{s['key']}-sm.webp"
+        sm.save(os.path.join(OUT_DIR, sm_name), 'WEBP', quality=82, method=6)
+
         # ظل القطعة على الحيطة: نفس شكلها متموّه — صورة صغيرة جاهزة
         # بدل filter: blur في المتصفح (اللي بيتعب كارت الشاشة)
         a = img.getchannel('A')
@@ -258,6 +264,7 @@ def main():
 
         entry = {
             'src': f'/room/{name}',
+            'srcSm': f'/room/{sm_name}',
             'from': s['src'].replace('public', ''),
             'color': s['color'],
             'shadow': f'/room/{shadow_name}',
