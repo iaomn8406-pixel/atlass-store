@@ -205,7 +205,7 @@ export function ShopBrowser({
       {/* ============ النتائج ============ */}
       <div>
         {/* --- شريط الأدوات --- */}
-        <div className="mb-7 flex items-center justify-between gap-3 border-b border-white/8 pb-4">
+        <div className="mb-7 flex items-center justify-between gap-3 border-b border-veil/8 pb-4">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -281,8 +281,8 @@ export function ShopBrowser({
             className="scrim a-fade"
           />
 
-          <div className="a-drawer absolute inset-y-0 left-0 flex w-full max-w-[330px] flex-col border-l border-white/8 bg-deep">
-            <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
+          <div className="a-drawer absolute inset-y-0 left-0 flex w-full max-w-[330px] flex-col border-l border-veil/8 bg-deep">
+            <div className="flex items-center justify-between border-b border-veil/8 px-5 py-4">
               <p className="display text-[16px] font-bold">فلترة</p>
               <button
                 type="button"
@@ -296,7 +296,7 @@ export function ShopBrowser({
 
             <div className="flex-1 overflow-y-auto px-5 py-6">{filters}</div>
 
-            <div className="border-t border-white/8 px-5 py-4">
+            <div className="border-t border-veil/8 px-5 py-4">
               <button
                 type="button"
                 onClick={() => setSheet(false)}
@@ -348,8 +348,8 @@ function Chip({
       aria-pressed={active}
       className={`rounded-full border px-3.5 py-2 text-[12.5px] font-bold transition-all duration-400 ${
         active
-          ? 'border-transparent bg-[image:var(--grad-soft)] text-ink shadow-[var(--glow-sm)]'
-          : 'border-white/12 bg-white/4 text-foam/80 hover:border-brand-500/50 hover:text-white'
+          ? 'border-transparent bg-[image:var(--grad-soft)] text-white shadow-[var(--glow-sm)]'
+          : 'border-veil/12 bg-veil/4 text-foam/80 hover:border-brand-500/50 hover:text-white'
       }`}
     >
       {children}

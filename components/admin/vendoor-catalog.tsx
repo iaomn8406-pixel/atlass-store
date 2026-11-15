@@ -148,7 +148,7 @@ export function VendoorCatalog({
         </form>
 
         {/* القسم اللي المنتجات هتتضاف فيه */}
-        <div className="mt-3 flex flex-wrap items-center gap-2.5 border-t border-white/8 pt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-2.5 border-t border-veil/8 pt-3">
           <span className="text-[11.5px] text-mist">يتضاف في قسم:</span>
           <select
             value={target}
@@ -344,7 +344,7 @@ function ProductCard({
             {colors.slice(0, 4).map((c) => (
               <span
                 key={c}
-                className="rounded-full bg-white/6 px-2 py-0.5 text-[10px] text-foam/75"
+                className="rounded-full bg-veil/6 px-2 py-0.5 text-[10px] text-foam/75"
               >
                 {c}
               </span>
@@ -365,7 +365,7 @@ function ProductCard({
       </div>
 
       {/* --- الأسعار --- */}
-      <div className="grid grid-cols-3 gap-px border-y border-white/8 bg-white/6 text-center">
+      <div className="grid grid-cols-3 gap-px border-y border-veil/8 bg-veil/6 text-center">
         <Cell label="سعر الشراء" value={formatPrice(buy)} />
         <Cell label="أقل سعر" value={formatPrice(min)} />
         <Cell label="أعلى سعر" value={formatPrice(max)} />
@@ -387,7 +387,7 @@ function ProductCard({
               disabled={pending}
               title="شيله من متجرك"
               aria-label={`شيل ${product.name} من متجرك`}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 text-mist transition-colors hover:border-sale/50 hover:text-sale disabled:opacity-40"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-veil/10 text-mist transition-colors hover:border-sale/50 hover:text-sale disabled:opacity-40"
             >
               {pending ? (
                 <SpinnerIcon className="a-spin h-4 w-4" />
@@ -425,7 +425,7 @@ function ProductCard({
                 disabled={pending}
                 title="أضف للمتجر"
                 aria-label={`أضف ${product.name} للمتجر`}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[image:var(--grad-soft)] text-ink shadow-[var(--glow-sm)] transition-transform duration-300 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[image:var(--grad-soft)] text-white shadow-[var(--glow-sm)] transition-transform duration-300 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50"
               >
                 {pending ? (
                   <SpinnerIcon className="a-spin h-5 w-5" />

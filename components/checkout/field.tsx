@@ -18,7 +18,7 @@ export function FormBlock({
   last?: boolean
 }) {
   return (
-    <section className={last ? '' : 'mb-8 border-b border-white/8 pb-8'}>
+    <section className={last ? '' : 'mb-8 border-b border-veil/8 pb-8'}>
       <div className="mb-5 flex items-baseline gap-3.5">
         <span className="font-[family-name:var(--font-label)] text-[10.5px] font-semibold text-brand-500/70">
           {index}
@@ -124,7 +124,7 @@ export function LockedOption({
   text: string
 }) {
   return (
-    <div className="rim rim-on relative flex items-start gap-3.5 rounded-2xl bg-white/4 p-4">
+    <div className="rim rim-on relative flex items-start gap-3.5 rounded-2xl bg-veil/4 p-4">
       <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-brand-500">
         <span className="h-2 w-2 rounded-full bg-brand-500" />
       </span>

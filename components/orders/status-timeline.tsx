@@ -61,7 +61,7 @@ export function StatusTimeline({
               <span
                 aria-hidden="true"
                 className={`absolute right-[15px] top-8 h-[calc(100%-14px)] w-px ${
-                  done ? 'bg-brand-500/60' : 'bg-white/10'
+                  done ? 'bg-brand-500/60' : 'bg-veil/10'
                 }`}
               />
             )}
@@ -71,8 +71,8 @@ export function StatusTimeline({
                 done
                   ? 'border-transparent bg-brand-600 text-ink'
                   : active
-                    ? 'border-transparent bg-[image:var(--grad-soft)] text-ink shadow-[var(--glow-sm)]'
-                    : 'border-white/12 bg-abyss text-mist'
+                    ? 'border-transparent bg-[image:var(--grad-soft)] text-white shadow-[var(--glow-sm)]'
+                    : 'border-veil/12 bg-abyss text-mist'
               }`}
             >
               {done ? (

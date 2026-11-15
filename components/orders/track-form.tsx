@@ -159,7 +159,7 @@ export function TrackForm() {
       {/* ============ النتيجة ============ */}
       {order && (
         <div className="card a-rise mt-6 overflow-hidden">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-veil/8 px-5 py-4">
             <div>
               <p className="text-[13px] font-bold">أهلاً {order.first_name} 👋</p>
               <p className="nums mt-1 text-[11.5px] text-mist">
@@ -185,7 +185,7 @@ export function TrackForm() {
             <StatusTimeline status={order.status} events={events} />
           </div>
 
-          <div className="border-t border-white/8 bg-abyss/40 px-5 py-4">
+          <div className="border-t border-veil/8 bg-abyss/40 px-5 py-4">
             <ul className="space-y-2">
               {(order.items ?? []).map((item, i) => (
                 <li

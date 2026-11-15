@@ -41,9 +41,9 @@ export function CartDrawer() {
         className="scrim a-fade"
       />
 
-      <div className="a-drawer absolute inset-y-0 left-0 flex w-full max-w-[440px] flex-col border-l border-white/8 bg-deep shadow-[0_0_80px_rgba(0,0,0,0.7)]">
+      <div className="a-drawer absolute inset-y-0 left-0 flex w-full max-w-[440px] flex-col border-l border-veil/8 bg-deep shadow-[0_0_80px_rgba(0,0,0,0.7)]">
         {/* ---------- الرأس ---------- */}
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-white/8 px-6 py-5">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-veil/8 px-6 py-5">
           <div>
             <p className="tag">Your Bag</p>
             <h2 className="display mt-1.5 text-[19px] font-bold">
@@ -69,7 +69,7 @@ export function CartDrawer() {
         {items.length === 0 ? (
           /* ---------------- سلة فاضية ---------------- */
           <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-            <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-white/8 bg-white/4">
+            <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-veil/8 bg-veil/4">
               <BagIcon className="h-10 w-10 text-mist/60" />
             </div>
             <p className="display text-[18px] font-bold">السلة لسه فاضية</p>
@@ -88,7 +88,7 @@ export function CartDrawer() {
         ) : (
           <>
             {/* ---------------- شريط التوصيل ---------------- */}
-            <div className="flex shrink-0 items-center gap-2.5 border-b border-white/8 bg-brand-500/6 px-6 py-3">
+            <div className="flex shrink-0 items-center gap-2.5 border-b border-veil/8 bg-brand-500/6 px-6 py-3">
               <TruckIcon className="h-4 w-4 shrink-0 text-brand-400" />
               <p className="text-[12px] text-foam/80">
                 توصيل لكل محافظات مصر خلال {DELIVERY_WINDOW}
@@ -96,7 +96,7 @@ export function CartDrawer() {
             </div>
 
             {/* ---------------- المنتجات ---------------- */}
-            <ul className="flex-1 divide-y divide-white/8 overflow-y-auto px-6">
+            <ul className="flex-1 divide-y divide-veil/8 overflow-y-auto px-6">
               {items.map((item, i) => (
                 <li
                   key={item.key}
@@ -172,7 +172,7 @@ export function CartDrawer() {
             </ul>
 
             {/* ---------------- التذييل ---------------- */}
-            <div className="shrink-0 border-t border-white/8 bg-abyss/60 px-6 py-5">
+            <div className="shrink-0 border-t border-veil/8 bg-abyss/60 px-6 py-5">
               <div className="flex items-baseline justify-between">
                 <span className="text-[13.5px] font-bold">الإجمالي الفرعي</span>
                 <span className="nums display text-[20px] font-bold">

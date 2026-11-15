@@ -264,7 +264,7 @@ export function LoginPanel({ next = '/checkout' }: { next?: string }) {
 
       {step === 'form' ? (
         <>
-          <div className="mb-6 grid grid-cols-2 gap-1 rounded-full border border-white/8 bg-white/4 p-1">
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-full border border-veil/8 bg-veil/4 p-1">
             <Tab
               active={method === 'otp'}
               onClick={() => {
@@ -473,7 +473,7 @@ function Tab({
       onClick={onClick}
       className={`rounded-full py-2.5 text-[12.5px] font-bold transition-all duration-400 ${
         active
-          ? 'bg-[image:var(--grad-soft)] text-ink shadow-[var(--glow-sm)]'
+          ? 'bg-[image:var(--grad-soft)] text-white shadow-[var(--glow-sm)]'
           : 'text-mist hover:text-foam'
       }`}
     >

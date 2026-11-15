@@ -46,7 +46,7 @@ const COPY: Record<
     subject: 'وصلك طلبك — شكرًا لثقتك',
     badge: 'تم التسليم',
     title: 'وصلك طلبك 🎉',
-    body: 'شكرًا إنك اخترت ATLAS Store. لو في أي حاجة مش مظبوطة، عندك ١٤ يوم استبدال — كلّمنا واتساب وهنحلها.',
+    body: 'شكرًا إنك اخترت ATLASs Store. لو في أي حاجة مش مظبوطة، عندك ١٤ يوم استبدال — كلّمنا واتساب وهنحلها.',
     next: 'تحب تطلب تاني؟ المجموعة مستنياك',
   },
   cancelled: {
@@ -105,7 +105,7 @@ export function buildStatusEmail(input: Input): { subject: string; html: string 
         <!-- الهيدر -->
         <tr><td style="background:${accent};padding:30px 22px;text-align:center">
           <img src="${site.url}${site.logo}" width="52" height="52" alt="${esc(site.nameFull)}" style="display:block;margin:0 auto 12px;border:0">
-          <div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:7px">ATLAS</div>
+          <div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:7px">ATLASs</div>
           <div style="font-size:9.5px;color:#ffffff;letter-spacing:6px;margin-top:6px;opacity:.7">STORE</div>
           <div style="margin-top:16px;display:inline-block;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:6px 16px;font-size:12px;font-weight:700;color:#ffffff">
             ${copy.badge}
@@ -186,7 +186,7 @@ export function buildStatusEmail(input: Input): { subject: string; html: string 
             <a href="https://wa.me/${site.contact.whatsapp}" style="color:#12c9ee;text-decoration:none;font-weight:700">واتساب</a>
           </div>
           <div style="font-size:11px;color:#a6effd;margin-top:8px" dir="ltr">${site.contact.phone}</div>
-          <div style="font-size:10px;color:rgba(174,245,255,.45);margin-top:14px">ATLAS Store — ملابس رجالي</div>
+          <div style="font-size:10px;color:rgba(174,245,255,.45);margin-top:14px">ATLASs Store — ملابس رجالي</div>
         </td></tr>
 
       </table>
@@ -216,7 +216,7 @@ export function buildStatusWhatsApp(input: Input): string {
     lines.push('', `المطلوب عند الاستلام: ${formatPrice(total)}`)
   }
 
-  lines.push('', 'ATLAS Store')
+  lines.push('', 'ATLASs Store')
 
   return encodeURIComponent(lines.join('\n'))
 }

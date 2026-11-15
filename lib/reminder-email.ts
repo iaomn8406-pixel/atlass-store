@@ -160,7 +160,7 @@ export function buildReminderEmail(input: {
 
         <tr><td style="background:linear-gradient(135deg,#0a2a80 0%,#0b5fc4 38%,#0a9fe3 70%,#12c9ee 100%);padding:30px 22px;text-align:center">
           <img src="${site.url}${site.logo}" width="52" height="52" alt="${esc(site.nameFull)}" style="display:block;margin:0 auto 12px;border:0">
-          <div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:7px">ATLAS</div>
+          <div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:7px">ATLASs</div>
           <div style="font-size:9.5px;color:#ffffff;letter-spacing:6px;margin-top:6px;opacity:.7">STORE</div>
         </td></tr>
 

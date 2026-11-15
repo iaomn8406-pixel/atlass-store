@@ -61,7 +61,7 @@ type OrderRow = {
 }
 
 const STATUS_TONE: Record<string, string> = {
-  gray: 'bg-white/8 text-mist',
+  gray: 'bg-veil/8 text-mist',
   cyan: 'bg-brand-500/15 text-brand-300',
   amber: 'bg-warn/15 text-warn',
   green: 'bg-ok/15 text-ok',
@@ -263,14 +263,14 @@ function CustomerCard({
 
   const waLink = row.phone
     ? `https://wa.me/${row.phone.replace(/^0/, '20')}?text=${encodeURIComponent(
-        `السلام عليكم${row.name ? ` يا ${row.name.split(' ')[0]}` : ''} 👋\nسلتك في ${'ATLAS'} لسه مستنياك — تحب نكمّل الطلب مع بعض؟`
+        `السلام عليكم${row.name ? ` يا ${row.name.split(' ')[0]}` : ''} 👋\nسلتك في ${'ATLASs'} لسه مستنياك — تحب نكمّل الطلب مع بعض؟`
       )}`
     : null
 
   return (
     <div className="card overflow-hidden">
       {/* --- الرأس --- */}
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/8 px-4 py-4 lg:px-5">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-veil/8 px-4 py-4 lg:px-5">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[13.5px] font-bold">
@@ -290,7 +290,7 @@ function CustomerCard({
             </span>
 
             {orders.length > 0 ? (
-              <span className="nums rounded-full bg-white/8 px-2.5 py-1 text-[10.5px] font-bold text-foam/85">
+              <span className="nums rounded-full bg-veil/8 px-2.5 py-1 text-[10.5px] font-bold text-foam/85">
                 {orders.length === 1 ? 'أوردر واحد' : `${orders.length} أوردرات`} ·{' '}
                 {formatPrice(spent)}
               </span>
@@ -412,7 +412,7 @@ function CustomerCard({
               ) : events.length === 0 ? (
                 <p className="py-3 text-[12px] text-mist">مفيش أحداث مسجّلة.</p>
               ) : (
-                <ol className="space-y-2 rounded-xl border border-white/8 p-3.5">
+                <ol className="space-y-2 rounded-xl border border-veil/8 p-3.5">
                   {events.map((e, i) => (
                     <li key={i} className="flex items-start gap-2.5 text-[12px]">
                       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rotate-45 bg-brand-500" />
@@ -436,7 +436,7 @@ function CustomerCard({
 
       {/* --- التذكير — بيظهر طول ما فيه سلة لسه متسابة --- */}
       {!row.ordered && (
-        <div className="border-t border-white/8 bg-abyss/40 px-4 py-4 lg:px-5">
+        <div className="border-t border-veil/8 bg-abyss/40 px-4 py-4 lg:px-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <p className="text-[11.5px] font-bold text-mist">
               التذكير المقترح حسب اللي ناقصه
@@ -473,7 +473,7 @@ function CustomerCard({
                 type="button"
                 disabled={pending || !row.email}
                 onClick={() => send(kind)}
-                className="rounded-full border border-white/10 px-3 py-2 text-[11.5px] font-bold text-foam/80 transition-colors hover:border-brand-500/50 hover:text-brand-300 disabled:opacity-40"
+                className="rounded-full border border-veil/10 px-3 py-2 text-[11.5px] font-bold text-foam/80 transition-colors hover:border-brand-500/50 hover:text-brand-300 disabled:opacity-40"
               >
                 {reminderLabel(kind)}
               </button>
@@ -484,7 +484,7 @@ function CustomerCard({
                 href={waLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-2 text-[11.5px] font-bold text-[#25d366] transition-colors hover:bg-[#25d366]/10"
+                className="flex items-center gap-1.5 rounded-full border border-veil/10 px-3 py-2 text-[11.5px] font-bold text-[#25d366] transition-colors hover:bg-[#25d366]/10"
               >
                 <WhatsAppIcon className="h-3.5 w-3.5" />
                 واتساب
@@ -503,7 +503,7 @@ function CustomerCard({
 
       {/* --- طلباته --- */}
       {orders.length > 0 ? (
-        <div className="border-t border-white/8 bg-ok/[0.04] px-4 py-4 lg:px-5">
+        <div className="border-t border-veil/8 bg-ok/[0.04] px-4 py-4 lg:px-5">
           <p className="mb-3 flex items-center gap-2 text-[11.5px] font-bold text-ok">
             <BoxIcon className="h-4 w-4" />
             طلباته ({orders.length})
@@ -516,7 +516,7 @@ function CustomerCard({
               return (
                 <li
                   key={order.id}
-                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-xl border border-white/8 bg-abyss/40 px-3.5 py-3"
+                  className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-xl border border-veil/8 bg-abyss/40 px-3.5 py-3"
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -550,7 +550,7 @@ function CustomerCard({
         </div>
       ) : (
         row.ordered && (
-          <div className="flex items-center gap-2 border-t border-white/8 bg-ok/6 px-4 py-3 text-[12px] font-bold text-ok lg:px-5">
+          <div className="flex items-center gap-2 border-t border-veil/8 bg-ok/6 px-4 py-3 text-[12px] font-bold text-ok lg:px-5">
             <BoxIcon className="h-4 w-4" />
             أتمّ الطلب {row.order_code ? `— ${row.order_code}` : ''}
           </div>
@@ -606,7 +606,7 @@ function Stat({
   return (
     <div
       className={`rounded-2xl border p-4 ${
-        hot ? 'border-brand-500/50 bg-brand-500/8' : 'border-white/8 bg-white/[0.03]'
+        hot ? 'border-brand-500/50 bg-brand-500/8' : 'border-veil/8 bg-veil/[0.03]'
       }`}
     >
       <p className="text-[11.5px] text-mist">{label}</p>
@@ -634,8 +634,8 @@ function Chip({
       aria-pressed={active}
       className={`rounded-full border px-3.5 py-2 text-[12px] font-bold transition-all duration-400 ${
         active
-          ? 'border-transparent bg-[image:var(--grad-soft)] text-ink shadow-[var(--glow-sm)]'
-          : 'border-white/10 bg-white/4 text-foam/80 hover:border-brand-500/50'
+          ? 'border-transparent bg-[image:var(--grad-soft)] text-white shadow-[var(--glow-sm)]'
+          : 'border-veil/10 bg-veil/4 text-foam/80 hover:border-brand-500/50'
       }`}
     >
       {children}

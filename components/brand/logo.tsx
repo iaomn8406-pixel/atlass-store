@@ -60,7 +60,7 @@ export function Logo({
         className={`display font-bold tracking-[0.16em] text-foam ${s.word}`}
         style={{ letterSpacing: '0.16em' }}
       >
-        ATLAS
+        {site.name}
       </span>
       <span
         className={`mt-1.5 font-[family-name:var(--font-label)] uppercase tracking-[0.42em] text-brand-300/70 ${s.sub}`}

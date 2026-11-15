@@ -161,7 +161,7 @@ export function Hero({ showcase }: { showcase: Product[] }) {
         <div
           data-reveal=""
           style={{ '--rd': '160ms' } as React.CSSProperties}
-          className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/8 bg-white/6 sm:grid-cols-4 lg:mt-16"
+          className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-veil/8 bg-veil/6 sm:grid-cols-4 lg:mt-16"
         >
           {site.perks.map((perk, i) => {
             const Icon = perkIcons[i] ?? SparkIcon

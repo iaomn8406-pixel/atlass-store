@@ -25,7 +25,7 @@ export function Accordion({
   const id = useId()
 
   return (
-    <div className="border-b border-white/8 last:border-b-0">
+    <div className="border-b border-veil/8 last:border-b-0">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -39,7 +39,7 @@ export function Accordion({
         </span>
 
         <span
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] ${
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-veil/10 transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] ${
             open ? 'rotate-180 border-brand-500/50 bg-brand-500/12' : ''
           }`}
         >

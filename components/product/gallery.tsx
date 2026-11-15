@@ -72,7 +72,7 @@ export function Gallery({ product }: { product: Product }) {
               className={`plate relative aspect-[3/4] w-[62px] shrink-0 rounded-xl border-2 transition-all duration-400 sm:w-full ${
                 i === active
                   ? 'border-brand-500 shadow-[var(--glow-sm)]'
-                  : 'border-white/10 opacity-70 hover:opacity-100'
+                  : 'border-veil/10 opacity-70 hover:opacity-100'
               }`}
             >
               <Shot src={img} alt="" sizes="78px" />

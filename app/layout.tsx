@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     'عبايات رجالي',
     'متجر ملابس مصر',
     'الدفع عند الاستلام',
-    'ATLAS Store',
+    'ATLASs Store',
   ],
   openGraph: {
     title: `${site.nameFull} — ${site.tagline}`,

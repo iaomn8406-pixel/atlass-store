@@ -1,21 +1,29 @@
 @import 'tailwindcss';
 
 /* ============================================================
-   ATLAS — نظام التصميم «التيار العميق» (Deep Current)
+   ATLAS — المتجر الفاتح (Showroom)
    ------------------------------------------------------------
-   الهوية كلها مسحوبة من اللوجو الجديد: ذيل الحوت اللي بيتحوّل
-   لحرف A، بتدرّجه من الكحلي العميق للأزرق الملكي للسماوي
-   المضيء. الموقع كله خلفية محيط غامقة، والمنتجات بتقعد على
-   «ألواح» فاتحة زي صندوق إضاءة — فالصور بتبان نضيفة والهوية
-   بتفضل غامقة وفخمة.
+   الموقع بقى «صالة عرض»: حيطان أبيض دافي بنقط خفيفة زي حيطان
+   المحل، والعناصر النشطة فحمي غامق، وسماوي اللوجو هو لون
+   التمييز (روابط، شارات، تركيز). المنتجات هي اللون الوحيد
+   الصريح في الصفحة.
+
+   أسماء التوكنز القديمة (abyss · foam · mist) فضلت زي ما هي
+   عشان كل الكلاسات تفضل شغالة — اللي اتغيّر قيمتها بس:
+   • abyss/deep  → أرضية الصفحة وأسطحها (فاتحة)
+   • foam        → النص الأساسي (فحمي)
+   • mist        → النص الثانوي (رمادي)
+   • veil        → لون الخطوط والأسطح الشفافة (فحمي بشفافية)
    ============================================================ */
 
 @theme {
   /* --- تدرّج اللوجو: من أعمق كحلي لأفتح سماوي --- */
   --color-brand-50: #ecfdff;
   --color-brand-100: #d0f7fe;
-  --color-brand-200: #a6effd;
-  --color-brand-300: #6fe1fa;
+  /* ٢٠٠ و ٣٠٠ كانوا نص سماوي على خلفية غامقة — على الفاتح
+     لازم يغمقوا عشان يتقروا (تباين ٤.٥:١ على الأقل) */
+  --color-brand-200: #075f86;
+  --color-brand-300: #076f9c;
   --color-brand-400: #35cdf2;
   --color-brand-500: #12c9ee;
   --color-brand-600: #0a9fe3;
@@ -24,26 +32,29 @@
   --color-brand-900: #0c3c9c;
   --color-brand-950: #0a2a80;
 
-  /* --- أعماق المحيط: أسطح الموقع --- */
-  --color-abyss: #04091a;
-  --color-deep: #070f26;
-  --color-shelf: #0b1734;
-  --color-ridge: #12224a;
+  /* --- حيطان الصالة: أسطح الموقع --- */
+  --color-abyss: #f2f1ed;
+  --color-deep: #e9e7e1;
+  --color-shelf: #ffffff;
+  --color-ridge: #dedbd3;
 
-  /* --- ألواح فاتحة تحت صور المنتجات --- */
-  --color-plate: #f4f9fd;
-  --color-plate2: #e7f1fa;
+  /* --- ألواح تحت صور المنتجات --- */
+  --color-plate: #fbfaf7;
+  --color-plate2: #eeece6;
 
   /* --- نصوص --- */
-  --color-foam: #eaf5ff;
-  --color-mist: #93a8c6;
-  --color-ink: #071021;
+  --color-foam: #14171f;
+  --color-mist: #5d6470;
+  --color-ink: #0f1218;
 
-  /* --- ألوان الحالة --- */
-  --color-aqua: #3ff0f7;
-  --color-sale: #ff5a5f;
-  --color-ok: #2ee6a8;
-  --color-warn: #ffc44d;
+  /* الخطوط والأسطح الشفافة: border-veil/8 · bg-veil/4 */
+  --color-veil: #10141c;
+
+  /* --- ألوان الحالة (أغمق عشان تتقري على الفاتح) --- */
+  --color-aqua: #0aa6c9;
+  --color-sale: #d83a40;
+  --color-ok: #17955f;
+  --color-warn: #a86d12;
 
   --font-sans: var(--font-body), system-ui, sans-serif;
   --font-display: var(--font-display), var(--font-body), system-ui, sans-serif;
@@ -55,25 +66,21 @@
 
 :root {
   /* التدرّج الأساسي — نفس ترتيب ألوان اللوجو بالظبط */
-  --grad-brand: linear-gradient(
-    135deg,
-    #0a2a80 0%,
-    #0b5fc4 30%,
-    #0a9fe3 58%,
-    #12c9ee 80%,
-    #3ff0f7 100%
-  );
-  --grad-soft: linear-gradient(135deg, #0b5fc4 0%, #0a9fe3 45%, #35cdf2 100%);
+  /* تدرّج اللوجو — مقصوص عند السماوي الغامق عشان النص يتقري */
+  --grad-brand: linear-gradient(135deg, #0a2a80 0%, #0b5fc4 45%, #0a8fd0 80%, #0aa6c9 100%);
+  /* العناصر النشطة: فحمي زي أزرار المرجع */
+  --grad-soft: linear-gradient(135deg, #222733 0%, #0f1218 100%);
 
   --shell: 1480px;
   --nav-h: 72px;
 
-  --glow-sm: 0 10px 30px -14px rgba(18, 201, 238, 0.55);
-  --glow-md: 0 22px 55px -22px rgba(18, 201, 238, 0.6);
-  --glow-lg: 0 40px 90px -40px rgba(18, 201, 238, 0.7);
-  --lift: 0 30px 70px -40px rgba(0, 0, 0, 0.85);
+  /* ظلال ناعمة واسعة — مفيش توهّج على الفاتح */
+  --glow-sm: 0 10px 24px -14px rgba(16, 20, 28, 0.38);
+  --glow-md: 0 18px 40px -20px rgba(16, 20, 28, 0.4);
+  --glow-lg: 0 30px 70px -34px rgba(16, 20, 28, 0.42);
+  --lift: 0 26px 60px -36px rgba(16, 20, 28, 0.38);
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 /* ============================================================
@@ -252,14 +259,14 @@ video {
 .card {
   position: relative;
   border-radius: 22px;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(16, 20, 28, 0.08);
 }
 
 .card-solid {
   border-radius: 22px;
   background: var(--color-shelf);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(16, 20, 28, 0.07);
 }
 
 /* الزجاج الضبابي.
@@ -268,20 +275,20 @@ video {
    فريم أثناء التمرير — وده أكبر سبب لتقطيع السكرول على الموبايل.
    الفرق في الشكل مش ملحوظ، والفرق في السلاسة كبير. */
 .glass {
-  background: rgba(7, 15, 38, 0.94);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(248, 247, 244, 0.94);
+  border-color: rgba(16, 20, 28, 0.08);
 }
 
 @media (min-width: 1024px) {
   .glass {
-    background: rgba(7, 15, 38, 0.72);
+    background: rgba(248, 247, 244, 0.72);
     -webkit-backdrop-filter: blur(16px) saturate(140%);
     backdrop-filter: blur(16px) saturate(140%);
   }
 
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     .glass {
-      background: rgba(7, 15, 38, 0.96);
+      background: rgba(248, 247, 244, 0.96);
     }
   }
 }
@@ -324,7 +331,7 @@ video {
     90deg,
     transparent,
     rgba(18, 201, 238, 0.35),
-    rgba(255, 255, 255, 0.08),
+    rgba(16, 20, 28, 0.08),
     transparent
   );
 }
@@ -371,7 +378,7 @@ video {
 /* الأساسي — تدرّج اللوجو بنص غامق */
 .btn-primary {
   background: var(--grad-soft);
-  color: #03101f;
+  color: #fff;
   box-shadow: var(--glow-sm);
 }
 
@@ -395,15 +402,15 @@ video {
 
 /* الثانوي — زجاج بحدّ خفيف */
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.055);
+  background: rgba(16, 20, 28, 0.055);
   color: var(--color-foam);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(16, 20, 28, 0.12);
 }
 
 .btn-ghost:hover:not(:disabled) {
   background: rgba(18, 201, 238, 0.1);
   border-color: rgba(18, 201, 238, 0.45);
-  color: #fff;
+  color: var(--color-foam);
   transform: translateY(-2px);
 }
 
@@ -460,8 +467,8 @@ video {
 }
 
 .icon-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: rgba(16, 20, 28, 0.08);
+  color: var(--color-foam);
 }
 
 .icon-btn:active {
@@ -476,7 +483,7 @@ video {
   padding-block: 6px;
   font-size: 13.5px;
   font-weight: 600;
-  color: rgba(234, 245, 255, 0.72);
+  color: rgba(20, 23, 31, 0.72);
   transition: color 0.35s var(--ease-atlas);
 }
 
@@ -495,7 +502,7 @@ video {
 
 .nav-link:hover,
 .nav-link[data-active='true'] {
-  color: #fff;
+  color: var(--color-foam);
 }
 
 .nav-link:hover::after,
@@ -531,8 +538,8 @@ video {
 .field {
   width: 100%;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(16, 20, 28, 0.1);
+  background: rgba(16, 20, 28, 0.04);
   padding: 14px 16px;
   font-size: 15px;
   color: var(--color-foam);
@@ -544,11 +551,11 @@ video {
 }
 
 .field::placeholder {
-  color: rgba(147, 168, 198, 0.45);
+  color: rgba(93, 100, 112, 0.45);
 }
 
 .field:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(16, 20, 28, 0.18);
 }
 
 .field:focus {
@@ -572,8 +579,8 @@ video {
 select.field {
   appearance: none;
   -webkit-appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, rgba(234, 245, 255, 0.65) 50%),
-    linear-gradient(135deg, rgba(234, 245, 255, 0.65) 50%, transparent 50%);
+  background-image: linear-gradient(45deg, transparent 50%, rgba(20, 23, 31, 0.65) 50%),
+    linear-gradient(135deg, rgba(20, 23, 31, 0.65) 50%, transparent 50%);
   background-position:
     18px calc(50% + 1px),
     23px calc(50% + 1px);
@@ -585,8 +592,8 @@ select.field {
 }
 
 select.field option {
-  background: #070f26;
-  color: #eaf5ff;
+  background: #fff;
+  color: #14171f;
 }
 
 .label {
@@ -594,7 +601,7 @@ select.field option {
   margin-bottom: 8px;
   font-size: 12.5px;
   font-weight: 700;
-  color: rgba(234, 245, 255, 0.85);
+  color: rgba(20, 23, 31, 0.85);
 }
 
 /* ============================================================
@@ -848,174 +855,27 @@ select.field option {
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  /* بيعزل الطبقة عن باقي الصفحة فالمتصفح مابيعيدش حساب
-     التخطيط والرسم للموقع كله مع كل فريم من الحركة */
   contain: strict;
   background:
-    radial-gradient(ellipse 110% 55% at 50% -5%, rgba(11, 95, 196, 0.22), transparent 72%),
-    radial-gradient(ellipse 90% 50% at 50% 105%, rgba(10, 42, 128, 0.28), transparent 72%),
+    radial-gradient(ellipse 80% 45% at 50% -8%, rgba(10, 166, 201, 0.07), transparent 70%),
+    radial-gradient(circle at center, rgba(16, 20, 28, 0.075) 1px, transparent 1.4px) 0 0 / 26px 26px,
     var(--color-abyss);
 }
 
-.site-bg__orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  will-change: transform;
-}
-
-/* كل كورة ليها مسار ومدة مختلفة عشان الحركة ما تبقاش متزامنة */
-.site-bg__orb--a {
-  top: -14%;
-  right: -12%;
-  height: 46vw;
-  width: 46vw;
-  min-height: 300px;
-  min-width: 300px;
-  background: radial-gradient(circle, rgba(18, 201, 238, 0.3), transparent 68%);
-  animation: bg-wander-a 46s ease-in-out infinite;
-}
-
-.site-bg__orb--b {
-  top: 28%;
-  left: -16%;
-  height: 52vw;
-  width: 52vw;
-  min-height: 320px;
-  min-width: 320px;
-  background: radial-gradient(circle, rgba(11, 95, 196, 0.34), transparent 68%);
-  animation: bg-wander-b 62s ease-in-out infinite;
-}
-
-.site-bg__orb--c {
-  bottom: -18%;
-  right: 18%;
-  height: 44vw;
-  width: 44vw;
-  min-height: 280px;
-  min-width: 280px;
-  background: radial-gradient(circle, rgba(10, 42, 128, 0.42), transparent 70%);
-  animation: bg-wander-c 54s ease-in-out infinite;
-}
-
-.site-bg__orb--d {
-  top: 58%;
-  right: -10%;
-  height: 34vw;
-  width: 34vw;
-  min-height: 220px;
-  min-width: 220px;
-  background: radial-gradient(circle, rgba(63, 240, 247, 0.16), transparent 66%);
-  animation: bg-wander-a 70s ease-in-out infinite reverse;
-}
-
-/* شبكة خطوط بتزحف ببطء — بتدّي إحساس بالعمق من غير ما تلفت النظر */
-/* الشبكة أكبر من الشاشة وبتتحرك بـ transform.
-   قبل كده كانت بتتحرك بـ background-position — وده إعادة رسم
-   للشاشة كلها كل فريم، وكان السبب الأكبر في تقطيع التمرير. */
-.site-bg__grid {
-  position: absolute;
-  top: -20%;
-  left: -20%;
-  width: 140%;
-  height: 140%;
-  background-image:
-    linear-gradient(to left, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
-  background-size: 96px 96px;
-  -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 45%, #000, transparent 78%);
-  mask-image: radial-gradient(ellipse 60% 50% at 50% 45%, #000, transparent 78%);
-  will-change: transform;
-  animation: bg-crawl 40s linear infinite;
-}
-
-/* طبقة أخيرة بتهدّي الألوان عشان النص يفضل واضح فوقها */
+/* عناصر الخلفية القديمة — فاضلة في المكوّن بس مالهاش شكل */
+.site-bg__orb,
+.site-bg__grid,
 .site-bg__veil {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(4, 9, 26, 0.35) 0%,
-    rgba(4, 9, 26, 0.55) 50%,
-    rgba(4, 9, 26, 0.35) 100%
-  );
-}
-
-@keyframes bg-wander-a {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  33% {
-    transform: translate3d(-6%, 8%, 0) scale(1.14);
-  }
-  66% {
-    transform: translate3d(5%, -5%, 0) scale(0.92);
-  }
-}
-
-@keyframes bg-wander-b {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  40% {
-    transform: translate3d(9%, -7%, 0) scale(0.9);
-  }
-  70% {
-    transform: translate3d(-4%, 10%, 0) scale(1.18);
-  }
-}
-
-@keyframes bg-wander-c {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1.05);
-  }
-  50% {
-    transform: translate3d(-10%, -9%, 0) scale(0.88);
-  }
-}
-
-@keyframes bg-crawl {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(-96px, 96px, 0);
-  }
-}
-
-/* على الفون بنشيل كورتين ونقلل التمويه — التمويه الكبير أغلى
-   حاجة على كروت الشاشة في الموبايل */
-@media (max-width: 1023px) {
-  /* التمويه أغلى حاجة على كروت الشاشة في الموبايل — بنقلّله
-     وبنسيب كورتين بس */
-  .site-bg__orb {
-    filter: blur(52px);
-  }
-
-  .site-bg__orb--c,
-  .site-bg__orb--d {
-    display: none;
-  }
-
-  .site-bg__grid {
-    display: none;
-  }
+  display: none;
 }
 
 /* ============================================================
    الشفق — خلفيات متحركة خفيفة داخل الأقسام
    ============================================================ */
+/* توهّجات الهوية الغامقة — على الحيطة الفاتحة بتبان بقع، وكمان
+   blur(90px) متحرك بيكلّف كارت الشاشة. مخفية في الشكل الفاتح. */
 .aurora {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.5;
-  pointer-events: none;
-  animation: atlas-drift 22s ease-in-out infinite;
-  will-change: transform;
+  display: none;
 }
 
 .aurora-a {
@@ -1039,8 +899,8 @@ select.field option {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(to left, rgba(255, 255, 255, 0.032) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.032) 1px, transparent 1px);
+    linear-gradient(to left, rgba(16, 20, 28, 0.032) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(16, 20, 28, 0.032) 1px, transparent 1px);
   background-size: 84px 84px;
   -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, #000 20%, transparent 82%);
   mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, #000 20%, transparent 82%);
@@ -1053,8 +913,8 @@ select.field option {
   position: relative;
   display: block;
   border-radius: 22px;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: #fff;
+  border: 1px solid rgba(16, 20, 28, 0.075);
   padding: 9px;
   transition:
     transform 0.6s var(--ease-atlas),
@@ -1119,7 +979,7 @@ select.field option {
   .group:hover .pcard {
     transform: none;
     box-shadow: none;
-    border-color: rgba(255, 255, 255, 0.075);
+    border-color: rgba(16, 20, 28, 0.075);
   }
 
   .group:hover .pshot {
@@ -1146,7 +1006,7 @@ select.field option {
 
 .chip-brand {
   background: var(--grad-soft);
-  color: #03101f;
+  color: #fff;
 }
 
 .chip-sale {
@@ -1177,12 +1037,12 @@ select.field option {
   position: relative;
   min-width: 54px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(16, 20, 28, 0.12);
+  background: rgba(16, 20, 28, 0.035);
   padding: 11px 16px;
   font-size: 13px;
   font-weight: 700;
-  color: rgba(234, 245, 255, 0.85);
+  color: rgba(20, 23, 31, 0.85);
   transition:
     border-color 0.35s var(--ease-atlas),
     background 0.35s var(--ease-atlas),
@@ -1193,13 +1053,13 @@ select.field option {
 
 .opt:hover:not(:disabled) {
   border-color: rgba(18, 201, 238, 0.45);
-  color: #fff;
+  color: var(--color-foam);
 }
 
 .opt[aria-pressed='true'] {
   border-color: transparent;
   background: var(--grad-soft);
-  color: #03101f;
+  color: #fff;
   box-shadow: var(--glow-sm);
 }
 
@@ -1212,8 +1072,8 @@ select.field option {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(16, 20, 28, 0.12);
+  background: rgba(16, 20, 28, 0.035);
   overflow: hidden;
 }
 
@@ -1250,7 +1110,7 @@ select.field option {
   border: 0;
   border-radius: 999px;
   background: var(--grad-soft);
-  color: #03101f;
+  color: #fff;
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
@@ -1281,7 +1141,7 @@ select.field option {
   bottom: -118%;
   height: 236%;
   border-radius: 45%;
-  background: linear-gradient(180deg, #0a2a80, #0b5fc4);
+  background: linear-gradient(180deg, #1ea562, #158a50);
   transform: translateY(0) rotate(0deg);
   transition: transform 0.85s var(--ease-atlas);
   pointer-events: none;
@@ -1373,7 +1233,7 @@ select.field option {
   border: 0;
   border-radius: 999px;
   background: var(--grad-soft);
-  color: #03101f;
+  color: #fff;
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
@@ -1430,7 +1290,7 @@ select.field option {
   bottom: 11px;
   height: 3px;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(16, 20, 28, 0.16);
   overflow: hidden;
   opacity: 0;
   transition: opacity 0.35s var(--ease-atlas);
@@ -1475,7 +1335,7 @@ select.field option {
   height: 20px;
   width: 20px;
   border-radius: 999px;
-  border: 2px solid rgba(234, 245, 255, 0.28);
+  border: 2px solid rgba(20, 23, 31, 0.28);
   border-top-color: var(--color-aqua);
   animation: atlas-spin 0.8s linear infinite;
 }
@@ -1594,7 +1454,7 @@ body.has-bar .wa {
   overflow: hidden;
   border-radius: 20px;
   background: var(--color-deep);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(16, 20, 28, 0.1);
   box-shadow: 0 34px 70px -28px rgba(0, 0, 0, 0.9);
   transform-origin: bottom left;
   animation: atlas-rise 0.42s var(--ease-atlas) both;
@@ -1603,8 +1463,8 @@ body.has-bar .wa {
 .wa-chip {
   display: block;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(16, 20, 28, 0.1);
+  background: rgba(16, 20, 28, 0.04);
   padding: 9px 14px;
   font-size: 12px;
   font-weight: 600;
@@ -1672,17 +1532,713 @@ body.has-bar .wa {
 }
 
 ::-webkit-scrollbar-track {
-  background: #070f26;
+  background: #ebe9e3;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #12224a;
+  background: #c9c5bb;
   border-radius: 99px;
-  border: 2px solid #070f26;
+  border: 2px solid #ebe9e3;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #0b5fc4;
+}
+
+/* ============================================================
+   المتجر الافتراضي — أوضة CSS 3D
+   ------------------------------------------------------------
+   مفيش blur ولا filter جوه المشهد خالص: الظلال تدرّجات مرسومة
+   مرة واحدة، والحركة كلها transform و opacity — فالمتصفح
+   بيحرّكها على كارت الشاشة من غير إعادة رسم.
+   ============================================================ */
+.vs {
+  position: relative;
+  height: clamp(560px, calc(100svh - var(--nav-h) - 36px), 940px);
+  /* clip مش hidden: hidden بيخلّي المشهد قابل للتمرير من جوه، والمتصفح
+     كان بيزقّه لفوق لما يوصّل التركيز لزرار جوّاه. clip ماينفعش يتمرّر */
+  overflow: hidden;
+  overflow: clip;
+  background: linear-gradient(to bottom, #f4f3ef 0%, #ecebe6 100%);
+  perspective-origin: 50% 46%;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.vs:active {
+  cursor: grabbing;
+}
+
+.vs-world {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: opacity 0.7s var(--ease-atlas);
+}
+
+.vs[data-ready='false'] .vs-world {
+  opacity: 0;
+}
+
+/* الحيطان: أبيض دافي بنقط خفيفة، وأغمق شوية عند الأرض */
+.vs-wall {
+  position: absolute;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  /* زي حيطة المرجع: فاتحة بنقط رمادي خفيفة — بس أغمق شعرة من
+     الأبيض الصافي عشان التيشرتات البيضا تبان بظلها */
+  background:
+    linear-gradient(to bottom, transparent calc(100% - 20px), #d4d0c7 calc(100% - 20px)),
+    radial-gradient(circle at center, rgba(16, 20, 28, 0.14) 1.4px, transparent 1.9px) 0 0 / 28px 28px,
+    linear-gradient(to bottom, #ecebe7 0%, #e7e5e0 60%, #dedbd4 100%);
+}
+
+.vs-floor {
+  position: absolute;
+  transform: rotateX(90deg);
+  backface-visibility: hidden;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 40%, rgba(255, 255, 255, 0.55), transparent 70%),
+    linear-gradient(to bottom, #e4e0d7, #d9d4c9);
+}
+
+.vs-logo {
+  position: absolute;
+  display: flex;
+  align-items: flex-end;
+  gap: 22px;
+  transform: translateX(-50%);
+  direction: ltr;
+  white-space: nowrap;
+}
+
+.vs-logo img {
+  height: 132px;
+  width: 132px;
+  align-self: center;
+}
+
+.vs-logo__name {
+  font-family: var(--font-display);
+  font-size: 112px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 0.92;
+  color: #0b4fae;
+}
+
+.vs-logo__sub {
+  margin-bottom: 8px;
+  font-family: var(--font-label);
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: #0a8fd0;
+}
+
+/* كارت المنتج مفتوح → زرار الواتساب العايم بيستخبى عشان مايغطيش
+   زرار الإضافة (على الفون بالذات) */
+body:has(.vs[data-mode='product']) .wa {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* على الفون الشعار أصغر عشان يدخل في عرض الشاشة */
+@media (max-width: 767px) {
+  .vs-logo {
+    gap: 14px;
+  }
+
+  .vs-logo img {
+    height: 80px;
+    width: 80px;
+  }
+
+  .vs-logo__name {
+    font-size: 66px;
+  }
+
+  .vs-logo__sub {
+    margin-bottom: 4px;
+    font-size: 20px;
+  }
+}
+
+.vs-zone {
+  position: absolute;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
+
+/* ظل القطعة على الحيطة — صورة جاهزة، بتضيق مع لفّة القطعة */
+.vs-shadow {
+  position: absolute;
+  height: auto;
+  pointer-events: none;
+  transform-origin: 50% 0;
+  transition:
+    transform 0.95s var(--ease-atlas),
+    opacity 0.6s var(--ease-atlas);
+}
+
+.vs-shadow[data-hidden='true'] {
+  opacity: 0 !important;
+}
+
+/* القضيب المعدني */
+.vs-rail {
+  position: absolute;
+  top: -7px;
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(to bottom, #eef0f2 0%, #a8aeb6 50%, #747a83 100%);
+  box-shadow: 0 10px 14px -8px rgba(16, 20, 28, 0.35);
+}
+
+/* الأرجل اللي ماسكة القضيب في الحيطة */
+.vs-bracket {
+  position: absolute;
+  top: -5px;
+  height: 10px;
+  transform-origin: 0 50%;
+  border-radius: 3px;
+  background: linear-gradient(to bottom, #d5d9de, #858b94);
+}
+
+/* القطعة المتعلقة */
+.vs-piece {
+  position: absolute;
+  left: 0;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  /* عشان شرايح القطعة تنحني في 3D جوّاها */
+  transform-style: preserve-3d;
+  transition:
+    transform 0.95s var(--ease-atlas),
+    opacity 0.5s var(--ease-atlas);
+}
+
+/* جسم القطعة: شرايح بتنحني، أو صورة واحدة على الأجهزة الضعيفة */
+.vs-body {
+  position: relative;
+  display: block;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.vs-body img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.vs-slice {
+  position: absolute;
+  top: 0;
+  display: block;
+  background-repeat: no-repeat;
+  background-blend-mode: multiply, normal;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  backface-visibility: hidden;
+}
+
+.vs-slice[data-side='start'] {
+  transform-origin: 100% 50%;
+}
+
+.vs-slice[data-side='end'] {
+  transform-origin: 0 50%;
+}
+
+.vs-hanger {
+  position: absolute;
+  top: 0;
+  display: block;
+}
+
+.vs-hanger svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.vs-piece[data-hidden='true'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.vs-piece:focus-visible {
+  outline: 3px solid var(--color-brand-500);
+  outline-offset: 10px;
+  border-radius: 14px;
+}
+
+/* اسم القطعة تحتها — بيظهر بس لما تبقى مختارة */
+.vs-caption {
+  display: block;
+  margin-top: 26px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: #5d6470;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-atlas);
+}
+
+.vs-piece[data-focused='true'] .vs-caption {
+  opacity: 1;
+}
+
+.vs[data-mode='product'] .vs-caption {
+  opacity: 0;
+}
+
+/* دايرة «+» جنب القطعة المختارة */
+.vs-plus {
+  position: absolute;
+  top: 46%;
+  inset-inline-start: -52px;
+  display: flex;
+  height: 54px;
+  width: 54px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 20, 28, 0.14);
+  background: rgba(255, 255, 255, 0.92);
+  color: #14171f;
+  box-shadow: 0 10px 22px -12px rgba(16, 20, 28, 0.45);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.45s var(--ease-atlas),
+    transform 0.6s var(--ease-atlas);
+}
+
+.vs-plus svg {
+  height: 26px;
+  width: 26px;
+}
+
+.vs[data-mode='focus'] .vs-piece[data-focused='true'] .vs-plus {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------------- الواجهة فوق المشهد ---------------- */
+.vs-ui {
+  cursor: auto;
+}
+
+.vs-pills {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 22px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 10px;
+  padding-inline: 16px;
+  pointer-events: none;
+}
+
+.vs-pills__track {
+  display: flex;
+  max-width: 100%;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 5px;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 20, 28, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 30px -18px rgba(16, 20, 28, 0.4);
+  pointer-events: auto;
+}
+
+.vs-pills__track button {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(20, 23, 31, 0.78);
+  white-space: nowrap;
+  transition:
+    background-color 0.35s var(--ease-atlas),
+    color 0.35s var(--ease-atlas);
+}
+
+.vs-pills__track button:hover {
+  color: #14171f;
+  background: rgba(16, 20, 28, 0.06);
+}
+
+.vs-pills__track button[data-active='true'] {
+  background: #14171f;
+  color: #fff;
+}
+
+.vs-pills__info {
+  display: flex;
+  align-items: center;
+  padding-inline: 12px !important;
+}
+
+.vs-help {
+  max-width: 420px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: #14171f;
+  color: #fff;
+  font-size: 12.5px;
+  line-height: 1.8;
+  text-align: center;
+  pointer-events: auto;
+}
+
+/* أسهم التنقل بين القطع */
+.vs-steps {
+  position: absolute;
+  top: 50%;
+  inset-inline: 18px;
+  z-index: 4;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.vs-steps button {
+  display: flex;
+  height: 46px;
+  width: 46px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 20, 28, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+  color: #14171f;
+  box-shadow: 0 10px 22px -14px rgba(16, 20, 28, 0.45);
+  pointer-events: auto;
+  transition: transform 0.35s var(--ease-atlas);
+}
+
+.vs-steps button:hover {
+  transform: scale(1.06);
+}
+
+@media (min-width: 768px) {
+  /* في وضع المنتج الأسهم حوالين القطعة بس — الكارت واخد الشمال */
+  .vs-steps[data-product='true'] {
+    inset-inline-end: 46%;
+  }
+}
+
+@media (max-width: 767px) {
+  .vs-steps[data-product='true'] {
+    top: 22%;
+  }
+}
+
+/* ---------------- كارت المنتج ---------------- */
+.vs-card {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 4%;
+  z-index: 6;
+  width: min(390px, 40%);
+  max-height: calc(100% - 40px);
+  overflow-y: auto;
+  padding: 26px 24px 22px;
+  border-radius: 26px;
+  border: 1px solid rgba(16, 20, 28, 0.08);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 34px 70px -34px rgba(16, 20, 28, 0.42);
+  transform: translateY(-50%);
+  animation: vs-card-in 0.6s var(--ease-atlas) both;
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  @media (min-width: 768px) {
+    .vs-card {
+      background: rgba(255, 255, 255, 0.72);
+      -webkit-backdrop-filter: blur(18px) saturate(150%);
+      backdrop-filter: blur(18px) saturate(150%);
+    }
+  }
+}
+
+@keyframes vs-card-in {
+  from {
+    opacity: 0;
+    transform: translate(-18px, -50%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+}
+
+/* على الفون: درج من تحت */
+.vs-card[data-sheet='true'] {
+  top: auto;
+  bottom: 0;
+  inset-inline: 0;
+  width: auto;
+  max-height: 64%;
+  padding: 22px 18px 20px;
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+  transform: none;
+  animation-name: vs-sheet-in;
+}
+
+@keyframes vs-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.vs-card__close {
+  position: absolute;
+  top: 14px;
+  inset-inline-end: 14px;
+  display: flex;
+  height: 34px;
+  width: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(16, 20, 28, 0.06);
+  color: #14171f;
+  transition: background-color 0.3s var(--ease-atlas);
+}
+
+.vs-card__close:hover {
+  background: rgba(16, 20, 28, 0.12);
+}
+
+.vs-card__cat {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.vs-card__name {
+  margin-top: 6px;
+  padding-inline-end: 34px;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #14171f;
+  text-wrap: balance;
+}
+
+.vs-card__price {
+  margin-top: 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #14171f;
+}
+
+.vs-card__price s {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.vs-card__line {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: #5d6470;
+}
+
+.vs-card__colors {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vs-card__colors button {
+  display: flex;
+  height: 34px;
+  width: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  transition: border-color 0.3s var(--ease-atlas);
+}
+
+.vs-card__colors button[data-on='true'] {
+  border-color: #14171f;
+}
+
+.vs-card__colors span {
+  display: flex;
+  height: 24px;
+  width: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(16, 20, 28, 0.18);
+  font-size: 11px;
+  font-weight: 700;
+  color: #14171f;
+}
+
+.vs-card__colors span[data-empty='true'] {
+  background: #f1efea !important;
+}
+
+.vs-card__head {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #14171f;
+}
+
+.vs-card__head span + span {
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.vs-card__sizes {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.vs-card__sizes button {
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 20, 28, 0.14);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  color: #14171f;
+  transition:
+    background-color 0.3s var(--ease-atlas),
+    color 0.3s var(--ease-atlas),
+    border-color 0.3s var(--ease-atlas);
+}
+
+.vs-card__sizes button:hover:not(:disabled) {
+  border-color: rgba(16, 20, 28, 0.4);
+}
+
+.vs-card__sizes button[data-on='true'] {
+  border-color: #14171f;
+  background: #14171f;
+  color: #fff;
+}
+
+.vs-card__sizes button:disabled {
+  opacity: 0.38;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.vs-card__error {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-sale);
+}
+
+.vs-card__add {
+  margin-top: 16px;
+  display: flex;
+  width: 100%;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: #14171f;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  transition:
+    background-color 0.45s var(--ease-atlas),
+    transform 0.3s var(--ease-atlas);
+  touch-action: manipulation;
+}
+
+.vs-card__add:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.vs-card__add:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.vs-card__add:disabled {
+  cursor: not-allowed;
+}
+
+.vs-card__add[data-phase='busy'] {
+  background: #2a2f3a;
+}
+
+.vs-card__add[data-phase='done'] {
+  background: #1e9d5c;
+}
+
+.vs-card__view {
+  margin: 10px auto 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #14171f;
+}
+
+.vs-card__view:hover span {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.vs-card__more {
+  margin-top: 14px;
+  display: block;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-brand-300);
+  text-underline-offset: 4px;
+}
+
+.vs-card__more:hover {
+  text-decoration: underline;
 }
 
 /* ============================================================

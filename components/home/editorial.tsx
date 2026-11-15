@@ -18,7 +18,7 @@ export function Editorial() {
     <section className="shell pb-4">
       <div
         data-reveal="zoom"
-        className="relative overflow-hidden rounded-[28px] border border-white/8"
+        className="relative overflow-hidden rounded-[28px] border border-veil/8"
       >
         {/* --- الصورة --- */}
         <div className="absolute inset-0">
@@ -82,7 +82,7 @@ export function Editorial() {
             <div
               data-reveal=""
               style={revealDelay(240)}
-              className="mt-8 grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/12 bg-white/10"
+              className="mt-8 grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-veil/12 bg-veil/10"
             >
               {stats.map((stat, i) => (
                 <div

@@ -224,14 +224,14 @@ export function buildCustomerEmail(input: EmailInput): { subject: string; html: 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e3eaf2">
     <tr><td style="background:linear-gradient(135deg,#0a2a80 0%,#0b5fc4 38%,#0a9fe3 70%,#12c9ee 100%);padding:30px 24px;text-align:center">
       <img src="${site.url}${site.logo}" width="56" height="56" alt="${esc(site.nameFull)}" style="display:block;margin:0 auto 12px;border:0">
-      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:6px">ATLAS</div>
+      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:6px">ATLASs</div>
       <div style="font-size:15px;color:#d0f7fe;margin-top:10px">استلمنا طلبك يا ${esc(customer.fullName.split(' ')[0])}</div>
       <div style="margin-top:16px;display:inline-block;background:rgba(255,255,255,.16);border-radius:3px;padding:8px 18px;font-family:monospace;font-size:18px;font-weight:700;color:#fff">${esc(orderId)}</div>
     </td></tr>
 
     <tr><td style="padding:26px 24px">
       <p style="margin:0 0 18px;font-size:14px;line-height:1.9;color:#071021">
-        شكرًا لطلبك من ATLAS Store. استلمنا طلبك وسجّلناه عندنا،
+        شكرًا لطلبك من ATLASs Store. استلمنا طلبك وسجّلناه عندنا،
         وهنبعتلك تحديث بحالته أول بأول.
       </p>
 

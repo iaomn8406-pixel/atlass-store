@@ -79,7 +79,7 @@ export default function OrderSuccessPage() {
               </p>
 
               {order && (
-                <div className="mt-8 inline-flex flex-col items-center rounded-2xl border border-white/10 bg-white/4 px-9 py-5">
+                <div className="mt-8 inline-flex flex-col items-center rounded-2xl border border-veil/10 bg-veil/4 px-9 py-5">
                   <span className="tag mb-2">Order Number</span>
                   <span className="font-[family-name:var(--font-label)] grad-text text-[27px] font-bold tracking-[0.12em]">
                     {order.orderId}
@@ -137,12 +137,12 @@ export default function OrderSuccessPage() {
           {/* ============ ملخص الطلب ============ */}
           {order && (
             <div className="card mt-6 overflow-hidden">
-              <div className="border-b border-white/8 px-6 py-5">
+              <div className="border-b border-veil/8 px-6 py-5">
                 <p className="tag">Summary</p>
                 <h2 className="display mt-1.5 text-[17px] font-bold">ملخص الطلب</h2>
               </div>
 
-              <ul className="divide-y divide-white/8 px-6">
+              <ul className="divide-y divide-veil/8 px-6">
                 {order.items.map((item) => (
                   <li
                     key={item.key}
@@ -168,7 +168,7 @@ export default function OrderSuccessPage() {
                 ))}
               </ul>
 
-              <div className="space-y-3 border-t border-white/8 px-6 py-5">
+              <div className="space-y-3 border-t border-veil/8 px-6 py-5">
                 <div className="flex justify-between text-[13px]">
                   <span className="text-mist">الإجمالي الفرعي</span>
                   <span className="nums font-bold">{formatPrice(order.subtotal)}</span>
@@ -179,7 +179,7 @@ export default function OrderSuccessPage() {
                   </span>
                   <span className="nums font-bold">{formatPrice(order.shipping)}</span>
                 </div>
-                <div className="flex items-baseline justify-between border-t border-white/8 pt-4">
+                <div className="flex items-baseline justify-between border-t border-veil/8 pt-4">
                   <span className="text-[14px] font-extrabold">
                     المطلوب عند الاستلام
                   </span>
@@ -189,7 +189,7 @@ export default function OrderSuccessPage() {
                 </div>
               </div>
 
-              <div className="border-t border-white/8 bg-abyss/40 px-6 py-5">
+              <div className="border-t border-veil/8 bg-abyss/40 px-6 py-5">
                 <p className="tag mb-3">Delivery Address</p>
                 <p className="text-[13px] leading-[1.95]">
                   {order.customer.fullName}

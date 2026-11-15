@@ -49,7 +49,7 @@ export function Process() {
           >
             {/* الدايرة */}
             <div className="relative shrink-0">
-              <span className="relative z-10 flex h-[76px] w-[76px] items-center justify-center rounded-full border border-white/10 bg-deep transition-all duration-600 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover:-translate-y-1.5 group-hover:border-brand-500/60 group-hover:shadow-[0_18px_40px_-18px_rgba(18,201,238,0.7)]">
+              <span className="relative z-10 flex h-[76px] w-[76px] items-center justify-center rounded-full border border-veil/10 bg-deep transition-all duration-600 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover:-translate-y-1.5 group-hover:border-brand-500/60 group-hover:shadow-[0_18px_40px_-18px_rgba(18,201,238,0.7)]">
                 <step.Icon className="h-7 w-7 text-brand-400 transition-transform duration-600 group-hover:scale-110" />
               </span>
 

@@ -123,7 +123,7 @@ export default async function TrackPage() {
 
               return (
                 <div key={order.id} className="card overflow-hidden">
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 px-5 py-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-veil/8 px-5 py-4">
                     <div>
                       <span className="font-[family-name:var(--font-label)] text-[14px] font-bold">
                         {order.order_code}
@@ -151,7 +151,7 @@ export default async function TrackPage() {
                     />
                   </div>
 
-                  <div className="border-t border-white/8 bg-abyss/40 px-5 py-4">
+                  <div className="border-t border-veil/8 bg-abyss/40 px-5 py-4">
                     <ul className="space-y-2">
                       {(order.items ?? []).map((item, i) => (
                         <li

@@ -108,7 +108,7 @@ export function Header({ categories }: { categories: Category[] }) {
              وزجاج ضبابي أول ما تنزل عشان الروابط تفضل مقروءة */
           className={`border-b transition-colors duration-300 ${
             scrolled || openMega || search
-              ? 'glass border-white/8'
+              ? 'glass border-veil/8'
               : 'border-transparent bg-transparent'
           }`}
         >
@@ -173,7 +173,7 @@ export function Header({ categories }: { categories: Category[] }) {
                             <Link
                               href={link.href}
                               onClick={() => setOpenMega(null)}
-                              className="group flex items-center justify-between gap-4 border-b border-white/8 px-4 py-3 text-[12.5px] font-extrabold text-brand-300 transition-colors hover:bg-brand-500/10"
+                              className="group flex items-center justify-between gap-4 border-b border-veil/8 px-4 py-3 text-[12.5px] font-extrabold text-brand-300 transition-colors hover:bg-brand-500/10"
                             >
                               كل {link.label}
                               <ArrowLeftIcon className="h-3.5 w-3.5 transition-transform duration-300 group-hover:-translate-x-1" />
@@ -185,7 +185,7 @@ export function Header({ categories }: { categories: Category[] }) {
                                   <Link
                                     href={child.href}
                                     onClick={() => setOpenMega(null)}
-                                    className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-semibold text-foam/80 transition-colors hover:bg-white/6 hover:text-white"
+                                    className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-semibold text-foam/80 transition-colors hover:bg-veil/6 hover:text-white"
                                   >
                                     <span className="h-1 w-1 shrink-0 rotate-45 bg-brand-500" />
                                     {child.label}
@@ -226,6 +226,7 @@ export function Header({ categories }: { categories: Category[] }) {
                   onClick={openCart}
                   aria-label={`السلة — ${count} قطعة`}
                   className="icon-btn"
+                  data-cart-target=""
                 >
                   <BagIcon className={`h-[22px] w-[22px] ${bump ? 'a-pop' : ''}`} />
                   {count > 0 && (
@@ -300,7 +301,7 @@ function SearchPanel({ onClose }: { onClose: () => void }) {
   const typed = query.trim().length > 0
 
   return (
-    <div className="a-panel border-t border-white/8 bg-deep/95 backdrop-blur-xl">
+    <div className="a-panel border-t border-veil/8 bg-deep/95 backdrop-blur-xl">
       <div className="shell py-6">
         <div className="relative">
           <SearchIcon className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-mist" />
@@ -322,7 +323,7 @@ function SearchPanel({ onClose }: { onClose: () => void }) {
                 key={word}
                 type="button"
                 onClick={() => setQuery(word)}
-                className="rounded-full border border-white/10 bg-white/4 px-3.5 py-1.5 text-[12px] font-semibold text-foam/80 transition-colors hover:border-brand-500/50 hover:text-white"
+                className="rounded-full border border-veil/10 bg-veil/4 px-3.5 py-1.5 text-[12px] font-semibold text-foam/80 transition-colors hover:border-brand-500/50 hover:text-white"
               >
                 {word}
               </button>
@@ -339,7 +340,7 @@ function SearchPanel({ onClose }: { onClose: () => void }) {
                 مفيش نتائج لـ «{query}» — جرّب كلمة تانية
               </p>
             ) : (
-              <ul className="divide-y divide-white/8">
+              <ul className="divide-y divide-veil/8">
                 {hits.map((p) => (
                   <li key={p.slug}>
                     <Link
@@ -398,7 +399,7 @@ function MobileMenu({ links, onClose }: { links: NavLink[]; onClose: () => void 
         className="aurora aurora-a -right-24 -top-24 h-[300px] w-[300px]"
       />
 
-      <div className="shell relative flex h-[74px] shrink-0 items-center justify-between border-b border-white/8">
+      <div className="shell relative flex h-[74px] shrink-0 items-center justify-between border-b border-veil/8">
         <Logo size="md" />
         <button
           type="button"
@@ -421,7 +422,7 @@ function MobileMenu({ links, onClose }: { links: NavLink[]; onClose: () => void 
             return (
               <li
                 key={link.href}
-                className="a-rise border-b border-white/8"
+                className="a-rise border-b border-veil/8"
                 style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -445,7 +446,7 @@ function MobileMenu({ links, onClose }: { links: NavLink[]; onClose: () => void 
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-all duration-400 ${
                         expanded
                           ? 'rotate-180 border-brand-500/50 bg-brand-500/12 text-brand-300'
-                          : 'border-white/10 text-mist'
+                          : 'border-veil/10 text-mist'
                       }`}
                     >
                       <ChevronDownIcon className="h-4 w-4" />
@@ -481,7 +482,7 @@ function MobileMenu({ links, onClose }: { links: NavLink[]; onClose: () => void 
         </ul>
 
         <div
-          className="a-rise mt-9 space-y-2 border-t border-white/8 pt-6"
+          className="a-rise mt-9 space-y-2 border-t border-veil/8 pt-6"
           style={{ animationDelay: '400ms' }}
         >
           <p className="tag mb-3">Contact</p>

@@ -75,7 +75,7 @@ export function Closing() {
               </Link>
             </div>
 
-            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-white/8 pt-6 text-[12.5px] text-mist">
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-veil/8 pt-6 text-[12.5px] text-mist">
               <a
                 href={`tel:${site.contact.phone}`}
                 dir="ltr"

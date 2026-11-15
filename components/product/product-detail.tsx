@@ -134,7 +134,7 @@ export function ProductDetail({
             )}
 
             {/* --- السعر --- */}
-            <div className="mt-6 flex flex-wrap items-baseline gap-3 border-b border-white/8 pb-7">
+            <div className="mt-6 flex flex-wrap items-baseline gap-3 border-b border-veil/8 pb-7">
               <span className="nums display text-[28px] font-bold">
                 {formatPrice(product.price)}
               </span>
@@ -160,7 +160,7 @@ export function ProductDetail({
                 <div
                   key={group.name}
                   id={`variant-${group.name}`}
-                  className="scroll-mt-28 border-b border-white/8 py-6"
+                  className="scroll-mt-28 border-b border-veil/8 py-6"
                 >
                   <div className="mb-4 flex items-baseline justify-between gap-3">
                     <span className="text-[13px] font-extrabold">{group.name}</span>

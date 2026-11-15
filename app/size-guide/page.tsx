@@ -3,7 +3,7 @@ import { InfoPage } from '@/components/layout/info-page'
 
 export const metadata: Metadata = {
   title: 'دليل المقاسات',
-  description: 'جداول مقاسات الملابس الرجالي في ATLAS Store — قمصان وتيشيرتات وبناطيل.',
+  description: 'جداول مقاسات الملابس الرجالي في ATLASs Store — قمصان وتيشيرتات وبناطيل.',
 }
 
 export default function SizeGuidePage() {

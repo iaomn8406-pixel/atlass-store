@@ -413,7 +413,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
   return (
     <>
       {/* ============ الرأس والخطوات ============ */}
-      <header className="relative overflow-hidden border-b border-white/8">
+      <header className="relative overflow-hidden border-b border-veil/8">
         <span
           aria-hidden="true"
           className="aurora aurora-b -right-16 -top-24 h-[280px] w-[280px] opacity-40"
@@ -435,7 +435,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                 {i > 0 && (
                   <span
                     aria-hidden="true"
-                    className="h-px w-6 bg-white/12 sm:w-10"
+                    className="h-px w-6 bg-veil/12 sm:w-10"
                   />
                 )}
                 <span className="flex items-center gap-2">
@@ -444,8 +444,8 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                       step.done
                         ? 'bg-brand-600 text-ink'
                         : step.current
-                          ? 'bg-[image:var(--grad-soft)] text-ink shadow-[var(--glow-sm)]'
-                          : 'border border-white/12 text-mist'
+                          ? 'bg-[image:var(--grad-soft)] text-white shadow-[var(--glow-sm)]'
+                          : 'border border-veil/12 text-mist'
                     }`}
                   >
                     {step.done ? <CheckIcon className="h-3.5 w-3.5" /> : step.n}
@@ -655,14 +655,14 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
             </FormBlock>
 
             {/* التأكيد على الفون — تحت البيانات مباشرة */}
-            <div className="mt-8 border-t border-white/8 pt-7 lg:hidden">{confirm}</div>
+            <div className="mt-8 border-t border-veil/8 pt-7 lg:hidden">{confirm}</div>
           </div>
 
           {/* ============ ملخص الطلب ============ */}
           <aside className="order-1 lg:order-2">
             <div className="lg:sticky lg:top-28">
               <div className="card overflow-hidden">
-                <div className="border-b border-white/8 px-5 py-4">
+                <div className="border-b border-veil/8 px-5 py-4">
                   <p className="tag">Order Summary</p>
                   <h2 className="display mt-1.5 text-[16px] font-bold">
                     ملخص الطلب
@@ -672,7 +672,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                   </h2>
                 </div>
 
-                <ul className="max-h-[320px] divide-y divide-white/8 overflow-y-auto px-5">
+                <ul className="max-h-[320px] divide-y divide-veil/8 overflow-y-auto px-5">
                   {items.map((item) => (
                     <li key={item.key} className="flex gap-3 py-3.5">
                       <div className="plate relative h-[76px] w-[58px] shrink-0">
@@ -701,7 +701,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                   ))}
                 </ul>
 
-                <div className="space-y-3 border-t border-white/8 px-5 py-4">
+                <div className="space-y-3 border-t border-veil/8 px-5 py-4">
                   <Row label="الإجمالي الفرعي" value={formatPrice(subtotal)} />
                   <Row
                     label={`الشحن — ${SHIPPING_METHOD_NAME}`}
@@ -716,7 +716,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                     }
                   />
 
-                  <div className="flex items-baseline justify-between border-t border-white/8 pt-3.5">
+                  <div className="flex items-baseline justify-between border-t border-veil/8 pt-3.5">
                     <span className="text-[14px] font-extrabold">الإجمالي</span>
                     <span className="nums display text-[21px] font-bold grad-text">
                       {formatPrice(total)}
@@ -731,7 +731,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                 </div>
 
                 {/* التأكيد على الكمبيوتر — جوه الملخص */}
-                <div className="hidden border-t border-white/8 bg-abyss/50 px-5 py-5 lg:block">
+                <div className="hidden border-t border-veil/8 bg-abyss/50 px-5 py-5 lg:block">
                   {confirm}
                 </div>
               </div>

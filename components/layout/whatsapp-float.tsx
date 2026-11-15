@@ -94,7 +94,7 @@ export function WhatsAppFloat() {
               type="button"
               onClick={() => setOpen(false)}
               aria-label="إغلاق"
-              className="shrink-0 rounded-full p-1.5 text-white/85 transition-colors hover:bg-white/15 hover:text-white"
+              className="shrink-0 rounded-full p-1.5 text-white/85 transition-colors hover:bg-veil/15 hover:text-white"
             >
               <CloseIcon className="h-4 w-4" />
             </button>
@@ -102,7 +102,7 @@ export function WhatsAppFloat() {
 
           {/* --- المحتوى --- */}
           <div className="px-4 py-4">
-            <div className="rounded-2xl rounded-tr-md border border-white/8 bg-white/4 px-3.5 py-3 text-[12.5px] leading-[1.9] text-foam/90">
+            <div className="rounded-2xl rounded-tr-md border border-veil/8 bg-veil/4 px-3.5 py-3 text-[12.5px] leading-[1.9] text-foam/90">
               أهلاً بيك في {site.nameFull} 👋
               <br />
               اسأل عن أي حاجة — المقاسات، الخامات، أو الأوردر بتاعك.
@@ -126,7 +126,7 @@ export function WhatsAppFloat() {
           </div>
 
           {/* --- الزرار --- */}
-          <div className="border-t border-white/8 px-4 pb-4 pt-3">
+          <div className="border-t border-veil/8 px-4 pb-4 pt-3">
             <a
               href={link()}
               target="_blank"

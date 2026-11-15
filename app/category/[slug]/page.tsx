@@ -96,7 +96,7 @@ export default async function CategoryPage({
               <a
                 key={child.slug}
                 href={`/category/${child.slug}`}
-                className="rounded-full border border-white/12 bg-white/4 px-4 py-2.5 text-[12.5px] font-bold text-foam/85 transition-all duration-400 hover:border-brand-500/50 hover:text-white"
+                className="rounded-full border border-veil/12 bg-veil/4 px-4 py-2.5 text-[12.5px] font-bold text-foam/85 transition-all duration-400 hover:border-brand-500/50 hover:text-white"
               >
                 {child.name}
               </a>

@@ -1,0 +1,132 @@
+{
+  "loewe-mens-tshirt": [
+    {
+      "src": "/room/loewe-mens-tshirt--white.webp",
+      "from": "/img/loewe-1.webp",
+      "color": "أبيض",
+      "shadow": "/room/loewe-mens-tshirt--white-shadow.webp",
+      "ownHanger": false,
+      "w": 1047,
+      "h": 960,
+      "hookX": 0.5014,
+      "top": 0.0083,
+      "shoulder": 0.5731
+    },
+    {
+      "src": "/room/loewe-mens-tshirt--black.webp",
+      "from": "/img/loewe-2.webp",
+      "color": "اسود",
+      "shadow": "/room/loewe-mens-tshirt--black-shadow.webp",
+      "ownHanger": false,
+      "w": 1100,
+      "h": 960,
+      "hookX": 0.5045,
+      "top": 0.0073,
+      "shoulder": 0.5764
+    }
+  ],
+  "massimo-dutti-oversize": [
+    {
+      "src": "/room/massimo-dutti-oversize--white.webp",
+      "from": "/img/massimo-1.webp",
+      "color": "أبيض",
+      "shadow": "/room/massimo-dutti-oversize--white-shadow.webp",
+      "ownHanger": false,
+      "w": 894,
+      "h": 960,
+      "hookX": 0.5,
+      "top": 0.0083,
+      "shoulder": 0.5917
+    },
+    {
+      "src": "/room/massimo-dutti-oversize--black.webp",
+      "from": "/img/massimo-2.webp",
+      "color": "اسود",
+      "shadow": "/room/massimo-dutti-oversize--black-shadow.webp",
+      "ownHanger": true,
+      "w": 811,
+      "h": 960,
+      "hookX": 0.4975,
+      "top": 0.0021,
+      "shoulder": 0.6239
+    }
+  ],
+  "tshirt-1975-print": [
+    {
+      "src": "/room/tshirt-1975-print--olive.webp",
+      "from": "/img/print1975-4.webp",
+      "color": null,
+      "shadow": "/room/tshirt-1975-print--olive-shadow.webp",
+      "ownHanger": true,
+      "w": 627,
+      "h": 821,
+      "hookX": 0.4777,
+      "top": 0.0097,
+      "shoulder": 0.681
+    }
+  ],
+  "on-cloud-tracksuit": [
+    {
+      "src": "/room/on-cloud-tracksuit--navy.webp",
+      "from": "/img/oncloud-1.webp",
+      "color": "كحلي",
+      "shadow": "/room/on-cloud-tracksuit--navy-shadow.webp",
+      "ownHanger": false,
+      "w": 320,
+      "h": 399,
+      "hookX": 0.5031,
+      "top": 0.0201,
+      "shoulder": 0.5875
+    }
+  ],
+  "hooded-embroidered-abaya": [
+    {
+      "src": "/room/hooded-embroidered-abaya--white.webp",
+      "from": "/img/abaya-2.webp",
+      "color": "أبيض",
+      "shadow": "/room/hooded-embroidered-abaya--white-shadow.webp",
+      "ownHanger": false,
+      "w": 455,
+      "h": 960,
+      "hookX": 0.5044,
+      "top": 0.0063,
+      "shoulder": 0.4901
+    },
+    {
+      "src": "/room/hooded-embroidered-abaya--beige.webp",
+      "from": "/img/abaya-3.webp",
+      "color": "بيج",
+      "shadow": "/room/hooded-embroidered-abaya--beige-shadow.webp",
+      "ownHanger": false,
+      "w": 486,
+      "h": 960,
+      "hookX": 0.5021,
+      "top": 0.0063,
+      "shoulder": 0.6296
+    },
+    {
+      "src": "/room/hooded-embroidered-abaya--black.webp",
+      "from": "/img/abaya-4.webp",
+      "color": "اسود",
+      "shadow": "/room/hooded-embroidered-abaya--black-shadow.webp",
+      "ownHanger": false,
+      "w": 471,
+      "h": 960,
+      "hookX": 0.4989,
+      "top": 0.0063,
+      "shoulder": 0.6433
+    },
+    {
+      "src": "/room/hooded-embroidered-abaya--blue.webp",
+      "from": "/img/abaya-1.webp",
+      "color": null,
+      "shadow": "/room/hooded-embroidered-abaya--blue-shadow.webp",
+      "ownHanger": false,
+      "w": 506,
+      "h": 960,
+      "hookX": 0.5,
+      "top": 0.0073,
+      "shoulder": 0.6087
+    }
+  ]
+}

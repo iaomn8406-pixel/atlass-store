@@ -184,7 +184,7 @@ export function ImageEditor({
       )}
 
       {/* ---------- الإضافة ---------- */}
-      <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-3.5">
+      <div className="rounded-2xl border border-veil/8 bg-veil/[0.03] p-3.5">
         <div className="flex flex-wrap items-center gap-2">
           <input
             ref={file}
@@ -278,7 +278,7 @@ function ImageCard({
   const verdict = judge(size)
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-abyss/40">
+    <div className="overflow-hidden rounded-xl border border-veil/10 bg-abyss/40">
       {/* --- المقاس فوق الصورة --- */}
       <div
         className={`flex items-center justify-between gap-1.5 px-2.5 py-1.5 text-[10px] font-bold ${verdict.tone}`}
@@ -351,7 +351,7 @@ function Ctrl({
       disabled={disabled}
       title={label}
       aria-label={label}
-      className={`flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 text-mist transition-colors disabled:opacity-30 ${
+      className={`flex h-7 w-7 items-center justify-center rounded-lg border border-veil/10 text-mist transition-colors disabled:opacity-30 ${
         danger
           ? 'hover:border-sale/50 hover:text-sale'
           : 'hover:border-brand-500/50 hover:text-brand-300'
@@ -371,7 +371,7 @@ function Ctrl({
    ------------------------------------------------------------ */
 function judge(size: Size | null | undefined) {
   if (size === undefined) {
-    return { label: 'بنقيس', tone: 'bg-white/5 text-mist', icon: null }
+    return { label: 'بنقيس', tone: 'bg-veil/5 text-mist', icon: null }
   }
 
   if (size === null) {

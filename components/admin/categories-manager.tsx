@@ -82,7 +82,7 @@ export function CategoriesManager({
                 />
 
                 {childrenOf(root.id).length > 0 && (
-                  <div className="border-t border-white/8 bg-abyss/40 pr-6">
+                  <div className="border-t border-veil/8 bg-abyss/40 pr-6">
                     {childrenOf(root.id).map((child) => (
                       <CategoryRow
                         key={child.id}
@@ -165,7 +165,7 @@ function CategoryRow({
   return (
     <div
       className={`flex items-center gap-3 px-4 py-3 ${
-        nested ? 'border-b border-white/6 last:border-b-0' : ''
+        nested ? 'border-b border-veil/6 last:border-b-0' : ''
       }`}
     >
       <div className="plate relative h-12 w-12 shrink-0 rounded-xl">
@@ -190,7 +190,7 @@ function CategoryRow({
           {nested && <span className="text-mist">↳</span>}
           <span className="truncate">{row.name}</span>
           {!row.is_active && (
-            <span className="shrink-0 rounded-full bg-white/8 px-2 py-0.5 text-[9.5px] text-mist">
+            <span className="shrink-0 rounded-full bg-veil/8 px-2 py-0.5 text-[9.5px] text-mist">
               مخفي
             </span>
           )}
@@ -201,7 +201,7 @@ function CategoryRow({
       </div>
 
       {/* الترتيب بالأزرار — أضمن بكتير من كتابة أرقام */}
-      <div className="flex shrink-0 flex-col overflow-hidden rounded-lg border border-white/10">
+      <div className="flex shrink-0 flex-col overflow-hidden rounded-lg border border-veil/10">
         <button
           type="button"
           onClick={() => move('up')}
@@ -216,7 +216,7 @@ function CategoryRow({
           onClick={() => move('down')}
           disabled={pending}
           aria-label={`حرّك ${row.name} لتحت`}
-          className="border-t border-white/10 px-2 py-1 text-mist transition-colors hover:bg-brand-500/12 hover:text-brand-300 disabled:opacity-40"
+          className="border-t border-veil/10 px-2 py-1 text-mist transition-colors hover:bg-brand-500/12 hover:text-brand-300 disabled:opacity-40"
         >
           <ChevronDownIcon className="h-3.5 w-3.5" />
         </button>
@@ -225,7 +225,7 @@ function CategoryRow({
       <button
         type="button"
         onClick={onEdit}
-        className="shrink-0 rounded-full border border-white/10 px-3 py-1.5 text-[11.5px] font-bold transition-colors hover:border-brand-500/50 hover:text-brand-300"
+        className="shrink-0 rounded-full border border-veil/10 px-3 py-1.5 text-[11.5px] font-bold transition-colors hover:border-brand-500/50 hover:text-brand-300"
       >
         تعديل
       </button>

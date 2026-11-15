@@ -36,7 +36,7 @@ const EMPTY: Profile = {
 }
 
 const TONES: Record<string, string> = {
-  gray: 'bg-white/8 text-mist',
+  gray: 'bg-veil/8 text-mist',
   cyan: 'bg-brand-500/15 text-brand-300',
   amber: 'bg-warn/15 text-warn',
   green: 'bg-ok/15 text-ok',
@@ -289,7 +289,7 @@ export function AccountPanel({ email }: { email: string }) {
         </div>
 
         <div className="card overflow-hidden">
-          <div className="border-b border-white/8 px-5 py-4">
+          <div className="border-b border-veil/8 px-5 py-4">
             <p className="tag">Orders</p>
             <h3 className="display mt-1.5 text-[15px] font-bold">أوردراتك</h3>
           </div>
@@ -300,7 +300,7 @@ export function AccountPanel({ email }: { email: string }) {
               <p className="text-[12.5px] text-mist">لسه ما طلبتش حاجة.</p>
             </div>
           ) : (
-            <ul className="divide-y divide-white/8">
+            <ul className="divide-y divide-veil/8">
               {orders.map((order) => {
                 const status = getStatus(order.status)
                 return (

@@ -3,7 +3,7 @@ import { InfoPage } from '@/components/layout/info-page'
 
 export const metadata: Metadata = {
   title: 'الاستبدال والاسترجاع',
-  description: 'سياسة الاستبدال والاسترجاع في ATLAS Store — استبدال خلال ١٤ يوم.',
+  description: 'سياسة الاستبدال والاسترجاع في ATLASs Store — استبدال خلال ١٤ يوم.',
 }
 
 export default function ReturnsPage() {

@@ -44,7 +44,7 @@ export function InfoPage({
               id={anchor(i)}
               data-reveal=""
               style={revealDelay(Math.min(i, 6) * 60)}
-              className="scroll-mt-28 border-b border-white/8 py-8 first:pt-0 last:border-b-0"
+              className="scroll-mt-28 border-b border-veil/8 py-8 first:pt-0 last:border-b-0"
             >
               <div className="mb-4 flex items-baseline gap-4">
                 <span className="font-[family-name:var(--font-label)] shrink-0 text-[11px] font-semibold text-brand-500/70">
@@ -78,13 +78,13 @@ export function InfoPage({
 
                 {block.table && (
                   <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-                    <table className="w-full min-w-[420px] overflow-hidden rounded-2xl border border-white/8 text-[13.5px]">
+                    <table className="w-full min-w-[420px] overflow-hidden rounded-2xl border border-veil/8 text-[13.5px]">
                       <thead>
-                        <tr className="bg-white/5">
+                        <tr className="bg-veil/5">
                           {block.table.head.map((cell, j) => (
                             <th
                               key={j}
-                              className="border-b border-white/8 px-4 py-3.5 text-right text-[12.5px] font-extrabold text-foam"
+                              className="border-b border-veil/8 px-4 py-3.5 text-right text-[12.5px] font-extrabold text-foam"
                             >
                               {cell}
                             </th>
@@ -93,14 +93,14 @@ export function InfoPage({
                       </thead>
                       <tbody>
                         {block.table.rows.map((row, j) => (
-                          <tr key={j} className="even:bg-white/[0.025]">
+                          <tr key={j} className="even:bg-veil/[0.025]">
                             {row.map((cell, k) => (
                               /* dir=ltr ضروري: المدى «98 - 102» في سياق
                                  عربي بينقلب ويتقرا «102 - 98» */
                               <td
                                 key={k}
                                 dir="ltr"
-                                className={`nums border-b border-white/6 px-4 py-3 text-right ${
+                                className={`nums border-b border-veil/6 px-4 py-3 text-right ${
                                   k === 0 ? 'font-bold text-foam' : 'text-mist'
                                 }`}
                               >
@@ -128,7 +128,7 @@ export function InfoPage({
                 <li key={i}>
                   <a
                     href={`#${anchor(i)}`}
-                    className="flex gap-3 rounded-lg px-2 py-1.5 text-[12.5px] leading-relaxed text-mist transition-colors hover:bg-white/5 hover:text-brand-300"
+                    className="flex gap-3 rounded-lg px-2 py-1.5 text-[12.5px] leading-relaxed text-mist transition-colors hover:bg-veil/5 hover:text-brand-300"
                   >
                     <span className="font-[family-name:var(--font-label)] shrink-0 text-[10px] text-brand-500/60">
                       {String(i + 1).padStart(2, '0')}

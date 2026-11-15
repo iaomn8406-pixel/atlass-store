@@ -193,7 +193,7 @@ function ShowsIn({
     return (
       <span
         title="بيظهر في صف قسمه، وفي العروض لو عليه سعر قبل الخصم"
-        className="rounded-full bg-white/6 px-2 py-0.5 text-[10px] font-bold text-mist"
+        className="rounded-full bg-veil/6 px-2 py-0.5 text-[10px] font-bold text-mist"
       >
         تلقائي
       </span>
@@ -311,7 +311,7 @@ function ProductRow({
             {categoryName && <span>· {categoryName}</span>}
             <ShowsIn sections={row.home_sections} categoryName={categoryName} />
             {!row.is_active && (
-              <span className="rounded-full bg-white/8 px-2 py-0.5 text-[9.5px]">
+              <span className="rounded-full bg-veil/8 px-2 py-0.5 text-[9.5px]">
                 مخفي
               </span>
             )}
@@ -333,7 +333,7 @@ function ProductRow({
         </Link>
 
         {/* الترتيب بالأزرار — أضمن من كتابة أرقام */}
-        <div className="flex shrink-0 flex-col overflow-hidden rounded-lg border border-white/10">
+        <div className="flex shrink-0 flex-col overflow-hidden rounded-lg border border-veil/10">
           <button
             type="button"
             onClick={() => move('up')}
@@ -348,7 +348,7 @@ function ProductRow({
             onClick={() => move('down')}
             disabled={pending}
             aria-label={`حرّك ${row.name} لتحت`}
-            className="border-t border-white/10 px-2 py-1 text-mist transition-colors hover:bg-brand-500/12 hover:text-brand-300 disabled:opacity-40"
+            className="border-t border-veil/10 px-2 py-1 text-mist transition-colors hover:bg-brand-500/12 hover:text-brand-300 disabled:opacity-40"
           >
             <ChevronDownIcon className="h-3.5 w-3.5" />
           </button>
@@ -358,7 +358,7 @@ function ProductRow({
           type="button"
           onClick={onToggle}
           aria-expanded={open}
-          className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-[11.5px] font-bold transition-colors hover:border-brand-500/50 hover:text-brand-300"
+          className="flex shrink-0 items-center gap-1.5 rounded-full border border-veil/10 px-3 py-1.5 text-[11.5px] font-bold transition-colors hover:border-brand-500/50 hover:text-brand-300"
         >
           تعديل
           <ChevronDownIcon
@@ -383,7 +383,7 @@ function ProductRow({
               e.preventDefault()
               submit(new FormData(e.currentTarget))
             }}
-            className="border-t border-white/8 p-4"
+            className="border-t border-veil/8 p-4"
           >
             <input type="hidden" name="id" value={row.id} />
 
@@ -523,7 +523,7 @@ function ProductRow({
                 </div>
 
                 {/* ---------- أماكنه في الصفحة الرئيسية ---------- */}
-                <div className="mt-5 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                <div className="mt-5 rounded-2xl border border-veil/8 bg-veil/[0.03] p-4">
                   <p className="text-[12px] font-extrabold">
                     يظهر فين في الصفحة الرئيسية؟
                   </p>
@@ -543,7 +543,7 @@ function ProductRow({
                       return (
                         <label
                           key={section.key}
-                          className={`flex items-start gap-2.5 rounded-xl border border-white/8 px-3 py-2.5 transition-colors ${
+                          className={`flex items-start gap-2.5 rounded-xl border border-veil/8 px-3 py-2.5 transition-colors ${
                             off
                               ? 'cursor-not-allowed opacity-50'
                               : 'cursor-pointer hover:border-brand-500/40'
@@ -582,7 +582,7 @@ function ProductRow({
 
             {/* الألوان والمقاسات — للعرض بس */}
             {row.variants && row.variants.length > 0 && (
-              <div className="mt-5 rounded-2xl border border-white/8 bg-white/4 p-4">
+              <div className="mt-5 rounded-2xl border border-veil/8 bg-veil/4 p-4">
                 <p className="mb-3 text-[12px] font-extrabold">
                   الألوان والمقاسات — جاية من فيندور
                 </p>
@@ -593,7 +593,7 @@ function ProductRow({
                       {v.options.map((o) => (
                         <span
                           key={o}
-                          className="rounded-full bg-white/8 px-2.5 py-1 text-[11px]"
+                          className="rounded-full bg-veil/8 px-2.5 py-1 text-[11px]"
                         >
                           {o}
                         </span>
@@ -746,7 +746,7 @@ function LinkToVendoor({ productId, name }: { productId: string; name: string })
                 type="button"
                 onClick={() => link(hit.id)}
                 disabled={pending}
-                className="flex w-full items-center gap-3 rounded-xl border border-white/10 bg-white/4 p-2 text-right transition-colors hover:border-brand-500/50 hover:bg-brand-500/8 disabled:opacity-50"
+                className="flex w-full items-center gap-3 rounded-xl border border-veil/10 bg-veil/4 p-2 text-right transition-colors hover:border-brand-500/50 hover:bg-brand-500/8 disabled:opacity-50"
               >
                 <span className="plate relative h-10 w-8 shrink-0 rounded-md">
                   {hit.photo && (

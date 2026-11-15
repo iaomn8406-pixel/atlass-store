@@ -163,7 +163,7 @@ export function VendoorSync() {
       </div>
 
       {report && (
-        <div className="mt-5 rounded-2xl border border-white/10 bg-abyss/60 p-4">
+        <div className="mt-5 rounded-2xl border border-veil/10 bg-abyss/60 p-4">
           <div className="mb-2 flex items-center justify-between gap-3">
             <p className="text-[11.5px] font-bold text-mist">تقرير فحص الصور</p>
             <button

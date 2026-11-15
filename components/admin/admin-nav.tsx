@@ -29,7 +29,7 @@ export function AdminNav() {
   const pathname = usePathname()
 
   return (
-    <div className="border-b border-white/8 bg-deep/60 backdrop-blur-xl">
+    <div className="border-b border-veil/8 bg-deep/60 backdrop-blur-xl">
       <div className="shell">
         <div className="rail no-bar bleed gap-2 py-3">
           {tabs.map((tab) => {
@@ -41,8 +41,8 @@ export function AdminNav() {
                 aria-current={active ? 'page' : undefined}
                 className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-[12.5px] font-bold transition-all duration-400 ${
                   active
-                    ? 'border-transparent bg-[image:var(--grad-soft)] text-ink shadow-[var(--glow-sm)]'
-                    : 'border-white/10 bg-white/4 text-foam/80 hover:border-brand-500/50 hover:text-white'
+                    ? 'border-transparent bg-[image:var(--grad-soft)] text-white shadow-[var(--glow-sm)]'
+                    : 'border-veil/10 bg-veil/4 text-foam/80 hover:border-brand-500/50 hover:text-white'
                 }`}
               >
                 <tab.Icon className="h-4 w-4" />

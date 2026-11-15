@@ -2,9 +2,9 @@ import Link from 'next/link'
 import { CategoryShowcase } from '@/components/home/category-showcase'
 import { Closing } from '@/components/home/closing'
 import { Editorial } from '@/components/home/editorial'
-import { Hero } from '@/components/home/hero'
 import { Process } from '@/components/home/process'
 import { ProductRail } from '@/components/product/product-card'
+import { VirtualStore } from '@/components/room/virtual-store'
 import { ArrowLeftIcon } from '@/components/ui/icons'
 import { Band, SectionHead } from '@/components/ui/section'
 import { site } from '@/data/site'
@@ -16,17 +16,19 @@ import {
   getFeaturedProducts,
   getSaleProducts,
 } from '@/lib/catalog'
+import { getRoom } from '@/lib/room'
 
 /* الصفحة بتتبني كل ساعة أو أول ما تعدّل حاجة من اللوحة */
 export const revalidate = 3600
 
 export default async function HomePage() {
-  const [tree, counts, showcase, best, onSale] = await Promise.all([
+  const [tree, counts, showcase, best, onSale, room] = await Promise.all([
     getCategoryTree(),
     getCategoryCounts(),
     getFeaturedProducts(3),
     getBestSellers(8),
     getSaleProducts(4),
+    getRoom(),
   ])
 
   /**
@@ -49,7 +51,8 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero showcase={showcase} />
+      {/* المتجر الافتراضي — أول شاشة. لو المتصفح مابيدعمش 3D بيرجع للواجهة العادية */}
+      <VirtualStore room={room} showcase={showcase} />
 
       {/* ============================================================
           01 — الأقسام
@@ -152,7 +155,7 @@ export default async function HomePage() {
       <section className="shell pb-20 lg:pb-28">
         <div
           data-reveal=""
-          className="relative overflow-hidden rounded-[26px] border border-white/8 bg-gradient-to-l from-brand-950/60 via-deep to-deep px-6 py-12 text-center lg:px-16 lg:py-16"
+          className="relative overflow-hidden rounded-[26px] border border-veil/8 bg-gradient-to-l from-brand-950/60 via-deep to-deep px-6 py-12 text-center lg:px-16 lg:py-16"
         >
           <span
             aria-hidden="true"

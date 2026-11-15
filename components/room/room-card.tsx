@@ -1,0 +1,334 @@
+'use client'
+
+import Link from 'next/link'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  AlertIcon,
+  ArrowLeftIcon,
+  BagIcon,
+  CheckIcon,
+  CloseIcon,
+  SpinnerIcon,
+} from '@/components/ui/icons'
+import { useCart } from '@/lib/cart'
+import { colorOf } from '@/lib/colors'
+import { formatPrice } from '@/lib/format'
+import { trackAddToCart } from '@/lib/meta/client'
+import type { RoomPiece, RoomProduct } from '@/lib/room'
+import type { Product } from '@/lib/types'
+
+/* ============================================================
+   كارت المنتج في المتجر الافتراضي
+   ------------------------------------------------------------
+   نفس السلة ونفس التتبّع اللي في صفحة المنتج بالظبط — مفيش سلة
+   جديدة. الزرار مابيخضرّش غير لما نتأكد إن عدد السلة زاد فعلًا،
+   وأثناء الإضافة بيتقفل عشان الضغطتين ورا بعض ما يضيفوش مرتين.
+
+   المقاس اللي مش متوفر في اللون المختار (حسب فيندور) بيتقفل.
+   ============================================================ */
+
+const COLOR = 'اللون'
+const SIZE = 'المقاس'
+
+/* «أسود» و«اسود» نفس اللون — الهمزات بتختلف بين فيندور ومتجرنا */
+const norm = (s: string) => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').trim()
+
+type Phase = 'idle' | 'busy' | 'done'
+
+export function RoomCard({
+  product,
+  piece,
+  mobile,
+  onClose,
+  onPickColor,
+}: {
+  product: RoomProduct
+  piece: RoomPiece
+  mobile: boolean
+  onClose: () => void
+  onPickColor: (color: string) => void
+}) {
+  const { addItem, openCart, count } = useCart()
+
+  const groups = product.variants ?? []
+  const colorGroup = groups.find((g) => g.name === COLOR)
+  const sizeGroup = groups.find((g) => g.name === SIZE)
+  const others = groups.filter((g) => g !== colorGroup && g !== sizeGroup)
+
+  const [picked, setPicked] = useState<Record<string, string>>(() => {
+    const start: Record<string, string> = {}
+    if (piece.color && colorGroup?.options.includes(piece.color)) start[COLOR] = piece.color
+    return start
+  })
+  const [phase, setPhase] = useState<Phase>('idle')
+  const [error, setError] = useState('')
+
+  const soldOut = product.inStock === false
+  const color = picked[COLOR]
+
+  /* المقاسات المتاحة للون المختار — لو فيندور بعتت الخريطة */
+  const allowed = useMemo(() => {
+    if (!product.available || !color) return null
+    const key = Object.keys(product.available).find((k) => norm(k) === norm(color))
+    return key ? new Set(product.available[key]) : null
+  }, [product.available, color])
+
+  const choose = (group: string, value: string) => {
+    setPicked((prev) => {
+      const next = { ...prev, [group]: value }
+      /* تغيير اللون بيلغي مقاس مش متوفر فيه */
+      if (group === COLOR && product.available && next[SIZE]) {
+        const key = Object.keys(product.available).find((k) => norm(k) === norm(value))
+        if (key && !product.available[key].includes(next[SIZE])) delete next[SIZE]
+      }
+      return next
+    })
+    setError('')
+    setPhase('idle')
+    if (group === COLOR) onPickColor(value)
+  }
+
+  /* ---------------- الإضافة للسلة ---------------- */
+  const before = useRef(0)
+
+  const add = () => {
+    if (phase === 'busy' || soldOut) return
+
+    const missing = groups.find((g) => !picked[g.name])
+    if (missing) {
+      setError(`اختار ${missing.name} الأول`)
+      return
+    }
+    if (allowed && picked[SIZE] && !allowed.has(picked[SIZE])) {
+      setError('المقاس ده مش متوفر في اللون ده')
+      return
+    }
+
+    before.current = count
+    setPhase('busy')
+    setError('')
+
+    const full: Product = { ...product, description: '' }
+    trackAddToCart(full, 1, picked)
+    addItem(full, picked, 1, false)
+  }
+
+  /* الأخضر بيظهر بس بعد ما عدد السلة يزيد فعلًا */
+  useEffect(() => {
+    if (phase !== 'busy') return
+
+    if (count > before.current) {
+      flyToCart(piece.id, piece.src)
+      setPhase('done')
+      return
+    }
+
+    const t = window.setTimeout(() => {
+      setPhase('idle')
+      setError('ما قدرناش نضيفها للسلة — جرّب تاني')
+    }, 1500)
+    return () => window.clearTimeout(t)
+  }, [count, phase, piece.id, piece.src])
+
+  const colorLine = color ?? (colorGroup ? 'اختار اللون' : null)
+
+  return (
+    <aside
+      className="vs-ui vs-card"
+      data-sheet={mobile}
+      role="dialog"
+      aria-label={product.name}
+    >
+      <button type="button" className="vs-card__close" onClick={onClose} aria-label="رجوع للمحل">
+        <CloseIcon className="h-4 w-4" />
+      </button>
+
+      <p className="vs-card__cat">{product.categoryName}</p>
+      <h2 className="vs-card__name">{product.name}</h2>
+
+      <div className="vs-card__price">
+        <span className="nums">{formatPrice(product.price)}</span>
+        {product.compareAtPrice && product.compareAtPrice > product.price && (
+          <s className="nums">{formatPrice(product.compareAtPrice)}</s>
+        )}
+      </div>
+
+      {colorLine && <p className="vs-card__line">{colorLine}</p>}
+
+      {/* ---------- الألوان ---------- */}
+      {colorGroup && (
+        <div className="vs-card__colors" role="radiogroup" aria-label="اللون">
+          {colorGroup.options.map((c) => {
+            const hex = colorOf(c)
+            const on = color === c
+            return (
+              <button
+                key={c}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                aria-label={c}
+                title={c}
+                data-on={on}
+                onClick={() => choose(COLOR, c)}
+              >
+                <span style={{ background: hex ?? 'transparent' }} data-empty={!hex}>
+                  {!hex && c.slice(0, 1)}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* ---------- المقاسات ---------- */}
+      {sizeGroup && (
+        <>
+          <div className="vs-card__head">
+            <span>اختار المقاس</span>
+            <span>رجالي</span>
+          </div>
+          <div className="vs-card__sizes" role="radiogroup" aria-label="المقاس">
+            {sizeGroup.options.map((s) => {
+              const off = allowed ? !allowed.has(s) : false
+              const on = picked[SIZE] === s
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  disabled={off}
+                  data-on={on}
+                  onClick={() => choose(SIZE, s)}
+                  title={off ? 'مش متوفر في اللون ده' : undefined}
+                >
+                  {s}
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {/* أي اختيارات تانية (لو المنتج ليه) */}
+      {others.map((g) => (
+        <div key={g.name} className="mt-4">
+          <p className="vs-card__head">
+            <span>{g.name}</span>
+          </p>
+          <div className="vs-card__sizes" role="radiogroup" aria-label={g.name}>
+            {g.options.map((o) => (
+              <button
+                key={o}
+                type="button"
+                role="radio"
+                aria-checked={picked[g.name] === o}
+                data-on={picked[g.name] === o}
+                onClick={() => choose(g.name, o)}
+              >
+                {o}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {error && (
+        <p className="vs-card__error" role="alert">
+          <AlertIcon className="h-3.5 w-3.5 shrink-0" />
+          {error}
+        </p>
+      )}
+
+      {/* ---------- الزرار ---------- */}
+      <button
+        type="button"
+        className="vs-card__add"
+        data-phase={phase}
+        disabled={soldOut || phase === 'busy'}
+        onClick={add}
+        aria-live="polite"
+      >
+        {soldOut ? (
+          'خلص المخزون'
+        ) : phase === 'busy' ? (
+          <SpinnerIcon className="a-spin h-4 w-4" />
+        ) : phase === 'done' ? (
+          <>
+            <span>اتضافت للسلة</span>
+            <CheckIcon className="h-4 w-4" />
+          </>
+        ) : (
+          <>
+            <BagIcon className="h-4 w-4" />
+            <span>أضف إلى السلة</span>
+          </>
+        )}
+      </button>
+
+      {phase === 'done' && (
+        <button type="button" className="vs-card__view" onClick={openCart}>
+          <span>عرض السلة</span>
+          <ArrowLeftIcon className="h-3.5 w-3.5" />
+        </button>
+      )}
+
+      <Link href={`/product/${product.slug}`} className="vs-card__more">
+        كل تفاصيل المنتج
+        {product.images.length > 1 && (
+          <span className="nums"> · {product.images.length} صور</span>
+        )}
+      </Link>
+    </aside>
+  )
+}
+
+/* ------------------------------------------------------------
+   القطعة بتطير للسلة — نسخة من صورتها بتتحرك لأيقونة السلة
+   في الهيدر. transform و opacity بس، فبتفضل ناعمة.
+   ------------------------------------------------------------ */
+function flyToCart(pieceId: string, src: string) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  const img = document.querySelector<HTMLElement>(
+    `[data-piece="${CSS.escape(pieceId)}"] .vs-body`
+  )
+  const target = document.querySelector<HTMLElement>('[data-cart-target]')
+  if (!img || !target) return
+
+  const from = img.getBoundingClientRect()
+  const to = target.getBoundingClientRect()
+  if (!from.width || !to.width) return
+
+  const ghost = document.createElement('img')
+  ghost.src = src
+  ghost.alt = ''
+  Object.assign(ghost.style, {
+    position: 'fixed',
+    left: `${from.left}px`,
+    top: `${from.top}px`,
+    width: `${from.width}px`,
+    height: `${from.height}px`,
+    margin: '0',
+    zIndex: '90',
+    pointerEvents: 'none',
+    transformOrigin: '0 0',
+    willChange: 'transform, opacity',
+  })
+  document.body.appendChild(ghost)
+
+  const scale = Math.min(to.width / from.width, to.height / from.height) * 0.9
+  const dx = to.left + to.width / 2 - (from.left + (from.width * scale) / 2)
+  const dy = to.top + to.height / 2 - (from.top + (from.height * scale) / 2)
+
+  const anim = ghost.animate(
+    [
+      { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+      { transform: `translate(${dx * 0.55}px, ${dy * 0.35 - 40}px) scale(${0.55 + scale * 0.45})`, opacity: 1, offset: 0.45 },
+      { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, opacity: 0.2 },
+    ],
+    { duration: 760, easing: 'cubic-bezier(0.55, 0, 0.3, 1)', fill: 'forwards' }
+  )
+  anim.onfinish = () => ghost.remove()
+}

@@ -3,8 +3,8 @@
    ============================================================ */
 
 export const site = {
-  name: 'ATLAS',
-  nameFull: 'ATLAS Store',
+  name: 'ATLASs',
+  nameFull: 'ATLASs Store',
   nameAr: 'أطلس',
   tagline: 'ملابس رجالي',
   description:

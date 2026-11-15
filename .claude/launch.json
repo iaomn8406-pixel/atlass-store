@@ -9,6 +9,14 @@
         "run",
         "dev"
       ]
+    },
+    {
+      "name": "atlas-prod",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start"
+      ]
     }
   ]
 }

@@ -62,7 +62,7 @@ export default async function LoginPage({
 
       <div className="shell relative py-10 lg:py-16">
         {/* --- شريط علوي --- */}
-        <div className="mb-10 flex items-center justify-between gap-4 border-b border-white/8 pb-5">
+        <div className="mb-10 flex items-center justify-between gap-4 border-b border-veil/8 pb-5">
           <Link
             href="/"
             className="group inline-flex items-center gap-2 text-[12.5px] font-bold text-mist transition-colors hover:text-foam"

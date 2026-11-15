@@ -27,7 +27,7 @@ export default async function AccountPage() {
       <div className="shell py-9 lg:py-12">
         <Link
           href="/track"
-          className="group mb-6 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/4 px-5 py-4 transition-colors hover:border-brand-500/40 hover:bg-brand-500/8"
+          className="group mb-6 flex items-center justify-between gap-4 rounded-2xl border border-veil/10 bg-veil/4 px-5 py-4 transition-colors hover:border-brand-500/40 hover:bg-brand-500/8"
         >
           <span className="flex items-center gap-3.5">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/12 text-brand-300">

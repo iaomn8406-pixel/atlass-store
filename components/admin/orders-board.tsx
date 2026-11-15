@@ -39,7 +39,7 @@ type Order = {
 const ACTIONS = ORDER_STATUSES.filter((s) => s.key !== 'new')
 
 const TONES: Record<string, string> = {
-  gray: 'bg-white/8 text-mist',
+  gray: 'bg-veil/8 text-mist',
   cyan: 'bg-brand-500/15 text-brand-300',
   amber: 'bg-warn/15 text-warn',
   green: 'bg-ok/15 text-ok',
@@ -315,7 +315,7 @@ function OrderCard({
   return (
     <div className="card overflow-hidden">
       {/* --- الرأس --- */}
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/8 px-4 py-4 lg:px-5">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-veil/8 px-4 py-4 lg:px-5">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-[family-name:var(--font-label)] text-[13px] font-bold">
@@ -410,7 +410,7 @@ function OrderCard({
 
         <div className="acc-body mt-3" data-open={open}>
           <div>
-            <ul className="divide-y divide-white/8 rounded-xl border border-white/8">
+            <ul className="divide-y divide-veil/8 rounded-xl border border-veil/8">
               {items.map((item, i) => (
                 <li key={i} className="flex items-start justify-between gap-3 px-3.5 py-3">
                   <div className="min-w-0">
@@ -433,7 +433,7 @@ function OrderCard({
       </div>
 
       {/* --- أزرار الحالة --- */}
-      <div className="border-t border-white/8 bg-abyss/40 px-4 py-4 lg:px-5">
+      <div className="border-t border-veil/8 bg-abyss/40 px-4 py-4 lg:px-5">
         <div className="mb-3 flex items-center justify-between gap-3">
           <p className="text-[11.5px] font-bold text-mist">
             غيّر الحالة — العميل هيوصله إيميل تلقائي
@@ -444,7 +444,7 @@ function OrderCard({
             disabled={busy}
             onClick={() => onDelete(order)}
             title="مسح الأوردر نهائيًا"
-            className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-[11.5px] font-bold text-mist transition-colors hover:border-sale/50 hover:bg-sale/8 hover:text-sale disabled:opacity-40"
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-veil/10 px-3 py-1.5 text-[11.5px] font-bold text-mist transition-colors hover:border-sale/50 hover:bg-sale/8 hover:text-sale disabled:opacity-40"
           >
             <TrashIcon className="h-3.5 w-3.5" />
             مسح
@@ -465,7 +465,7 @@ function OrderCard({
             return (
               <span
                 key={s.key}
-                className="inline-flex overflow-hidden rounded-full border border-white/10"
+                className="inline-flex overflow-hidden rounded-full border border-veil/10"
               >
                 <button
                   type="button"
@@ -474,7 +474,7 @@ function OrderCard({
                   title={s.hint}
                   className={`px-3.5 py-2 text-[12px] font-bold transition-colors disabled:cursor-not-allowed ${
                     active
-                      ? 'bg-[image:var(--grad-soft)] text-ink'
+                      ? 'bg-[image:var(--grad-soft)] text-white'
                       : 'text-foam hover:bg-brand-500/12 disabled:opacity-50'
                   }`}
                 >
@@ -487,7 +487,7 @@ function OrderCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   title={`ابعت «${s.label}» واتساب`}
-                  className="flex items-center border-r border-white/10 px-2.5 text-[#25d366] transition-colors hover:bg-[#25d366]/12"
+                  className="flex items-center border-r border-veil/10 px-2.5 text-[#25d366] transition-colors hover:bg-[#25d366]/12"
                 >
                   <WhatsAppIcon className="h-3.5 w-3.5" />
                 </a>
@@ -558,7 +558,7 @@ function Stat({
   return (
     <div
       className={`rounded-2xl border p-4 ${
-        hot ? 'border-brand-500/50 bg-brand-500/8' : 'border-white/8 bg-white/[0.03]'
+        hot ? 'border-brand-500/50 bg-brand-500/8' : 'border-veil/8 bg-veil/[0.03]'
       }`}
     >
       <p className="text-[11.5px] text-mist">{label}</p>
@@ -589,8 +589,8 @@ function Chip({
       aria-pressed={active}
       className={`rounded-full border px-3.5 py-2 text-[12px] font-bold transition-all duration-400 ${
         active
-          ? 'border-transparent bg-[image:var(--grad-soft)] text-ink shadow-[var(--glow-sm)]'
-          : 'border-white/10 bg-white/4 text-foam/80 hover:border-brand-500/50'
+          ? 'border-transparent bg-[image:var(--grad-soft)] text-white shadow-[var(--glow-sm)]'
+          : 'border-veil/10 bg-veil/4 text-foam/80 hover:border-brand-500/50'
       }`}
     >
       {children}

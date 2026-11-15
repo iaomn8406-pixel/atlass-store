@@ -31,7 +31,7 @@ export function Footer({ categories }: { categories: Category[] }) {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="relative mt-auto overflow-hidden border-t border-white/8 bg-deep/92">
+    <footer className="relative mt-auto overflow-hidden border-t border-veil/8 bg-deep/92">
       <div
         aria-hidden="true"
         className="aurora aurora-c -bottom-40 -left-32 h-[420px] w-[420px] opacity-40"
@@ -42,7 +42,7 @@ export function Footer({ categories }: { categories: Category[] }) {
       />
 
       {/* ============ شريط المزايا ============ */}
-      <div className="relative border-b border-white/8">
+      <div className="relative border-b border-veil/8">
         <div className="shell grid grid-cols-2 gap-x-6 gap-y-2 lg:grid-cols-4">
           {site.perks.map((perk, i) => {
             const Icon = perkIcons[i] ?? CashIcon
@@ -160,13 +160,13 @@ export function Footer({ categories }: { categories: Category[] }) {
       </div>
 
       {/* ============ الشريط السفلي ============ */}
-      <div className="relative border-t border-white/8">
+      <div className="relative border-t border-veil/8">
         <div className="shell flex flex-col items-center justify-between gap-4 py-6 sm:flex-row">
           <p className="nums text-[11.5px] text-mist/70">
             © {year} {site.nameFull} — كل الحقوق محفوظة
           </p>
 
-          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-4 py-2">
+          <div className="flex items-center gap-2 rounded-full border border-veil/10 bg-veil/4 px-4 py-2">
             <CashIcon className="h-4 w-4 text-brand-400" />
             <span className="text-[11.5px] font-bold">الدفع عند الاستلام</span>
           </div>
@@ -226,7 +226,7 @@ function Social({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 text-mist transition-all duration-400 hover:-translate-y-0.5 hover:border-brand-500/60 hover:bg-brand-500/12 hover:text-brand-300"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-veil/12 text-mist transition-all duration-400 hover:-translate-y-0.5 hover:border-brand-500/60 hover:bg-brand-500/12 hover:text-brand-300"
     >
       {children}
     </a>
