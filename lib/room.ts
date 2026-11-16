@@ -34,6 +34,8 @@ type Asset = {
   flat?: { span: number }
   /** لون القماش الأساسي [r,g,b] — للمعاينة بلون مالوش صورة */
   base?: number[]
+  /** خريطة عمق — القطعة بتتعرض مجسّمة */
+  depth?: string
 }
 
 const MANIFEST = assets as Record<string, Asset[]>

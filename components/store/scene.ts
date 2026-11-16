@@ -61,6 +61,8 @@ export type ScenePiece = {
   flat?: { span: number }
   /** لون القماش الأساسي — للمعاينة بلون مالوش صورة */
   base?: number[]
+  /** خريطة عمق (رمادي): قد إيه كل نقطة في القطعة بارزة — عشان تبقى مجسّمة */
+  depth?: string
 }
 
 export type SceneZone = {
@@ -145,8 +147,8 @@ const SLOTS: Record<string, Slot> = {
 /** كل نوع عنده حيطة مفضّلة؛ لو اتاخدت بياخد اللي بعدها */
 const PREFER: Record<SceneZone['kind'], string[]> = {
   top: ['back', 'backRight', 'front', 'right', 'left'],
-  long: ['rack', 'right', 'backRight', 'front', 'left', 'back'],
-  set: ['island', 'left', 'backRight', 'front', 'right', 'back'],
+  long: ['right', 'backRight', 'front', 'left', 'back'],
+  set: ['left', 'backRight', 'front', 'right', 'back'],
 }
 
 type Shot = { pos: Vector3; target: Vector3; fov: number }
@@ -326,8 +328,8 @@ async function logoTexture(src: string, brand: string, font: string) {
  * الصورة نفسها مابتتغيّرش: الألوان بالظبط زي الأصل في النص.
  */
 function bodyGeometry(w: number, h: number, bend: number) {
-  const seg = 18
-  const geo = new PlaneGeometry(w, h, seg, 1)
+  const seg = 64
+  const geo = new PlaneGeometry(w, h, seg, Math.max(8, Math.round(seg * (h / w))))
   const pos = geo.attributes.position as BufferAttribute
   const colors = new Float32Array(pos.count * 3)
   for (let i = 0; i < pos.count; i++) {
@@ -365,7 +367,7 @@ vec3 atlasRgb(vec3 l) {
 
 type Tint = { uTint: { value: number }; uBase: { value: Color }; uTarget: { value: Color } }
 
-function recolorable(mat: MeshBasicMaterial): Tint {
+function recolorable(mat: MeshBasicMaterial | MeshLambertMaterial): Tint {
   const u: Tint = { uTint: { value: 0 }, uBase: { value: new Color() }, uTarget: { value: new Color() } }
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u)
@@ -394,6 +396,60 @@ function recolorable(mat: MeshBasicMaterial): Tint {
   }
   mat.customProgramCacheKey = () => 'atlas-recolor'
   return u
+}
+
+/* ---------------- حجم حقيقي للقطعة ----------------
+   سطح القطعة كشبكة كثيفة بتبرز حسب خريطة العمق: الجسم لقدّام والحواف
+   بتدوّر. الإضاءة بتقع على السطح ده بجد (ضل على الجناب ونور على اللي
+   بارز)، ولما الكاميرا تلف القطعة بتبان مجسّمة — مش ورقة. الصورة
+   نفسها (الألوان والتفاصيل) زي ما هي. */
+const depthCache = new Map<string, Promise<{ w: number; h: number; data: Uint8ClampedArray } | null>>()
+
+function loadDepth(src: string) {
+  let p = depthCache.get(src)
+  if (!p) {
+    p = new Promise((res) => {
+      const img = new Image()
+      img.onload = () => {
+        const c = document.createElement('canvas')
+        c.width = img.width
+        c.height = img.height
+        const g = c.getContext('2d', { willReadFrequently: true })!
+        g.drawImage(img, 0, 0)
+        res({ w: img.width, h: img.height, data: g.getImageData(0, 0, img.width, img.height).data })
+      }
+      img.onerror = () => res(null)
+      img.src = src
+    })
+    depthCache.set(src, p)
+  }
+  return p
+}
+
+/** بيزق رؤوس الشبكة لقدّام (+z المحلي) حسب العمق — amount بالمتر */
+function inflate(geo: PlaneGeometry, w: number, h: number, depth: { w: number; h: number; data: Uint8ClampedArray }, amount: number) {
+  const pos = geo.attributes.position as BufferAttribute
+  const sample = (u: number, v: number) => {
+    const x = Math.min(depth.w - 1, Math.max(0, u * (depth.w - 1)))
+    const y = Math.min(depth.h - 1, Math.max(0, v * (depth.h - 1)))
+    const x0 = Math.floor(x)
+    const y0 = Math.floor(y)
+    const x1 = Math.min(depth.w - 1, x0 + 1)
+    const y1 = Math.min(depth.h - 1, y0 + 1)
+    const fx = x - x0
+    const fy = y - y0
+    const at = (xx: number, yy: number) => depth.data[(yy * depth.w + xx) * 4] / 255
+    return (at(x0, y0) * (1 - fx) + at(x1, y0) * fx) * (1 - fy) + (at(x0, y1) * (1 - fx) + at(x1, y1) * fx) * fy
+  }
+  for (let i = 0; i < pos.count; i++) {
+    const u = pos.getX(i) / w + 0.5
+    const v = 0.5 - pos.getY(i) / h
+    pos.setZ(i, pos.getZ(i) + sample(u, v) * amount)
+  }
+  pos.needsUpdate = true
+  geo.computeVertexNormals()
+  geo.computeBoundingBox()
+  geo.computeBoundingSphere()
 }
 
 /* ---------------- شماعة خشب ثلاثية الأبعاد ---------------- */
@@ -480,6 +536,9 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
   const sun = new DirectionalLight('#ffffff', 1.1)
   sun.position.set(-2, 6, 4)
   scene.add(sun)
+  // ضوء ماشي مع الكاميرا: الوش اللي قدامك بلونه الحقيقي، والجناب بتغمق طبيعي
+  const key = new DirectionalLight('#ffffff', 1.25)
+  scene.add(key, key.target)
 
   const loader = new TextureLoader()
   const maxAniso = Math.min(8, renderer.capabilities.getMaxAnisotropy())
@@ -590,11 +649,11 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     const tableD = rows * cellD + 0.26
     const tableZ = tableD / 2 + 0.25
     if (z.kind === 'set') {
-      const top = new Mesh(track(new BoxGeometry(tableLen, 0.05, tableD)), track(new MeshLambertMaterial({ color: '#f1ebe1' })))
+      const top = new Mesh(track(new BoxGeometry(tableLen, 0.05, tableD)), track(new MeshLambertMaterial({ color: '#cfc7ba' })))
       top.position.set(0, TABLE_Y - 0.025, tableZ)
       const base = new Mesh(
         track(new BoxGeometry(tableLen - 0.1, TABLE_Y - 0.05, tableD - 0.1)),
-        track(new MeshLambertMaterial({ color: '#e2dacd' }))
+        track(new MeshLambertMaterial({ color: '#c9c0b2' }))
       )
       base.position.set(0, (TABLE_Y - 0.05) / 2, tableZ)
       const contact = new Mesh(
@@ -621,9 +680,19 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
         const px = (cols - 1) / 2 * cellW - col * cellW
         const pz = tableZ - ((rows - 1) / 2) * cellD + row * cellD
         g.position.x = px
-        const mat = new MeshBasicMaterial({ transparent: true, alphaTest: 0.02 })
+        // الوش اللي لفوق بياخد نور السما والشمس وضوء الكاميرا مع بعض — بنرجّعه للونه الحقيقي
+        const mat = new MeshLambertMaterial({ transparent: true, alphaTest: 0.04, color: '#c4c4c4' })
         const tint = recolorable(mat)
-        const mesh = new Mesh(track(new PlaneGeometry(fw, fd)), mat)
+        const tableGeo = track(new PlaneGeometry(fw, fd, 110, Math.round(110 * (fd / fw))))
+        const mesh = new Mesh(tableGeo, mat)
+        if (p.depth) {
+          // تيشيرت متطبّق ~٢ سم + بنطلون متطبّق فوقه
+          void loadDepth(p.depth).then((d) => {
+            if (!d || disposed) return
+            inflate(tableGeo, fw, fd, d, 0.04)
+            invalidate()
+          })
+        }
         mesh.rotation.x = -Math.PI / 2 // الياقة ناحية الحيطة
         mesh.position.set(0, TABLE_Y + 0.004 + i * 0.0004, pz)
         const sh = new Mesh(
@@ -632,15 +701,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
         )
         sh.rotation.x = -Math.PI / 2
         sh.position.set(0.012, TABLE_Y + 0.001, pz + 0.014)
-        // سُمك القماش: نفس الشكل تحتها بـ ١٫٤ سم وأغمق — بيبان كحرف القماش من الجنب
-        const edgeMat = new MeshBasicMaterial({ color: '#5d5853', transparent: true, alphaTest: 0.3 })
-        const edge = new Mesh(mesh.geometry, edgeMat)
-        edge.rotation.x = -Math.PI / 2
-        edge.position.set(0.004, TABLE_Y + 0.004 - 0.0001 + i * 0.0004, pz + 0.004)
-        edge.scale.setScalar(1.006)
-        mesh.position.y += 0.014
-        sh.position.y = TABLE_Y + 0.001
-        g.add(sh, edge, mesh)
+        g.add(sh, mesh)
         const lp: LaidPiece = {
           ...p,
           zone: z.slug,
@@ -669,8 +730,6 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
             t.anisotropy = maxAniso
             mat.map = t
             mat.needsUpdate = true
-            edgeMat.map = t
-            edgeMat.needsUpdate = true
             lp.ready = true
             g.visible = true
             opts.onPieceReady(p.id)
@@ -693,7 +752,15 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       // الجسم
       const bend = Math.min(0.06, mw * 0.1)
       const geo = track(bodyGeometry(mw, mh, bend))
-      const mat = new MeshBasicMaterial({ transparent: true, vertexColors: true, alphaTest: 0.04, side: DoubleSide })
+      const mat = new MeshLambertMaterial({ transparent: true, alphaTest: 0.04, side: DoubleSide, color: '#eaeaea' })
+      if (p.depth) {
+        const amount = long ? 0.09 : 0.07
+        void loadDepth(p.depth).then((d) => {
+          if (!d || disposed) return
+          inflate(geo, mw, mh, d, amount)
+          invalidate()
+        })
+      }
       const tint = recolorable(mat)
       const body = new Mesh(geo, mat)
       // الخطاف (hookX, top) لازم ييجي على كتف الشماعة
@@ -1037,6 +1104,8 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     camera.aspect = aspect
     camera.updateProjectionMatrix()
     camera.lookAt(s.target)
+    key.position.copy(s.pos).add(new Vector3(-0.6, 1.2, 0))
+    key.target.position.copy(s.target)
   }
 
   function go(to: Shot, instant = false) {
