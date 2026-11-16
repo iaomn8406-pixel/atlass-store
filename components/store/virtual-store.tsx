@@ -219,8 +219,13 @@ export function VirtualStore({ room }: { room: Room }) {
     let acc = 0
     let idle = 0
     const onWheel = (e: WheelEvent) => {
-      if (modeRef.current === 'product' || e.ctrlKey) return // ctrl+wheel = تكبير الصفحة
+      if (e.ctrlKey) return // ctrl+wheel = تكبير الصفحة
       e.preventDefault()
+      // جوه القطعة المختارة: السكرول بينزّل/يطلّع الكاميرا عليها (من فوق لتحت)
+      if (modeRef.current === 'product') {
+        store.current?.panFocus(e.deltaY)
+        return
+      }
       acc += Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX
       clearTimeout(idle)
       idle = window.setTimeout(() => (acc = 0), 220)
@@ -234,19 +239,39 @@ export function VirtualStore({ room }: { room: Room }) {
   }, [step])
 
   /* ---------------- السحب ---------------- */
-  const drag = useRef<{ x: number; x0: number; y0: number; t0: number; id: number; moved: boolean } | null>(null)
+  const drag = useRef<{ x: number; y: number; x0: number; y0: number; t0: number; id: number; moved: boolean } | null>(null)
+  /** مسك المؤشر للسحب — بعض المتصفحات بترمي خطأ لو المؤشر خلص؛ مش مهم */
+  const capture = (e: React.PointerEvent) => {
+    try {
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    } catch {
+      /* السحب بيكمّل عادي من غير مسك */
+    }
+  }
   const onDown = (e: React.PointerEvent) => {
-    if (e.button !== 0 || modeRef.current === 'product') return
-    drag.current = { x: e.clientX, x0: e.clientX, y0: e.clientY, t0: performance.now(), id: e.pointerId, moved: false }
+    if (e.button !== 0) return
+    drag.current = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t0: performance.now(), id: e.pointerId, moved: false }
   }
   const onMove = (e: React.PointerEvent) => {
     const d = drag.current
     if (!d || d.id !== e.pointerId) return
+    // جوه القطعة المختارة: السحب لفوق/تحت بيمشي الكاميرا على القطعة
+    if (modeRef.current === 'product') {
+      const dy = e.clientY - d.y
+      if (!d.moved && Math.abs(e.clientY - d.y0) < 6) return
+      if (!d.moved) {
+        d.moved = true
+        capture(e)
+      }
+      d.y = e.clientY
+      store.current?.panFocus(-dy)
+      return
+    }
     const dx = e.clientX - d.x
     if (!d.moved && Math.abs(dx) < 8) return
     if (!d.moved) {
       d.moved = true
-      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+      capture(e)
     }
     d.x = e.clientX
     store.current?.drag(dx)
@@ -255,6 +280,13 @@ export function VirtualStore({ room }: { room: Room }) {
     const d = drag.current
     drag.current = null
     if (!d) return
+    if (modeRef.current === 'product') {
+      if (d.moved) {
+        dragged.current = true
+        setTimeout(() => (dragged.current = false), 0)
+      }
+      return
+    }
     const dx = e.clientX - d.x0
     const dy = e.clientY - d.y0
     const dt = Math.max(1, performance.now() - d.t0)

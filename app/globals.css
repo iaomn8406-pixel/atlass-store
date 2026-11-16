@@ -1583,7 +1583,7 @@ body.has-bar .wa {
 }
 
 .st[data-mode='product'] .st-stage {
-  cursor: default;
+  cursor: grab; /* السحب لفوق/تحت بيمشي الكاميرا على القطعة */
 }
 
 .st-canvas {
