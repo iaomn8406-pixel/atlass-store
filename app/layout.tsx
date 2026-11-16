@@ -11,7 +11,9 @@ import { MetaPixel } from '@/components/analytics/meta-pixel'
 import { WhatsAppFloat } from '@/components/layout/whatsapp-float'
 import { RevealObserver } from '@/components/ui/reveal'
 import { site } from '@/data/site'
+import { GalleryProvider } from '@/components/product/gallery-piece'
 import { CartProvider } from '@/lib/cart'
+import { getGalleryAssets } from '@/lib/gallery'
 import { getCategoryTree } from '@/lib/catalog'
 
 /* ------------------------------------------------------------
@@ -142,7 +144,8 @@ export default async function RootLayout({
           <Header categories={categories} />
 
           <main id="main" className="flex-1">
-            {children}
+            {/* القطع المتعلّقة لكروت المتجر — نفس عالم المعرض */}
+            <GalleryProvider assets={getGalleryAssets()}>{children}</GalleryProvider>
           </main>
 
           <Footer categories={categories} />

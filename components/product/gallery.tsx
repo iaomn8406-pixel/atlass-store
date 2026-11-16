@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowLeftIcon, ArrowRightIcon } from '@/components/ui/icons'
 import { discountPercent } from '@/lib/format'
 import type { Product } from '@/lib/types'
+import { GalleryPiece, useGalleryAsset } from './gallery-piece'
 import { Shot } from './shot'
 
 /* ============================================================
@@ -16,13 +17,19 @@ import { Shot } from './shot'
      بيتبع مكان المؤشر) + مصغّرات رأسية.
    • على الفون: سحب يمين وشمال بين الصور.
    ============================================================ */
+const HUNG = '__hung__'
+
 export function Gallery({ product }: { product: Product }) {
+  /* أول «صورة» = القطعة متعلّقة في ركن عرض المعرض (لو ليها صورة مفرّغة أمينة)،
+     وبعدها صور المنتج الحقيقية زي ما هي */
+  const hung = useGalleryAsset(product.slug)
   const [active, setActive] = useState(0)
   const [zoom, setZoom] = useState(false)
   const stage = useRef<HTMLDivElement>(null)
   const touchX = useRef<number | null>(null)
 
-  const images = product.images.length ? product.images : ['']
+  const photos = product.images.length ? product.images : ['']
+  const images = hung ? [HUNG, ...photos] : photos
   const discount = discountPercent(product.price, product.compareAtPrice)
   const soldOut = product.inStock === false
 
@@ -75,7 +82,12 @@ export function Gallery({ product }: { product: Product }) {
                   : 'border-veil/10 opacity-70 hover:opacity-100'
               }`}
             >
-              <Shot src={img} alt="" sizes="78px" />
+              {img === HUNG && hung ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={hung.src} alt="" className="absolute inset-0 h-full w-full object-contain p-1.5" />
+              ) : (
+                <Shot src={img} alt="" sizes="78px" />
+              )}
             </button>
           ))}
         </div>
@@ -116,12 +128,18 @@ export function Gallery({ product }: { product: Product }) {
                   'opacity 0.4s cubic-bezier(0.19,1,0.22,1), transform 0.5s cubic-bezier(0.19,1,0.22,1)',
               }}
             >
-              <Shot
-                src={img}
-                alt={i === active ? product.name : ''}
-                sizes="(max-width: 1024px) 100vw, 46vw"
-                priority={i === 0}
-              />
+              {img === HUNG && hung ? (
+                <div className="plate absolute inset-0" data-gallery="true">
+                  <GalleryPiece asset={hung} alt={product.name} />
+                </div>
+              ) : (
+                <Shot
+                  src={img}
+                  alt={i === active ? product.name : ''}
+                  sizes="(max-width: 1024px) 100vw, 46vw"
+                  priority={i === 0 || (i === 1 && !!hung)}
+                />
+              )}
             </div>
           ))}
 

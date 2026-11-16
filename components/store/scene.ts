@@ -697,18 +697,9 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
             invalidate()
           })
         }
-        // ستاند عرض مايل (~١٧°) زي ترابيزات المحلات: الطقم بيتقري من بعيد ومن
-        // زاوية واطية بدل ما يبقى خط رفيع على السطح
-        const lean = 0.3
-        mesh.rotation.x = -Math.PI / 2 + lean // الياقة ناحية الحيطة والطرف اللي قدّام واطي
-        mesh.position.set(0, TABLE_Y + 0.02 + (fd / 2) * Math.sin(lean) + i * 0.0004, pz)
-        const board = new Mesh(
-          track(new BoxGeometry(fw + 0.06, fd + 0.06, 0.016)),
-          track(new MeshLambertMaterial({ color: '#ddd5c8' }))
-        )
-        board.rotation.x = -Math.PI / 2 + lean
-        board.position.set(0, mesh.position.y - 0.012, pz + 0.004)
-        g.add(board)
+        // نايم على الترابيزة بسُمكه (من خريطة العمق) — من غير ألواح تحته
+        mesh.rotation.x = -Math.PI / 2 // الياقة ناحية الحيطة
+        mesh.position.set(0, TABLE_Y + 0.004 + i * 0.0004, pz)
         const sh = new Mesh(
           track(new PlaneGeometry(fw * 1.06, fd * 1.05)),
           track(new MeshBasicMaterial({ map: softShadow(), transparent: true, depthWrite: false, opacity: 0.24 }))

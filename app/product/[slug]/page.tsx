@@ -1,6 +1,6 @@
+import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { PageHeader } from '@/components/layout/page-header'
 import { ProductGrid } from '@/components/product/product-card'
 import { ProductDetail } from '@/components/product/product-detail'
 import { SectionHead } from '@/components/ui/section'
@@ -127,16 +127,26 @@ export default async function ProductPage({
         }}
       />
 
-      <PageHeader
-        eyebrow={category?.name ?? 'منتج'}
-        title={product.name}
-        breadcrumbs={[
-          { href: '/shop', label: 'كل المنتجات' },
-          ...(category
-            ? [{ href: `/category/${category.slug}`, label: category.name }]
-            : []),
-        ]}
-      />
+      {/* اسم المنتج بيظهر مرة واحدة بس (جنب الصورة) — هنا سطر التنقل بس */}
+      <nav aria-label="مسار الصفحة" className="shell pt-6 text-[12.5px] text-mist lg:pt-8">
+        <ol className="flex flex-wrap items-center gap-2">
+          <li>
+            <Link href="/" className="hover:text-foam">الرئيسية</Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <Link href="/shop" className="hover:text-foam">كل المنتجات</Link>
+          </li>
+          {category && (
+            <>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link href={`/category/${category.slug}`} className="hover:text-foam">{category.name}</Link>
+              </li>
+            </>
+          )}
+        </ol>
+      </nav>
 
       <ProductDetail product={product} category={category} />
 

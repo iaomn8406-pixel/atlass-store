@@ -38,11 +38,12 @@ def lit(src):
     n = np.dstack([-gx, -gy, np.ones_like(h)])
     n /= np.linalg.norm(n, axis=-1, keepdims=True)
     lam = np.clip(n @ LIGHT, 0, 1)
-    shade = 0.8 + 0.3 * lam  # وش مواجه للكاميرا ≈ ١٫٠٢
+    # خفيف: الوش اللي قدامك ≈ لونه بالظبط، والجناب بتغمق شوية بس — مش «مجسّم» غريب
+    shade = 0.9 + 0.13 * lam  # وش مواجه للكاميرا ≈ ١٫٠
     a = np.asarray(im).astype(float)
     # لمعة قماش خفيفة على اللي مواجه للضوء — هي اللي بتبيّن حجم القماش الغامق
     t = np.clip((lam - 0.78) / 0.22, 0, 1)
-    sheen = 26 * t * t * (3 - 2 * t)
+    sheen = 12 * t * t * (3 - 2 * t)
     a[..., :3] = np.clip(a[..., :3] * shade[..., None] + sheen[..., None], 0, 255)
     out = ROOT / ('public' + asset['srcSm'].replace('-sm.webp', '-lit.webp'))
     Image.fromarray(a.astype(np.uint8), 'RGBA').save(out, 'WEBP', quality=88, method=6, exact=True)
@@ -50,5 +51,10 @@ def lit(src):
 
 
 if __name__ == '__main__':
-    for s in sys.argv[1:]:
+    srcs = sys.argv[1:]
+    if not srcs:
+        # كل القطع المتعلّقة (الأطقم على الترابيزة ليها عرض تاني)
+        m = json.loads((ROOT / 'data/room-assets.json').read_text(encoding='utf-8'))
+        srcs = [a['src'] for v in m.values() for a in v if not a.get('flat') and a.get('depth')]
+    for s in srcs:
         lit(s)
