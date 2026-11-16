@@ -14,8 +14,10 @@
    الوحدة: متر.
    ============================================================ */
 import {
+  BackSide,
   Box3,
   BufferAttribute,
+  FrontSide,
   CanvasTexture,
   CatmullRomCurve3,
   Color,
@@ -63,6 +65,27 @@ export type ScenePiece = {
   base?: number[]
   /** خريطة عمق (رمادي): قد إيه كل نقطة في القطعة بارزة — عشان تبقى مجسّمة */
   depth?: string
+  /** خط القماش من فوق (٤١ نقطة على عرض الصورة، كنسبة من الارتفاع) — الشماعة بتترسم تحته */
+  rim?: number[]
+  /** طقم من قطعتين مفرودين (تيشيرت + بنطلون) بيتطبقوا على الترابيزة ويتفردوا عند الاختيار */
+  foldSet?: { tee: FoldSpec; pants: FoldSpec }
+}
+
+/** قطعة مفرودة متصوّرة من فوق + خطوط طيّها (نِسَب من الصورة) */
+export type FoldSpec = {
+  src: string
+  srcSm: string
+  w: number
+  h: number
+  /** خطوط الطي الرأسية (u) — العمود رقم anchor بيفضل قدّام والباقي بيتطبق لورا */
+  cuts: number[]
+  anchor: number
+  /** خط الطي الأفقي (v): النص التحتاني بيتطبق لورا */
+  foldV: number
+  top: number
+  bottom: number
+  /** بكسل لكل متر */
+  ppm: number
 }
 
 export type SceneZone = {
@@ -182,6 +205,10 @@ type LaidPiece = ScenePiece & {
   dimTo: number
   baseColor: Color
   tintTo: number
+  /** خامات تانية بتغمق مع الجسم (قطع الطقم) */
+  dimMats?: { mat: MeshBasicMaterial; base: Color }[]
+  /** الطقم المطوي: ٠ مطوي ← ١ مفرود */
+  folding?: { s: number; apply: (s: number) => void }
 }
 
 type LaidZone = Omit<SceneZone, 'pieces'> & {
@@ -461,26 +488,41 @@ function inflate(geo: PlaneGeometry, w: number, h: number, depth: { w: number; h
 const woodMat = new MeshLambertMaterial({ color: '#b98048' })
 const metalMat = new MeshLambertMaterial({ color: '#a9aeb5', emissive: '#2a2d31' })
 
-function hanger(span: number) {
+/**
+ * الخطاف: طالع من وسط الشماعة لفوق، ولافف حوالين القضيب لفّة واضحة
+ * (قدّام القضيب ← فوقه ← وراه ونازل) — نفس الشكل على كل القطع.
+ * dz = مكان القضيب بالنسبة للشماعة (لقدّام موجب).
+ */
+function hookCurve(from: number, dz: number) {
+  const R = 0.011 + 0.0065 // نص قطر القضيب + خلوص
+  const cy = HOOK_DROP
+  return new CatmullRomCurve3([
+    new Vector3(0, from, 0),
+    new Vector3(0, (from + cy) * 0.5, dz * 0.5),
+    new Vector3(0, cy - R * 0.95, dz + R * 0.55),
+    new Vector3(0, cy, dz + R),
+    new Vector3(0, cy + R * 0.72, dz + R * 0.7),
+    new Vector3(0, cy + R, dz),
+    new Vector3(0, cy + R * 0.7, dz - R * 0.72),
+    new Vector3(0, cy, dz - R),
+    new Vector3(0, cy - R * 0.55, dz - R * 0.8),
+  ])
+}
+
+/** arm: نقط ذراع الشماعة (محلي) — لو مفيش، ذراع عادي بعرض span */
+function hanger(span: number, dz: number, arm?: Vector3[]) {
   const g = new Group()
   const half = span / 2
-  const arm = new CatmullRomCurve3([
+  const pts = arm ?? [
     new Vector3(-half, -0.055, 0),
     new Vector3(-half * 0.5, -0.022, 0),
     new Vector3(0, -0.004, 0),
     new Vector3(half * 0.5, -0.022, 0),
     new Vector3(half, -0.055, 0),
-  ])
-  g.add(new Mesh(new TubeGeometry(arm, 24, 0.0105, 8, false), woodMat))
-  // الخطاف: طالع لفوق ومتلفّ حوالين القضيب
-  const hook = new CatmullRomCurve3([
-    new Vector3(0, -0.004, 0),
-    new Vector3(0, HOOK_DROP * 0.55, 0),
-    new Vector3(0, HOOK_DROP + 0.014, -0.006),
-    new Vector3(0, HOOK_DROP + 0.022, -0.024),
-    new Vector3(0, HOOK_DROP + 0.006, -0.04),
-  ])
-  g.add(new Mesh(new TubeGeometry(hook, 16, 0.0028, 6, false), metalMat))
+  ]
+  g.add(new Mesh(new TubeGeometry(new CatmullRomCurve3(pts), 32, 0.0105, 8, false), woodMat))
+  const mid = pts[Math.floor(pts.length / 2)].y
+  g.add(new Mesh(new TubeGeometry(hookCurve(mid, dz), 40, 0.0028, 6, false), metalMat))
   return g
 }
 
@@ -495,15 +537,114 @@ function clipHanger(span: number) {
     clip.position.set(sx, -0.016, 0.004)
     g.add(clip)
   }
-  const hook = new CatmullRomCurve3([
-    new Vector3(0, 0, 0),
-    new Vector3(0, (HOOK_DROP + 0.02) * 0.55, 0),
-    new Vector3(0, HOOK_DROP + 0.034, -0.006),
-    new Vector3(0, HOOK_DROP + 0.042, -0.024),
-    new Vector3(0, HOOK_DROP + 0.026, -0.04),
-  ])
-  g.add(new Mesh(new TubeGeometry(hook, 16, 0.0028, 6, false), metalMat))
+  const hook = hookCurve(0, -0.012)
+  hook.points.forEach((v) => (v.y += 0.02))
+  g.add(new Mesh(new TubeGeometry(hook, 40, 0.0028, 6, false), metalMat))
   return g
+}
+
+/* ---------------- الطقم المطوي ----------------
+   الصورة المفرودة نفسها متقسمة ألواح على خطوط الطي: الجنبين (بالأكمام)
+   بيتطبقوا لورا، وبعدين النص التحتاني لورا — زي طي المحلات. الوش اللي
+   باين وهو مطوي جزء من نفس الصورة بالظبط، ومفيش أي تفصيلة مرسومة.
+   الفرد = نفس الحركة بالعكس. */
+const FOLD_T = 0.004 // سُمك طبقة القماش
+
+function foldable(spec: FoldSpec, front: MeshBasicMaterial, back: MeshBasicMaterial) {
+  const Wm = spec.w / spec.ppm
+  const Hm = spec.h / spec.ppm
+  const X = (u: number) => (u - 0.5) * Wm
+  const Y = (v: number) => (0.5 - v) * Hm
+  const us = [0, ...spec.cuts, 1]
+  const yF = Y(spec.foldV)
+  const root = new Group()
+  const meshes: Mesh[] = []
+  const sides: { g: Group; sign: number }[] = []
+  const bottoms: { g: Group; sign: number }[] = []
+  const shaded: { attr: BufferAttribute; base: Float32Array }[] = []
+  const t = FOLD_T
+
+  const panel = (u0: number, u1: number, v0: number, v1: number, edges: boolean) => {
+    const geo = new PlaneGeometry(X(u1) - X(u0), Y(v0) - Y(v1), 12, 12)
+    const uv = geo.attributes.uv as BufferAttribute
+    const pos = geo.attributes.position as BufferAttribute
+    const col = new Float32Array(pos.count * 3)
+    for (let i = 0; i < uv.count; i++) {
+      const a = uv.getX(i)
+      const b = uv.getY(i)
+      uv.setXY(i, u0 + a * (u1 - u0), 1 - (v0 + (1 - b) * (v1 - v0)))
+      // الوش الأمامي وهو مطوي: الحافة اللي عندها الطية بتغمق سنة (القماش بيلف لورا)
+      let s = 1
+      if (edges) {
+        const dx = Math.min(a, 1 - a) * (X(u1) - X(u0))
+        const dy = b * (Y(v0) - Y(v1))
+        s = 1 - 0.1 * Math.exp(-dx / 0.012) - 0.12 * Math.exp(-dy / 0.014)
+      }
+      col.set([s, s, s], i * 3)
+    }
+    geo.setAttribute('color', new BufferAttribute(col, 3))
+    if (edges) shaded.push({ attr: geo.attributes.color as BufferAttribute, base: col.slice() })
+    const f = new Mesh(geo, front)
+    const bk = new Mesh(geo, back)
+    const g = new Group()
+    g.add(f, bk)
+    g.position.set(X((u0 + u1) / 2), Y((v0 + v1) / 2), 0)
+    meshes.push(f)
+    return g
+  }
+
+  for (let c = 0; c < us.length - 1; c++) {
+    const side = c === spec.anchor ? 0 : c < spec.anchor ? -1 : 1
+    const col = new Group()
+    root.add(col)
+    let ox = 0
+    let zl = 0
+    if (side) {
+      const px = X(side < 0 ? us[c + 1] : us[c])
+      col.position.set(px, 0, -t / 2)
+      ox = -px
+      zl = t / 2
+      sides.push({ g: col, sign: side })
+    }
+    const top = panel(us[c], us[c + 1], 0, spec.foldV, side === 0)
+    top.position.x += ox
+    top.position.z = zl
+    col.add(top)
+    const hz = side ? t * 1.5 : -t
+    const bh = new Group()
+    bh.position.set(0, yF, hz)
+    col.add(bh)
+    const bot = panel(us[c], us[c + 1], spec.foldV, 1, false)
+    bot.position.x += ox
+    bot.position.y -= yF
+    bot.position.z = zl - hz
+    bh.add(bot)
+    bottoms.push({ g: bh, sign: side ? -1 : 1 })
+  }
+
+  // f: ١ = مطوي، ٠ = مفرود (لكل مرحلة لوحدها)
+  const set = (sideF: number, bottomF: number) => {
+    for (const s of sides) s.g.rotation.y = s.sign * Math.PI * sideF
+    for (const b of bottoms) b.g.rotation.x = b.sign * Math.PI * bottomF
+    // غمقان حافة الطية بيختفي مع الفرد
+    const k = Math.min(sideF, bottomF)
+    for (const s of shaded) {
+      const arr = s.attr.array as Float32Array
+      for (let i = 0; i < arr.length; i++) arr[i] = 1 - k * (1 - s.base[i])
+      s.attr.needsUpdate = true
+    }
+  }
+  const a0 = us[spec.anchor]
+  const a1 = us[spec.anchor + 1]
+  return {
+    root,
+    meshes,
+    set,
+    /** مقاسات بالمتر: الوش المطوي، والقطعة مفرودة */
+    folded: { w: X(a1) - X(a0), h: Y(spec.top) - yF, cx: X((a0 + a1) / 2) },
+    open: { w: Wm, h: Y(spec.top) - Y(spec.bottom) },
+    topY: Y(spec.top),
+  }
 }
 
 let soft: CanvasTexture | null = null
@@ -600,10 +741,133 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       track(new PlaneGeometry(w, w / aspect)),
       track(new MeshBasicMaterial({ map: texture, transparent: true }))
     )
-    m.position.set(SLOTS.back.origin.x, 2.66, BACK_Z + 0.01)
+    m.position.set(SLOTS.back.origin.x, 2.84, BACK_Z + 0.01)
     scene.add(m)
     invalidate()
   })
+
+  /* ---------------- الطقم المطوي على الترابيزة ---------------- */
+  const SET_PAIR_GAP = 0.035
+  const sstep = (a: number, b: number, x: number) => {
+    const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
+    return t * t * (3 - 2 * t)
+  }
+
+  /** طقم (تيشيرت + بنطلون) مطويين جنب بعض؛ zTop = حافة الياقة/الوسط ناحية الحيطة */
+  function buildFoldSet(p: ScenePiece, zoneSlug: string, g: Group, px: number, zTop: number): LaidPiece {
+    const fs = p.foldSet!
+    const mats = () => ({
+      front: new MeshBasicMaterial({ transparent: true, alphaTest: 0.02, vertexColors: true, side: FrontSide }),
+      // ضهر القماش (بيبان بس وقت الفرد): نفس الصورة أغمق شوية
+      back: new MeshBasicMaterial({ transparent: true, alphaTest: 0.02, side: BackSide, color: new Color(0.78, 0.78, 0.78) }),
+    })
+    const tm = mats()
+    const pm = mats()
+    const tint = recolorable(tm.front)
+    const tee = foldable(fs.tee, tm.front, tm.back)
+    const pants = foldable(fs.pants, pm.front, pm.back)
+    for (const f of [tee, pants]) {
+      f.root.rotation.x = -Math.PI / 2 // الياقة/الوسط ناحية الحيطة
+      f.root.traverse((o) => {
+        const m = o as Mesh
+        if (m.geometry) track(m.geometry)
+      })
+      g.add(f.root)
+    }
+    track(tm.front), track(tm.back), track(pm.front), track(pm.back)
+
+    // مطويين: التيشيرت يمين والبنطلون شماله (RTL) — مفرودين: نفس الترتيب بمسافة
+    const fw = tee.folded.w + SET_PAIR_GAP + pants.folded.w
+    const ow = tee.open.w + SET_PAIR_GAP + pants.open.w
+    const oh = Math.max(tee.open.h, pants.open.h)
+    const lay = [
+      { f: tee, x0: fw / 2 - tee.folded.w / 2 - tee.folded.cx, x1: ow / 2 - tee.open.w / 2 },
+      { f: pants, x0: -fw / 2 + pants.folded.w / 2 - pants.folded.cx, x1: -ow / 2 + pants.open.w / 2 },
+    ]
+    const shGeo = track(new PlaneGeometry(1, 1))
+    const shMat = track(new MeshBasicMaterial({ map: softShadow(), transparent: true, depthWrite: false, opacity: 0.22 }))
+    const shadows = lay.map(() => {
+      const m = new Mesh(shGeo, shMat)
+      m.rotation.x = -Math.PI / 2
+      g.add(m)
+      return m
+    })
+
+    const apply = (s: number) => {
+      // يترفع من على الترابيزة ← يتفرد في الهوا (التحتاني الأول وبعدين الجنبين) ← ينزل مفرود
+      const lift = 0.3 * sstep(0, 0.2, s) * (1 - sstep(0.8, 1, s))
+      const rest = FOLD_T * 3 + 0.002 + (0.024 - FOLD_T * 3 - 0.002) * sstep(0.8, 1, s)
+      const move = sstep(0.12, 0.55, s)
+      const bottomF = 1 - sstep(0.2, 0.5, s)
+      const sideF = 1 - sstep(0.45, 0.8, s)
+      const open = 1 - Math.max(sideF, bottomF)
+      lay.forEach(({ f, x0, x1 }, i) => {
+        f.set(sideF, bottomF)
+        const x = x0 + (x1 - x0) * move
+        f.root.position.set(x, TABLE_Y + rest + lift, zTop + f.topY)
+        const w = f.folded.w + (f.open.w - f.folded.w) * open
+        const d = f.folded.h + (f.open.h - f.folded.h) * open
+        const sh = shadows[i]
+        sh.scale.set(w * 1.08, d * 1.06, 1)
+        sh.position.set(x + f.folded.cx * (1 - open) + 0.012, TABLE_Y + 0.001, zTop + d / 2 + 0.014)
+      })
+      shMat.opacity = 0.22 * (1 - 0.65 * (lift / 0.3))
+    }
+    apply(0)
+
+    const lp: LaidPiece = {
+      ...p,
+      src: fs.tee.src,
+      srcSm: fs.tee.srcSm,
+      zone: zoneSlug,
+      x: px,
+      mw: ow,
+      mh: oh,
+      group: g,
+      body: tee.meshes[fs.tee.anchor * 2],
+      ready: false,
+      spread: 0,
+      spreadTo: 0,
+      lift: 0,
+      liftTo: 0,
+      box: { x0: -ow / 2, x1: ow / 2, y0: TABLE_Y, y1: TABLE_Y, z: zTop + oh / 2 },
+      hits: [...tee.meshes, ...pants.meshes],
+      onTable: true,
+      tint,
+      tintTo: 0,
+      dim: 0,
+      dimTo: 0,
+      baseColor: tm.front.color.clone(),
+      dimMats: [tm.back, pm.front, pm.back].map((mat) => ({ mat, base: mat.color.clone() })),
+      folding: { s: 0, apply },
+    }
+    const tex = (src: string, targets: MeshBasicMaterial[], done?: () => void) =>
+      loader.load(
+        src,
+        (t) => {
+          if (disposed) return t.dispose()
+          track(t)
+          t.colorSpace = SRGBColorSpace
+          t.anisotropy = maxAniso
+          for (const m of targets) {
+            m.map = t
+            m.needsUpdate = true
+          }
+          done?.()
+          invalidate()
+        },
+        undefined,
+        () => {}
+      )
+    tex(fs.pants.src, [pm.front, pm.back])
+    tex(fs.tee.srcSm, [tm.front, tm.back], () => {
+      lp.ready = true
+      g.visible = true
+      opts.onPieceReady(p.id)
+    })
+    all.push(lp)
+    return lp
+  }
 
   /* ---------------- الأقسام ---------------- */
   const used = new Set<string>()
@@ -638,11 +902,45 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       s.p.fold ? s.mw + SET_GAP + s.p.fold.w / s.ppm : s.mw * s.p.shoulder
     const unitMax = Math.max(...sized.map(unitW))
     const step = unitMax + (z.kind === 'set' ? GAP * 3 : GAP)
-    const width = step * (sized.length - 1)
+    /* التباعد: كل قطعة بعرضها الحقيقي من طرف الكم للطرف التاني (من خط القماش)
+       + مسافة ثابتة — الأكمام والكفوف مابتلمسش اللي جنبها */
+    const EDGE_GAP = 0.04
+    const ext = sized.map(({ p, mw }) => {
+      const r = p.rim
+      if (!r || p.fold) return { l: unitW({ p, mw } as (typeof sized)[number]) / 2, r: unitW({ p, mw } as (typeof sized)[number]) / 2 }
+      const i0 = r.findIndex((v) => v < 0.999)
+      const i1 = r.length - 1 - [...r].reverse().findIndex((v) => v < 0.999)
+      const u0 = Math.max(0, (i0 - 0.5) / (r.length - 1))
+      const u1 = Math.min(1, (i1 + 0.5) / (r.length - 1))
+      return { l: (p.hookX - u0) * mw, r: (u1 - p.hookX) * mw }
+    })
+    const hookXs: number[] = []
+    if (z.kind !== 'set' && ext.length) {
+      // من اليمين للشمال (RTL): القطعة اللي بعدها بتبدأ بعد طرف كم اللي قبلها
+      let x = 0
+      hookXs.push(0)
+      for (let i = 1; i < ext.length; i++) {
+        x -= ext[i - 1].l + EDGE_GAP + ext[i].r
+        hookXs.push(x)
+      }
+      // القسم كله (من طرف أول كم لآخر كم) في نص القضيب
+      const c = (ext[0].r + x - ext[ext.length - 1].l) / 2
+      for (let i = 0; i < hookXs.length; i++) hookXs[i] -= c
+    }
+    const width = hookXs.length > 1 ? hookXs[0] - hookXs[hookXs.length - 1] : step * (sized.length - 1)
     const laid: LaidPiece[] = []
 
     // ترابيزة العرض: الأطقم نايمة عليها زي ما اتصوّرت — ٣ جنب بعض في صفوف
     const flatSize = (p: ScenePiece) => {
+      if (p.foldSet) {
+        // الطقم مطوي: التيشيرت والبنطلون جنب بعض
+        const { tee, pants } = p.foldSet
+        const tw = (tee.cuts[1] - tee.cuts[0]) * (tee.w / tee.ppm)
+        const th = (tee.foldV - tee.top) * (tee.h / tee.ppm)
+        const pw = (1 - pants.cuts[0]) * (pants.w / pants.ppm)
+        const ph = (pants.foldV - pants.top) * (pants.h / pants.ppm)
+        return { fw: tw + SET_PAIR_GAP + pw, fd: Math.max(th, ph) }
+      }
       const fw = p.flat ? p.flat.span : p.w / ((p.shoulder * p.w) / SHOULDER_M)
       return { fw, fd: fw * (p.h / p.w) }
     }
@@ -671,7 +969,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     }
 
     sized.forEach(({ p, mw, mh, ppm }, i) => {
-      const x = width / 2 - i * step
+      const x = hookXs.length ? hookXs[i] : width / 2 - i * step
       const g = new Group()
       g.visible = false
       group.add(g)
@@ -685,6 +983,10 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
         const px = (cols - 1) / 2 * cellW - col * cellW
         const pz = tableZ - ((rows - 1) / 2) * cellD + row * cellD
         g.position.x = px
+        if (p.foldSet) {
+          laid.push(buildFoldSet(p, z.slug, g, px, pz - fd / 2))
+          return
+        }
         // الوش اللي لفوق بياخد نور السما والشمس وضوء الكاميرا مع بعض — بنرجّعه للونه الحقيقي
         const mat = new MeshLambertMaterial({ alphaTest: 0.5, alphaToCoverage: true, color: '#c4c4c4' })
         const tint = recolorable(mat)
@@ -787,16 +1089,44 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       g.add(body)
 
       if (!p.ownHanger) {
-        // العينة: الشماعة جوه القطعة (ورا القماش) وأضيق من الكتف — الخطاف بس اللي طالع
+        // الشماعة جوه القطعة (ورا القماش): ذراعها ماشي تحت خط الكتف الحقيقي
+        // للقطعة نفسها (rim) بـ ٢٫٤ سم — مفيش خشب برّه القماش في أي حتة
         const span = natural ? p.shoulder * mw * 0.74 : Math.max(0.3, Math.min(0.46, p.shoulder * mw * 0.92))
-        const hg = hanger(span)
+        let arm: Vector3[] | undefined
+        if (p.rim) {
+          const r = p.rim
+          const rimAt = (u: number) => {
+            const f = Math.min(1, Math.max(0, u)) * (r.length - 1)
+            const k = Math.floor(f)
+            const a = r[k]
+            const b = r[Math.min(r.length - 1, k + 1)]
+            return a + (b - a) * (f - k)
+          }
+          // نقطة القماش من فوق في مكان x (محلي من الخطاف)، بأقل قيمة حواليها (أمان)
+          const topAt = (xl: number) => {
+            let worst = Infinity
+            for (const d of [-0.012, 0, 0.012]) {
+              const u = p.hookX + (xl + d) / mw
+              worst = Math.min(worst, (p.top - rimAt(u)) * mh)
+            }
+            return worst
+          }
+          const half = p.shoulder * mw * 0.5 * 0.86
+          arm = []
+          for (let k = -4; k <= 4; k++) {
+            const xl = (k / 4) * half
+            arm.push(new Vector3(xl, Math.min(-0.012, topAt(xl) - 0.024), 0))
+          }
+        }
+        const hg = hanger(span, 0.012, arm)
         hg.position.set(ox, railY - HOOK_DROP, natural ? RAIL_Z - 0.012 : RAIL_Z + bend + 0.004)
         g.add(hg)
       }
 
-      // ظل القطعة على الحيطة — نفس شكلها متموّه، والضوء جاي من فوق شمال
-      const sw = mw * 1.32
-      const sh = mh * 1.24
+      // ظل القطعة على الحيطة — نفس شكلها متموّه، والضوء جاي من فوق شمال.
+      // قريب من القطعة وخفيف (القطعة على بُعد ١٧ سم من الحيطة) — مش كتلة غامقة
+      const sw = mw * 1.2
+      const sh = mh * 1.14
       const smat = new MeshBasicMaterial({ transparent: true, depthWrite: false, opacity: 0.0 })
       shadowMats.push(smat)
       const shadow = new Mesh(track(new PlaneGeometry(sw, sh)), smat)
@@ -812,7 +1142,8 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
         shadow.visible = false
         group.add(shadow)
       } else {
-        shadow.position.set(body.position.x + 0.05, body.position.y - 0.07, 0.006)
+        shadow.position.set(body.position.x + 0.025, body.position.y - 0.045, 0.006)
+        smat.userData.max = long ? 0.16 : 0.22
         if (!slot.free) g.add(shadow)
       }
       if (!slot.free) loader.load(p.shadow, (t) => {
@@ -920,7 +1251,9 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     })
 
     // القضيب + الكوابيل (مش للترابيزة)
-    const railLen = width + unitMax + 0.7
+    const railLen = hookXs.length
+      ? hookXs[0] + ext[0].r - (hookXs[hookXs.length - 1] - ext[ext.length - 1].l) + 0.36
+      : width + unitMax + 0.7
     if (z.kind !== 'set' && slot.free) {
       // ستاند هدوم معدن واقف على الأرض: عمودين + رجلين + القضيب + لوحة الاسم
       const rail = new Mesh(track(new CylinderGeometry(0.012, 0.012, railLen, 16)), metalRail)
@@ -1051,7 +1384,8 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     return {
       pos: new Vector3(0, 1.8, BACK_Z + (square ? 9.4 : 8.6)),
       target: new Vector3(0, 1.25, BACK_Z),
-      fov: square ? 54 : 50,
+      // أوسع شوية: العبايات بقت بمسافات (الكفوف مابتتداخلش) فالقضيب أطول ناحيتك
+      fov: square ? 56 : 55,
     }
   }
 
@@ -1189,9 +1523,12 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     if (!raf && !disposed) raf = requestAnimationFrame(frame)
   }
 
+  let lastNow = 0
   function frame(now: number) {
     raf = 0
     let moving = false
+    const frameDt = lastNow ? Math.min(0.05, (now - lastNow) / 1000) : 1 / 60
+    lastNow = now
 
     if (tween) {
       if (tween.t0 < 0) tween.t0 = now // الساعة تبدأ من أول فريم مرسوم
@@ -1225,8 +1562,20 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
         p.dim += dd * (opts.reducedMotion ? 1 : 0.14)
         const m = p.body.material as MeshLambertMaterial | MeshBasicMaterial
         m.color.copy(p.baseColor).multiplyScalar(1 - 0.32 * p.dim)
+        if (p.dimMats) for (const d of p.dimMats) d.mat.color.copy(d.base).multiplyScalar(1 - 0.32 * p.dim)
         moving = true
         dirty = true
+      }
+      // الطقم: بيتفرد لما يتختار، ويرجع يتطبق لما تسيبه (~١٫٦ ث)
+      if (p.folding) {
+        const target = p.id === focusId ? 1 : 0
+        if (p.folding.s !== target) {
+          const stepK = opts.reducedMotion ? 1 : frameDt / 1.6
+          p.folding.s = target > p.folding.s ? Math.min(target, p.folding.s + stepK) : Math.max(target, p.folding.s - stepK)
+          p.folding.apply(p.folding.s)
+          moving = true
+          dirty = true
+        }
       }
       const ds = p.spreadTo - p.spread
       const dl = p.liftTo - p.lift
@@ -1248,6 +1597,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       emitRects()
     }
     if (moving) kick()
+    else lastNow = 0
   }
 
   const bx = new Box3()

@@ -36,6 +36,23 @@ type Asset = {
   base?: number[]
   /** خريطة عمق — القطعة بتتعرض مجسّمة */
   depth?: string
+  /** خط القماش من فوق — الشماعة بتترسم تحته (scripts/refine-v4.py) */
+  rim?: number[]
+  /** الطقم: تيشيرت وبنطلون مفرودين بخطوط طيّهم (scripts/refine-v4.py) */
+  foldSet?: { tee: FoldSpec; pants: FoldSpec }
+}
+
+type FoldSpec = {
+  src: string
+  srcSm: string
+  w: number
+  h: number
+  cuts: number[]
+  anchor: number
+  foldV: number
+  top: number
+  bottom: number
+  ppm: number
 }
 
 const MANIFEST = assets as Record<string, Asset[]>
