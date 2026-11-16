@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { PageHeader } from '@/components/layout/page-header'
+import { WallSign } from '@/components/layout/wall-sign'
 import { ShopBrowser } from '@/components/shop/shop-browser'
 import { site } from '@/data/site'
 import { getCategories, getProducts } from '@/lib/catalog'
@@ -35,14 +36,7 @@ export default async function ShopPage({
             ? 'القطع اللي عليها خصم دلوقتي — نفس الخامة ونفس القصّة بسعر أقل.'
             : 'المجموعة كاملة. فلتر حسب القسم أو السعر ورتّب زي ما يريحك عشان توصل بسرعة للي بتدوّر عليه.'
         }
-        aside={
-          <div className="card px-5 py-4 text-center">
-            <p className="nums display grad-text text-[26px] font-bold">
-              {products.length}
-            </p>
-            <p className="mt-1 text-[11px] text-mist">قطعة في المجموعة</p>
-          </div>
-        }
+        aside={<WallSign count={products.length} label="قطعة في المجموعة" zone={''} />}
       />
 
       <div className="shell py-10 lg:py-14">

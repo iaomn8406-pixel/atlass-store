@@ -22,7 +22,7 @@ export function PageHeader({
   aside?: React.ReactNode
 }) {
   return (
-    <header className="relative overflow-hidden border-b border-veil/8">
+    <header className="page-wall relative overflow-hidden border-b border-veil/8">
       <span
         aria-hidden="true"
         className="aurora aurora-b -right-20 -top-28 h-[320px] w-[320px] opacity-40"

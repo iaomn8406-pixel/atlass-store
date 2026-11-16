@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ProductGrid } from '@/components/product/product-card'
 import { ProductDetail } from '@/components/product/product-detail'
+import { isInRoom } from '@/lib/room'
 import { SectionHead } from '@/components/ui/section'
 import { SHIPPING_FLAT_RATE } from '@/data/locations'
 import {
@@ -49,7 +50,7 @@ export default async function ProductPage({
 
   const [category, related] = await Promise.all([
     getCategoryBySlug(product.category),
-    getRelatedProducts(product, 4),
+    getRelatedProducts(product, 8),
   ])
 
   /* بيانات منظّمة لجوجل — المنتج + مسار التنقّل */
@@ -146,18 +147,32 @@ export default async function ProductPage({
             </>
           )}
         </ol>
+        {/* بيفتح الغرفة على نفس القطعة ببطاقتها — للمنتجات المتعلّقة في المعرض بس */}
+        {isInRoom(product.slug) && (
+          <Link href={`/?piece=${encodeURIComponent(product.slug)}`} className="wsign__back mt-3">
+            شوفه في المعرض
+          </Link>
+        )}
       </nav>
 
       <ProductDetail product={product} category={category} />
 
-      {related.length > 0 && (
+      {/* كمّل الطقم: قطع من أقسام تانية تتلبس معاه */}
+      {related.some((p) => p.category !== product.category) && (
+        <section className="shell pb-12 lg:pb-16">
+          <SectionHead eyebrow="Complete The Look" title="كمّل الطقم" href="/shop" />
+          <ProductGrid products={related.filter((p) => p.category !== product.category).slice(0, 4)} />
+        </section>
+      )}
+
+      {related.some((p) => p.category === product.category) && (
         <section className="shell pb-20 lg:pb-28">
           <SectionHead
-            eyebrow="You May Also Like"
-            title="يمكن يعجبك كمان"
+            eyebrow="Same Section"
+            title="من نفس القسم"
             href={category ? `/category/${category.slug}` : '/shop'}
           />
-          <ProductGrid products={related} />
+          <ProductGrid products={related.filter((p) => p.category === product.category).slice(0, 4)} />
         </section>
       )}
     </>

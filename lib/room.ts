@@ -40,6 +40,11 @@ type Asset = {
 
 const MANIFEST = assets as Record<string, Asset[]>
 
+/** المنتج ده متعلّق في المعرض؟ (عشان زرار «شوفه في المعرض») */
+export function isInRoom(slug: string) {
+  return (MANIFEST[slug]?.length ?? 0) > 0
+}
+
 /** قطعة واحدة متعلقة على الشماعة */
 export type RoomPiece = Asset & {
   /** مفتاح فريد للقطعة: المنتج + اللون */

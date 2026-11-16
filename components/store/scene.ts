@@ -87,12 +87,6 @@ export type SceneOptions = {
   onMotion: (moving: boolean) => void
 }
 
-/* عينة ملف الفحص الجديد — بتتعمّم بعد موافقة صاحب المشروع */
-const SAMPLE_NATURAL = new Set([
-  '/room/massimo-dutti-oversize--white.webp',
-  '/room/loewe-mens-tshirt--white.webp',
-  '/room/tshirt-1975-print--olive.webp',
-])
 
 /* ---------------- أبعاد الأوضة ---------------- */
 const ROOM_W = 9.6
@@ -770,7 +764,8 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       /* عينة الملف (Massimo الأبيض، Loewe الأبيض، 1975): ظلال الصورة الأصلية نفسها —
          من غير نفخ ولا إضاءة مضافة (كانت بتعمل مساحات مستوية شبه البلاستيك)،
          وحافة ناعمة متدرّجة (مش alpha-to-coverage اللي بيعمل تسنين) */
-      const natural = SAMPLE_NATURAL.has(p.src)
+      // اتعمّمت بعد موافقة صاحب المشروع على العينة: كل القطع المتعلّقة بظلال صورتها الأصلية
+      const natural = true
       const mat = natural
         ? new MeshBasicMaterial({ transparent: true, alphaTest: 0.02, side: DoubleSide })
         : new MeshLambertMaterial({ alphaTest: 0.5, alphaToCoverage: true, side: DoubleSide, color: '#eaeaea' })

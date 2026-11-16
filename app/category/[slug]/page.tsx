@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PageHeader } from '@/components/layout/page-header'
+import { WallSign } from '@/components/layout/wall-sign'
 import { ShopBrowser } from '@/components/shop/shop-browser'
 import { site } from '@/data/site'
 import {
@@ -78,14 +79,7 @@ export default async function CategoryPage({
         title={category.name}
         description={category.description}
         breadcrumbs={[{ href: '/shop', label: 'كل المنتجات' }]}
-        aside={
-          <div className="card px-5 py-4 text-center">
-            <p className="nums display grad-text text-[26px] font-bold">
-              {items.length}
-            </p>
-            <p className="mt-1 text-[11px] text-mist">قطعة في القسم</p>
-          </div>
-        }
+        aside={<WallSign count={items.length} label="قطعة في القسم" zone={category.slug} />}
       />
 
       <div className="shell py-10 lg:py-14">

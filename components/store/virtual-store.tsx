@@ -185,6 +185,24 @@ export function VirtualStore({ room, governorates }: { room: Room; governorates:
     [byId]
   )
 
+  /* روابط المعرض من الصفحات: /?zone=slug يفتح القسم، /?piece=product-slug يفتح القطعة ببطاقتها */
+  const linked = useRef(false)
+  useEffect(() => {
+    if (linked.current || gl !== 'on' || ready.size === 0) return
+    const q = new URLSearchParams(window.location.search)
+    const want = q.get('piece')
+    const z = q.get('zone')
+    if (want) {
+      const p = pieces.find((x) => room.products[x.productId]?.slug === want && ready.has(x.id))
+      if (!p) return // لسه الصورة بتتحمّل — نستنى
+      linked.current = true
+      window.setTimeout(() => open(p.id), 600)
+    } else if (z && zones.some((x) => x.slug === z)) {
+      linked.current = true
+      window.setTimeout(() => goZone(z), 600)
+    } else linked.current = true
+  }, [gl, ready, pieces, room.products, zones, open, goZone])
+
   /* الطلب المعلّق: أول ما القطعة تظهر في المشهد نفتحها والبطاقة تكمّل الطلب */
   const resumed = useRef(false)
   useEffect(() => {
