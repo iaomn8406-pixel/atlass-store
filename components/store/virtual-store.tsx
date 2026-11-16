@@ -7,6 +7,7 @@ import { ArrowRightIcon, CloseIcon, InfoIcon } from '@/components/ui/icons'
 import { site } from '@/data/site'
 import { colorOf } from '@/lib/colors'
 import type { Room, RoomPiece, RoomZone } from '@/lib/room'
+import type { GovOption } from './quick-checkout'
 import type { Rect, Store } from './scene'
 
 /* البطاقة بتتحمّل لما حد يفتح قطعة بس — مش في أول تحميل للصفحة */
@@ -26,7 +27,7 @@ const StoreCard = dynamic(() => import('./store-card').then((m) => m.StoreCard),
 type Mode = 'store' | 'zone' | 'product'
 type Piece = RoomPiece & { zone: string }
 
-export function VirtualStore({ room }: { room: Room }) {
+export function VirtualStore({ room, governorates }: { room: Room; governorates: GovOption[] }) {
   const zones = room.zones
   const pieces = useMemo<Piece[]>(
     () => zones.flatMap((z) => z.pieces.map((p) => ({ ...p, zone: z.slug }))),
@@ -42,6 +43,8 @@ export function VirtualStore({ room }: { room: Room }) {
   const [info, setInfo] = useState(false)
   /** لون بيتعرض كمعاينة (مالوش صورة) */
   const [preview, setPreview] = useState<string | null>(null)
+  /** رجع من تسجيل الدخول وهو كان بيطلب قطعة → نفتحها بنفس اختياراته */
+  const [resume, setResume] = useState<{ pieceId: string; picked: Record<string, string> } | null>(null)
   const [mobile, setMobile] = useState(false)
 
   const stage = useRef<HTMLDivElement>(null)
@@ -115,6 +118,18 @@ export function VirtualStore({ room }: { room: Room }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zones])
 
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('atlas_quick_resume')
+      if (!raw) return
+      sessionStorage.removeItem('atlas_quick_resume')
+      const r = JSON.parse(raw)
+      if (r?.pieceId && byId.has(r.pieceId)) setResume(r)
+    } catch {
+      /* مفيش طلب معلّق */
+    }
+  }, [byId])
+
   /* ---------------- أزرار القطع فوق الكانفاس ---------------- */
   const place = useCallback(() => {
     for (const [id, el] of spots.current) {
@@ -170,6 +185,14 @@ export function VirtualStore({ room }: { room: Room }) {
     [byId]
   )
 
+  /* الطلب المعلّق: أول ما القطعة تظهر في المشهد نفتحها والبطاقة تكمّل الطلب */
+  const resumed = useRef(false)
+  useEffect(() => {
+    if (!resume || resumed.current || gl !== 'on' || !ready.has(resume.pieceId)) return
+    resumed.current = true
+    open(resume.pieceId)
+  }, [resume, gl, ready, open])
+
   /** الرجوع: البطاقة → مكان القسم → الكادر العام */
   const back = useCallback(() => {
     if (modeRef.current === 'product' && zone) {
@@ -219,13 +242,8 @@ export function VirtualStore({ room }: { room: Room }) {
     let acc = 0
     let idle = 0
     const onWheel = (e: WheelEvent) => {
-      if (e.ctrlKey) return // ctrl+wheel = تكبير الصفحة
+      if (modeRef.current === 'product' || e.ctrlKey) return // ctrl+wheel = تكبير الصفحة
       e.preventDefault()
-      // جوه القطعة المختارة: السكرول بينزّل/يطلّع الكاميرا عليها (من فوق لتحت)
-      if (modeRef.current === 'product') {
-        store.current?.panFocus(e.deltaY)
-        return
-      }
       acc += Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX
       clearTimeout(idle)
       idle = window.setTimeout(() => (acc = 0), 220)
@@ -239,7 +257,7 @@ export function VirtualStore({ room }: { room: Room }) {
   }, [step])
 
   /* ---------------- السحب ---------------- */
-  const drag = useRef<{ x: number; y: number; x0: number; y0: number; t0: number; id: number; moved: boolean } | null>(null)
+  const drag = useRef<{ x: number; x0: number; y0: number; t0: number; id: number; moved: boolean } | null>(null)
   /** مسك المؤشر للسحب — بعض المتصفحات بترمي خطأ لو المؤشر خلص؛ مش مهم */
   const capture = (e: React.PointerEvent) => {
     try {
@@ -249,24 +267,12 @@ export function VirtualStore({ room }: { room: Room }) {
     }
   }
   const onDown = (e: React.PointerEvent) => {
-    if (e.button !== 0) return
-    drag.current = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t0: performance.now(), id: e.pointerId, moved: false }
+    if (e.button !== 0 || modeRef.current === 'product') return
+    drag.current = { x: e.clientX, x0: e.clientX, y0: e.clientY, t0: performance.now(), id: e.pointerId, moved: false }
   }
   const onMove = (e: React.PointerEvent) => {
     const d = drag.current
     if (!d || d.id !== e.pointerId) return
-    // جوه القطعة المختارة: السحب لفوق/تحت بيمشي الكاميرا على القطعة
-    if (modeRef.current === 'product') {
-      const dy = e.clientY - d.y
-      if (!d.moved && Math.abs(e.clientY - d.y0) < 6) return
-      if (!d.moved) {
-        d.moved = true
-        capture(e)
-      }
-      d.y = e.clientY
-      store.current?.panFocus(-dy)
-      return
-    }
     const dx = e.clientX - d.x
     if (!d.moved && Math.abs(dx) < 8) return
     if (!d.moved) {
@@ -280,13 +286,6 @@ export function VirtualStore({ room }: { room: Room }) {
     const d = drag.current
     drag.current = null
     if (!d) return
-    if (modeRef.current === 'product') {
-      if (d.moved) {
-        dragged.current = true
-        setTimeout(() => (dragged.current = false), 0)
-      }
-      return
-    }
     const dx = e.clientX - d.x0
     const dy = e.clientY - d.y0
     const dt = Math.max(1, performance.now() - d.t0)
@@ -464,6 +463,8 @@ export function VirtualStore({ room }: { room: Room }) {
           onPickColor={pickColor}
           pieceRect={pieceRect}
           preview={preview}
+          governorates={governorates}
+          resume={resume?.pieceId === piece.id ? resume.picked : null}
         />
       )}
 

@@ -1063,52 +1063,47 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     return { pos, target: c, fov }
   }
 
-  /* القطعة المختارة: زوم حقيقي — عرضها بيملا ~٨٠٪ من المساحة المتاحة لها
-     (شمال البطاقة على الكمبيوتر، فوق الدرج على الفون). لو القطعة أطول من
-     الكادر (عباية مثلًا) الكاميرا بتبدأ من فوق (الكابيشون/الياقة) والسكرول
-     بيمشيها لتحت لحد الديل — focusPan بالمتر من فوق. */
-  let focusPan = 0
-  let focusRange = 0
-
   function shotPiece(p: LaidPiece, withCard: boolean): Shot {
     const z = zones.find((zz) => zz.slug === p.zone)!
-    const port = portrait()
-    const sheet = withCard && port
-    const fov = port ? 50 : 40
-    const v = (fov * Math.PI) / 180
-    const availW = withCard && !port ? 0.58 : 1
-    const availH = sheet ? 0.4 : 0.84
-    const pw = p.onTable ? p.box.x1 - p.box.x0 : p.mw
-    const visW = pw / (0.8 * availW)
-    const dist = visW / 2 / (Math.tan(v / 2) * aspect)
-    const visH = 2 * dist * Math.tan(v / 2)
-    const win = visH * availH
-    const cx = p.x + (p.box.x0 + p.box.x1) / 2
-
-    // طول القطعة على محورها (رأسي للمتعلّقة، من الياقة للديل على الترابيزة)
-    const len = p.onTable ? p.mh + 0.06 : p.box.y1 - p.box.y0 + 0.06
-    focusRange = Math.max(0, len - win)
-    focusPan = Math.min(focusPan, focusRange)
-    const off = focusRange > 0 ? -len / 2 + win / 2 + focusPan : 0 // من فوق لتحت
-
-    let target: Vector3
-    let pos: Vector3
     if (p.onTable) {
-      // فوق الصورة = ناحية الحيطة؛ النزول = ناحية الأوضة
-      const up = new Vector3(0, 1, 0)
-      const dir = z.slot.normal.clone().multiplyScalar(0.58).add(up).normalize()
-      target = toWorld(z, cx, TABLE_Y + 0.02, p.box.z + off)
-      if (sheet) target.addScaledVector(z.slot.normal, visH * 0.3)
-      else if (withCard) target.addScaledVector(z.slot.right, visW * 0.21)
-      pos = target.clone().addScaledVector(dir, dist)
-    } else {
-      const top = p.box.y1 + 0.03
-      const cy = (p.box.y0 + p.box.y1) / 2
-      target = toWorld(z, cx, focusRange > 0 ? top - win / 2 - focusPan : cy, p.box.z)
-      // البطاقة يمين (زي المرجع) → القطعة شمال؛ الدرج تحت → القطعة فوق
-      if (sheet) target.y -= visH * 0.3
-      else if (withCard) target.addScaledVector(z.slot.right, visW * 0.21)
-      pos = target.clone().addScaledVector(z.slot.normal, dist)
+      const fov = portrait() ? 52 : 40
+      const w = p.box.x1 - p.box.x0
+      const sheet = withCard && portrait()
+      const s = sheet
+        ? shotTable(z, p.x, w * 1.1, p.mh / 0.4, fov, 1, false, p.box.z)
+        : shotTable(z, p.x, w * 1.45, p.mh * 1.6, fov, 1.3, false, p.box.z)
+      if (withCard) {
+        const v = (fov * Math.PI) / 180
+        const visH = 2 * s.pos.distanceTo(s.target) * Math.tan(v / 2)
+        const shift = sheet ? z.slot.normal.clone().multiplyScalar(visH * 0.3) : z.slot.right.clone().multiplyScalar(visH * aspect * 0.15)
+        s.pos.add(shift)
+        s.target.add(shift)
+      }
+      return s
+    }
+    const fov = portrait() ? 50 : 40
+    const cx = p.x + (p.box.x0 + p.box.x1) / 2
+    const cy = (p.box.y0 + p.box.y1) / 2
+    const h = p.box.y1 - p.box.y0
+    // الفون والبطاقة مفتوحة: القطعة كلها لازم تدخل في الـ ٤٠٪ اللي فوق الدرج
+    const sheet = withCard && portrait()
+    const dist = sheet ? fit(p.mw * 1.4, h / 0.38, fov, 1) : fit(p.mw * 1.6, h, fov, portrait() ? 1.4 : 1.6)
+    const center = toWorld(z, cx, cy, p.box.z)
+    const pos = center.clone().addScaledVector(z.slot.normal, dist)
+    const target = center.clone()
+    if (withCard) {
+      const v = (fov * Math.PI) / 180
+      const visH = 2 * dist * Math.tan(v / 2)
+      if (portrait()) {
+        // البطاقة تحت كشيت — القطعة تطلع فوق
+        target.y -= visH * 0.28
+        pos.y -= visH * 0.28
+      } else {
+        // البطاقة يمين (زي المرجع) — القطعة تروح شمال
+        const visW = visH * aspect
+        target.addScaledVector(z.slot.right, visW * 0.2)
+        pos.addScaledVector(z.slot.right, visW * 0.2)
+      }
     }
     return { pos, target, fov }
   }
@@ -1129,7 +1124,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     key.target.position.copy(s.target)
   }
 
-  function go(to: Shot, instant = false, quick = 0) {
+  function go(to: Shot, instant = false) {
     goal = to
     const from: Shot = { pos: cur.pos.clone(), target: cur.target.clone(), fov: cur.fov }
     if (instant || opts.reducedMotion) {
@@ -1146,7 +1141,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     const d1 = to.target.clone().sub(to.pos).normalize()
     const angle = Math.acos(Math.max(-1, Math.min(1, d0.dot(d1))))
     const travel = from.pos.distanceTo(to.pos)
-    const dur = quick || Math.min(1700, Math.max(750, 700 + angle * 480 + travel * 70))
+    const dur = Math.min(1700, Math.max(750, 700 + angle * 480 + travel * 70))
     // المسار بيعدّي جوه الأوضة (بيبعد عن الحيطة ويرجع) — مش خط مستقيم
     const mid = from.pos.clone().lerp(to.pos, 0.5)
     if (angle > 0.35) mid.lerp(new Vector3(0, 1.6, 0.8), Math.min(0.45, angle * 0.3))
@@ -1348,21 +1343,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       const z = zones.find((zz) => zz.slug === slug)
       if (z) go(shotZone(z))
     },
-    /** سكرول/سحب جوه القطعة المختارة: الكاميرا بتنزل وتطلع عليها */
-    panFocus(dPx: number) {
-      if (!focusId) return false
-      const p = all.find((x) => x.id === focusId)
-      if (!p || focusRange <= 0) return false
-      const v = (cur.fov * Math.PI) / 180
-      const metersPerPx = (2 * cur.pos.distanceTo(cur.target) * Math.tan(v / 2)) / height
-      const next = Math.max(0, Math.min(focusRange, focusPan + dPx * metersPerPx))
-      if (next === focusPan) return false
-      focusPan = next
-      go(shotPiece(p, withCard), false, 260)
-      return true
-    },
     focus(id: string, card: boolean) {
-      focusPan = 0
       const p = all.find((x) => x.id === id)
       if (!p) return
       focusId = id

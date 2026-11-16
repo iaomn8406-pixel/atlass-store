@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   AlertIcon,
@@ -15,6 +16,9 @@ import { colorOf } from '@/lib/colors'
 import { formatPrice } from '@/lib/format'
 import { trackAddToCart } from '@/lib/meta/client'
 import type { RoomPiece, RoomProduct } from '@/lib/room'
+import { createClient } from '@/lib/supabase/client'
+import { isSupabaseConfigured } from '@/lib/supabase/config'
+import { QuickCheckout, type GovOption } from './quick-checkout'
 import type { Product } from '@/lib/types'
 
 /* ============================================================
@@ -43,6 +47,8 @@ export function StoreCard({
   onPickColor,
   pieceRect,
   preview,
+  governorates,
+  resume,
 }: {
   product: RoomProduct
   piece: RoomPiece
@@ -53,7 +59,12 @@ export function StoreCard({
   pieceRect: () => { x: number; y: number; w: number; h: number } | null
   /** اللون المختار مالوش صورة — القطعة معروضة بمعاينة للون */
   preview?: string | null
+  /** المحافظات (للطلب من البطاقة) */
+  governorates: GovOption[]
+  /** رجع من تسجيل الدخول: نفس الاختيارات ويفتح الطلب على طول */
+  resume?: Record<string, string> | null
 }) {
+  const router = useRouter()
   const { addItem, openCart, count } = useCart()
 
   const groups = product.variants ?? []
@@ -62,11 +73,15 @@ export function StoreCard({
   const others = groups.filter((g) => g !== colorGroup && g !== sizeGroup)
 
   const [picked, setPicked] = useState<Record<string, string>>(() => {
+    if (resume) return { ...resume }
     const start: Record<string, string> = {}
     if (piece.color && colorGroup?.options.includes(piece.color)) start[COLOR] = piece.color
     return start
   })
   const [phase, setPhase] = useState<Phase>('idle')
+  /* options → leaving (أنيميشن خروج) → checkout */
+  const [stage, setStage] = useState<'options' | 'leaving' | 'checkout'>('options')
+  const [checking, setChecking] = useState(false)
   const [error, setError] = useState('')
 
   const soldOut = product.inStock === false
@@ -97,18 +112,51 @@ export function StoreCard({
   /* ---------------- الإضافة للسلة ---------------- */
   const before = useRef(0)
 
-  const add = () => {
-    if (phase === 'busy' || soldOut) return
-
+  const ready = () => {
     const missing = groups.find((g) => !picked[g.name])
     if (missing) {
       setError(`اختار ${missing.name} الأول`)
-      return
+      return false
     }
     if (allowed && picked[SIZE] && !allowed.has(picked[SIZE])) {
       setError('المقاس ده مش متوفر في اللون ده')
-      return
+      return false
     }
+    return true
+  }
+
+  /* اطلب الآن: لازم يكون مسجّل (زي صفحة الدفع). لو مش مسجّل بنحفظ
+     اختياره ونوديه يسجّل، ويرجع يلاقي الطلب مفتوح بنفس القطعة */
+  const buyNow = async () => {
+    if (soldOut || checking || !ready()) return
+    setChecking(true)
+    try {
+      if (isSupabaseConfigured) {
+        const {
+          data: { user },
+        } = await createClient().auth.getUser()
+        if (!user) {
+          sessionStorage.setItem('atlas_quick_resume', JSON.stringify({ pieceId: piece.id, picked }))
+          router.push('/login?next=/')
+          return
+        }
+      }
+      setStage('leaving')
+      window.setTimeout(() => setStage('checkout'), 260)
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  /* رجع من تسجيل الدخول → الطلب يفتح على طول */
+  useEffect(() => {
+    if (resume) void buyNow()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const add = () => {
+    if (phase === 'busy' || soldOut) return
+    if (!ready()) return
 
     before.current = count
     setPhase('busy')
@@ -143,6 +191,7 @@ export function StoreCard({
     <aside
       className="st-card"
       data-sheet={mobile}
+      data-stage={stage}
       role="dialog"
       aria-label={product.name}
     >
@@ -160,7 +209,19 @@ export function StoreCard({
         )}
       </div>
 
-      {colorLine && <p className="st-card__line">{colorLine}</p>}
+      {colorLine && stage !== 'checkout' && <p className="st-card__line">{colorLine}</p>}
+
+      {stage === 'checkout' ? (
+        <div className="st-swap-in">
+          <QuickCheckout
+            product={product}
+            picked={picked}
+            governorates={governorates}
+            onBack={() => setStage('options')}
+          />
+        </div>
+      ) : (
+      <div className="st-card__opts" data-leaving={stage === 'leaving'}>
       {preview && (
         <p className="st-card__note">معاينة للون «{preview}» على نفس القطعة — الصورة الحقيقية بلون تاني</p>
       )}
@@ -284,12 +345,20 @@ export function StoreCard({
         </button>
       )}
 
+      {!soldOut && (
+        <button type="button" className="st-card__buy" onClick={buyNow} disabled={checking || phase === 'busy'}>
+          {checking ? <SpinnerIcon className="a-spin h-4 w-4" /> : <span>اطلب الآن — من غير السلة</span>}
+        </button>
+      )}
+
       <Link href={`/product/${product.slug}`} className="st-card__more">
         كل تفاصيل المنتج
         {product.images.length > 1 && (
           <span className="nums"> · {product.images.length} صور</span>
         )}
       </Link>
+      </div>
+      )}
     </aside>
   )
 }

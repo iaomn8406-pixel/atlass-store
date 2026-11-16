@@ -1,5 +1,6 @@
 import { VirtualStore } from '@/components/store/virtual-store'
 import { site } from '@/data/site'
+import { getGovernorateOptions } from '@/lib/locations'
 import { getRoom } from '@/lib/room'
 
 /* ============================================================
@@ -16,7 +17,11 @@ import { getRoom } from '@/lib/room'
 export const revalidate = 3600
 
 export default async function HomePage() {
-  const room = await getRoom()
+  const [room, governorates] = await Promise.all([
+    getRoom(),
+    /* المحافظات للطلب من البطاقة — نفس اللي صفحة إتمام الطلب بتستخدمه */
+    getGovernorateOptions().catch(() => []),
+  ])
   const products = Object.values(room.products)
 
   /* قايمة المنتجات اللي في المتجر — بيانات منظّمة لجوجل */
@@ -39,7 +44,7 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }}
       />
-      <VirtualStore room={room} />
+      <VirtualStore room={room} governorates={governorates} />
     </>
   )
 }
