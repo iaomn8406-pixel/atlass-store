@@ -19,6 +19,7 @@ import {
 import { DELIVERY_WINDOW, SHIPPING_FLAT_RATE } from '@/data/locations'
 import { site } from '@/data/site'
 import { useCart } from '@/lib/cart'
+import { useColorImage } from './gallery-piece'
 import { colorOf, isColorGroup } from '@/lib/colors'
 import { discountPercent, formatPrice } from '@/lib/format'
 import { trackAddToCart, trackViewContent } from '@/lib/meta/client'
@@ -34,6 +35,7 @@ export function ProductDetail({
   category?: Category
 }) {
   const { addItem, openCart } = useCart()
+  const withColorImage = useColorImage()
 
   const [selected, setSelected] = useState<Record<string, string>>({})
   const [quantity, setQuantity] = useState(1)
@@ -93,7 +95,7 @@ export function ProductDetail({
 
     trackAddToCart(product, quantity, selected)
     /* السلة بتتفتح في onDone بعد ما الأنيميشن يخلص */
-    addItem(product, selected, quantity, false)
+    addItem(withColorImage(product, selected), selected, quantity, false)
     return true
   }
 
@@ -323,7 +325,7 @@ export function ProductDetail({
                 <ul className="space-y-2.5 text-[13.5px] leading-[1.95] text-mist">
                   <li className="flex gap-2.5">
                     <CheckIcon className="mt-1 h-3.5 w-3.5 shrink-0 text-brand-400" />
-                    بنوصّل لكل محافظات مصر الـ٢٧ بسعر موحّد{' '}
+                    بنوصّل لكل المحافظات اللي في قائمة الطلب بسعر موحّد{' '}
                     {formatPrice(SHIPPING_FLAT_RATE)}.
                   </li>
                   <li className="flex gap-2.5">

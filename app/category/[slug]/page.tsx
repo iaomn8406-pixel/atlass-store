@@ -1,3 +1,4 @@
+import { arCount } from '@/lib/format'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PageHeader } from '@/components/layout/page-header'
@@ -79,7 +80,7 @@ export default async function CategoryPage({
         title={category.name}
         description={category.description}
         breadcrumbs={[{ href: '/shop', label: 'كل المنتجات' }]}
-        aside={<WallSign count={items.length} label="قطعة في القسم" zone={category.slug} />}
+        aside={<WallSign count={items.length} label={`${arCount(items.length, 'قطعة', 'قطعتين', 'قطع')} في القسم`} zone={category.slug} />}
       />
 
       <div className="shell py-10 lg:py-14">

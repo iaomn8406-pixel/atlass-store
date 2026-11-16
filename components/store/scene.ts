@@ -209,6 +209,8 @@ type LaidPiece = ScenePiece & {
   dimMats?: { mat: MeshBasicMaterial; base: Color }[]
   /** الطقم المطوي: ٠ مطوي ← ١ مفرود */
   folding?: { s: number; apply: (s: number) => void }
+  /** الطقم واقف مفرود: مكان وحجم الكادر (محلي في مجموعة القسم، x نسبةً للقطعة) */
+  stand?: { x: number; y: number; z: number; w: number; h: number }
 }
 
 type LaidZone = Omit<SceneZone, 'pieces'> & {
@@ -754,7 +756,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
   }
 
   /** طقم (تيشيرت + بنطلون) مطويين جنب بعض؛ zTop = حافة الياقة/الوسط ناحية الحيطة */
-  function buildFoldSet(p: ScenePiece, zoneSlug: string, g: Group, px: number, zTop: number): LaidPiece {
+  function buildFoldSet(p: ScenePiece, zoneSlug: string, g: Group, px: number, zTop: number, tableHalf: number): LaidPiece {
     const fs = p.foldSet!
     const mats = () => ({
       front: new MeshBasicMaterial({ transparent: true, alphaTest: 0.02, vertexColors: true, side: FrontSide }),
@@ -780,10 +782,39 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     const fw = tee.folded.w + SET_PAIR_GAP + pants.folded.w
     const ow = tee.open.w + SET_PAIR_GAP + pants.open.w
     const oh = Math.max(tee.open.h, pants.open.h)
+    // الطقم المفرود بيفضل جوه حدود الترابيزة (مايعدّيش الحرف) — إزاحة ثابتة لكل طقم
+    let shift = 0
+    if (px - ow / 2 < -tableHalf + 0.05) shift = -tableHalf + 0.05 - (px - ow / 2)
+    if (px + ow / 2 + shift > tableHalf - 0.05) shift = tableHalf - 0.05 - (px + ow / 2)
     const lay = [
-      { f: tee, x0: fw / 2 - tee.folded.w / 2 - tee.folded.cx, x1: ow / 2 - tee.open.w / 2 },
-      { f: pants, x0: -fw / 2 + pants.folded.w / 2 - pants.folded.cx, x1: -ow / 2 + pants.open.w / 2 },
+      { f: tee, x0: fw / 2 - tee.folded.w / 2 - tee.folded.cx, x1: shift + ow / 2 - tee.open.w / 2 },
+      { f: pants, x0: -fw / 2 + pants.folded.w / 2 - pants.folded.cx, x1: shift - ow / 2 + pants.open.w / 2 },
     ]
+    // خط الوقفة: الاتنين واقفين على نفس الخط، عند الحرف القريب للرزمة نفسها (مكانها)
+    const zStand = zTop + Math.max(tee.folded.h, pants.folded.h)
+    const HEM = 0.03 // الديل فوق الترابيزة وهو واقف
+    const BASE = FOLD_T * 3 + 0.002 // سُمك الرزمة المطوية
+
+    /* ستاند عرض لكل قطعة (عمود معدن رفيع + قاعدة + بار ورا الياقة/الوسط):
+       بيشيل القطعة طول الحركة — مفيش لحظة القطعة فيها طايرة من غير سند */
+    const standMat = metalMat
+    const rodGeo = track(new CylinderGeometry(0.005, 0.005, 1, 10))
+    const baseGeo = track(new CylinderGeometry(0.055, 0.06, 0.008, 24))
+    const barGeo = track(new CylinderGeometry(0.0055, 0.0055, 1, 10))
+    const stands = lay.map(({ f }) => {
+      const sg = new Group()
+      const rod = new Mesh(rodGeo, standMat)
+      const base = new Mesh(baseGeo, standMat)
+      const bar = new Mesh(barGeo, standMat)
+      bar.rotation.z = Math.PI / 2
+      bar.scale.y = f.folded.w * 0.8
+      base.position.y = TABLE_Y + 0.004
+      sg.add(rod, base, bar)
+      sg.visible = false
+      g.add(sg)
+      return { sg, rod, base, bar }
+    })
+
     const shGeo = track(new PlaneGeometry(1, 1))
     const shMat = track(new MeshBasicMaterial({ map: softShadow(), transparent: true, depthWrite: false, opacity: 0.22 }))
     const shadows = lay.map(() => {
@@ -793,25 +824,63 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       return m
     })
 
+    /* الحركة (s من ٠ مطوي لـ ١ واقف مفرود) — كل لحظة القطعة مسنودة:
+       ١) الرزمة بتقوم على حرفها القريب (الحرف لازق في الترابيزة طول الوقت)
+       ٢) الستاند بيشيلها لفوق من ورا الياقة لحد ما يبقى فيه مكان للديل
+       ٣) نفس الفرد اللي اتوافق عليه: التحتاني الأول وبعدين الجنبين
+       القفل = نفس الحركة بالعكس بالظبط */
     const apply = (s: number) => {
-      // يترفع من على الترابيزة ← يتفرد في الهوا (التحتاني الأول وبعدين الجنبين) ← ينزل مفرود
-      const lift = 0.3 * sstep(0, 0.2, s) * (1 - sstep(0.8, 1, s))
-      const rest = FOLD_T * 3 + 0.002 + (0.024 - FOLD_T * 3 - 0.002) * sstep(0.8, 1, s)
-      const move = sstep(0.12, 0.55, s)
-      const bottomF = 1 - sstep(0.2, 0.5, s)
-      const sideF = 1 - sstep(0.45, 0.8, s)
+      const up = sstep(0, 0.25, s)
+      const rise = sstep(0.22, 0.45, s)
+      const bottomF = 1 - sstep(0.45, 0.72, s)
+      const sideF = 1 - sstep(0.65, 0.95, s)
       const open = 1 - Math.max(sideF, bottomF)
+      const a = -Math.PI / 2 * (1 - up)
       lay.forEach(({ f, x0, x1 }, i) => {
         f.set(sideF, bottomF)
-        const x = x0 + (x1 - x0) * move
-        f.root.position.set(x, TABLE_Y + rest + lift, zTop + f.topY)
-        const w = f.folded.w + (f.open.w - f.folded.w) * open
-        const d = f.folded.h + (f.open.h - f.folded.h) * open
+        const yF = f.topY - f.folded.h // خط الطي التحتاني (محلي)
+        const pz = zTop + f.folded.h // الحرف القريب للرزمة على الترابيزة
+        const py = TABLE_Y + BASE
+        // ١: لف حوالين الحرف ده
+        let ry = py - yF * Math.cos(a)
+        let rz = pz - yF * Math.sin(a)
+        // ٢: طلوع على الستاند لحد الوضع النهائي (الديل عند HEM لما يتفرد)
+        const yEnd = TABLE_Y + HEM - (f.topY - f.open.h)
+        ry += (yEnd - (py - yF)) * rise
+        rz += (zStand - pz) * rise
+        const x = x0 + (x1 - x0) * rise
+        f.root.rotation.x = a
+        f.root.position.set(x, ry, rz)
+
+        // الستاند: بيظهر مع القومة، وعموده من الترابيزة لحد ورا الياقة
+        const st = stands[i]
+        st.sg.visible = s > 0.001
+        const barY = ry + f.topY - 0.03
+        const rodTop = TABLE_Y + (barY - TABLE_Y) * Math.min(1, up * 1.4)
+        // ورا الجزء الظاهر: نص الرزمة وهي مطوية، ونص القطعة لما تتفرد
+        const sx = x + f.folded.cx * (1 - open)
+        st.rod.scale.y = Math.max(0.001, rodTop - TABLE_Y)
+        st.rod.position.set(sx, (rodTop + TABLE_Y) / 2, rz - 0.012)
+        st.base.position.set(sx, TABLE_Y + 0.004, rz - 0.012)
+        st.bar.position.set(sx, barY, rz - 0.014)
+        st.bar.visible = up > 0.7
+
+        // ضل التلامس: مطوي = تحت الرزمة، واقف = خط ناعم تحت الديل وحوالين القاعدة
         const sh = shadows[i]
-        sh.scale.set(w * 1.08, d * 1.06, 1)
-        sh.position.set(x + f.folded.cx * (1 - open) + 0.012, TABLE_Y + 0.001, zTop + d / 2 + 0.014)
+        const fwid = f.folded.w + (f.open.w - f.folded.w) * open
+        const flatW = fwid * 1.08
+        const flatD = f.folded.h * 1.06
+        const standW = fwid * 0.92
+        const standD = 0.07 + 0.05 * (1 - open)
+        sh.scale.set(flatW + (standW - flatW) * up, flatD + (standD - flatD) * up, 1)
+        const flatZ = zTop + f.folded.h / 2 + 0.014
+        sh.position.set(
+          x + f.folded.cx * (1 - up) + 0.01,
+          TABLE_Y + 0.001,
+          flatZ + (zStand + 0.01 - flatZ) * up
+        )
       })
-      shMat.opacity = 0.22 * (1 - 0.65 * (lift / 0.3))
+      shMat.opacity = 0.22 + 0.06 * up
     }
     apply(0)
 
@@ -840,6 +909,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       baseColor: tm.front.color.clone(),
       dimMats: [tm.back, pm.front, pm.back].map((mat) => ({ mat, base: mat.color.clone() })),
       folding: { s: 0, apply },
+      stand: { x: shift, y: TABLE_Y + HEM + oh / 2, z: zStand, w: ow, h: oh + 0.04 },
     }
     const tex = (src: string, targets: MeshBasicMaterial[], done?: () => void) =>
       loader.load(
@@ -984,7 +1054,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
         const pz = tableZ - ((rows - 1) / 2) * cellD + row * cellD
         g.position.x = px
         if (p.foldSet) {
-          laid.push(buildFoldSet(p, z.slug, g, px, pz - fd / 2))
+          laid.push(buildFoldSet(p, z.slug, g, px, pz - fd / 2, tableLen / 2))
           return
         }
         // الوش اللي لفوق بياخد نور السما والشمس وضوء الكاميرا مع بعض — بنرجّعه للونه الحقيقي
@@ -1421,6 +1491,33 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
 
   function shotPiece(p: LaidPiece, withCard: boolean): Shot {
     const z = zones.find((zz) => zz.slug === p.zone)!
+    if (p.stand) {
+      // الطقم واقف على الستاند: الكاميرا قدّامه تقريبًا (مش من فوق)
+      const st = p.stand
+      const fov = portrait() ? 50 : 40
+      const sheet = withCard && portrait()
+      // الكارت على الكمبيوتر واخد ~٤٠٪ من العرض: الطقم كله لازم يدخل في الباقي
+      const avail = withCard && !portrait() ? 0.54 : 1
+      const dist = sheet ? fit(st.w * 1.08, st.h / 0.44, fov, 1) : fit((st.w * 1.12) / avail, st.h, fov, portrait() ? 1.25 : 1.18)
+      const center = toWorld(z, p.x + st.x, st.y, st.z)
+      const dir = z.slot.normal.clone().add(new Vector3(0, 0.32, 0)).normalize()
+      const pos = center.clone().addScaledVector(dir, dist)
+      const target = center.clone()
+      if (withCard) {
+        const v = (fov * Math.PI) / 180
+        const visH = 2 * dist * Math.tan(v / 2)
+        if (portrait()) {
+          target.y -= visH * 0.24
+          pos.y -= visH * 0.24
+        } else {
+          // نص المساحة اللي شمال الكارت
+          const k = Math.min(0.22, 290 / width)
+          target.addScaledVector(z.slot.right, visH * aspect * k)
+          pos.addScaledVector(z.slot.right, visH * aspect * k)
+        }
+      }
+      return { pos, target, fov }
+    }
     if (p.onTable) {
       const fov = portrait() ? 52 : 40
       const w = p.box.x1 - p.box.x0
@@ -1568,7 +1665,10 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       }
       // الطقم: بيتفرد لما يتختار، ويرجع يتطبق لما تسيبه (~١٫٦ ث)
       if (p.folding) {
-        const target = p.id === focusId ? 1 : 0
+        // تبديل لون/طقم: القديم يتطبق بالكامل الأول، وبعدين الجديد يتفرد —
+        // عمر ما يبقى فيه طقمين مفتوحين أو بيتحركوا مع بعض
+        const busy = all.some((q) => q !== p && q.folding && q.folding.s > 0)
+        const target = p.id === focusId && !busy ? 1 : 0
         if (p.folding.s !== target) {
           const stepK = opts.reducedMotion ? 1 : frameDt / 1.6
           p.folding.s = target > p.folding.s ? Math.min(target, p.folding.s + stepK) : Math.max(target, p.folding.s - stepK)

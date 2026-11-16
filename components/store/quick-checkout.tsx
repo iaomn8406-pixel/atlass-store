@@ -7,8 +7,10 @@ import { track as trackActivity, trackOrdered } from '@/lib/activity'
 import { formatPrice, isValidEgyptPhone, isValidEmail, normalizeEgyptPhone } from '@/lib/format'
 import { makeEventId, trackInitiateCheckout, trackPurchase } from '@/lib/meta/client'
 import { loadProfile, profileToForm } from '@/lib/profile'
+import { useColorImage } from '@/components/product/gallery-piece'
 import type { RoomProduct } from '@/lib/room'
 import type { CartItem, CustomerInfo } from '@/lib/types'
+import { arClear, arInvalid } from '@/components/checkout/field'
 
 /* ============================================================
    الطلب من البطاقة نفسها (قطعة واحدة)
@@ -48,6 +50,7 @@ export function QuickCheckout({
   onBack: () => void
 }) {
   const router = useRouter()
+  const withColorImage = useColorImage()
   const [form, setForm] = useState<CustomerInfo>(empty)
   const [errors, setErrors] = useState<Errors>({})
   const [serverError, setServerError] = useState('')
@@ -66,12 +69,12 @@ export function QuickCheckout({
       slug: product.slug,
       name: product.name,
       price: product.price,
-      image: product.images[0] ?? '',
+      image: withColorImage(product, picked).images[0] ?? '',
       quantity: 1,
       selectedVariants: picked,
       sku: product.sku,
     }),
-    [product, picked]
+    [product, picked, withColorImage]
   )
   const items = useMemo(() => [item], [item])
 
@@ -218,6 +221,8 @@ export function QuickCheckout({
         value={(form[name] as string) ?? ''}
         onChange={(e) => update(name, e.target.value)}
         aria-invalid={!!errors[name]}
+        onInvalid={arInvalid}
+        onInput={arClear}
         {...props}
       />
       {errors[name] && <em>{errors[name]}</em>}
@@ -229,7 +234,7 @@ export function QuickCheckout({
     .join(' · ')
 
   return (
-    <form className="qc" onSubmit={submit} noValidate>
+    <form className="qc" onSubmit={submit}>
       <button type="button" className="qc-back" onClick={onBack} disabled={sending}>
         <ArrowRightIcon className="h-3.5 w-3.5" />
         <span>رجوع للمقاس واللون</span>
@@ -241,14 +246,14 @@ export function QuickCheckout({
       </div>
 
       <div className="qc-grid">
-        {field('fullName', 'الاسم بالكامل', { autoComplete: 'name' })}
-        {field('phone', 'رقم الموبايل', { inputMode: 'tel', autoComplete: 'tel', dir: 'ltr' })}
-        {field('phoneAlt', 'رقم احتياطي', { inputMode: 'tel', dir: 'ltr' })}
-        {field('email', 'الإيميل', { inputMode: 'email', autoComplete: 'email', dir: 'ltr' })}
+        {field('fullName', 'الاسم بالكامل', { autoComplete: 'name', required: true, minLength: 3 })}
+        {field('phone', 'رقم الموبايل', { type: 'tel', inputMode: 'tel', autoComplete: 'tel', dir: 'ltr', required: true, minLength: 10 })}
+        {field('phoneAlt', 'رقم احتياطي', { type: 'tel', inputMode: 'tel', dir: 'ltr', required: true, minLength: 10 })}
+        {field('email', 'الإيميل', { type: 'email', inputMode: 'email', autoComplete: 'email', dir: 'ltr', required: true })}
 
         <label className="qc-field" data-error={!!errors.governorate}>
           <span>المحافظة</span>
-          <select id="qc-governorate" value={form.governorate} onChange={(e) => update('governorate', e.target.value)}>
+          <select id="qc-governorate" required onInvalid={arInvalid} onInput={arClear} value={form.governorate} onChange={(e) => update('governorate', e.target.value)}>
             <option value="">اختار</option>
             {governorates.map((g) => (
               <option key={g.id} value={g.name}>
@@ -263,6 +268,9 @@ export function QuickCheckout({
           <span>المركز / الحي</span>
           <select
             id="qc-area"
+            required
+            onInvalid={arInvalid}
+            onInput={arClear}
             value={form.area}
             onChange={(e) => update('area', e.target.value)}
             disabled={!form.governorate || areasLoading}
@@ -277,7 +285,7 @@ export function QuickCheckout({
           {errors.area && <em>{errors.area}</em>}
         </label>
 
-        <div className="qc-wide">{field('address', 'العنوان بالتفصيل', { autoComplete: 'street-address' })}</div>
+        <div className="qc-wide">{field('address', 'العنوان بالتفصيل', { autoComplete: 'street-address', required: true, minLength: 10 })}</div>
         <div className="qc-wide">{field('landmark', 'علامة مميزة (اختياري)')}</div>
       </div>
 

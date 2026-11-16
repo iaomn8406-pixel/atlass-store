@@ -11,6 +11,7 @@ import {
   CloseIcon,
   SpinnerIcon,
 } from '@/components/ui/icons'
+import { useColorImage } from '@/components/product/gallery-piece'
 import { useCart } from '@/lib/cart'
 import { colorOf } from '@/lib/colors'
 import { formatPrice } from '@/lib/format'
@@ -66,6 +67,7 @@ export function StoreCard({
 }) {
   const router = useRouter()
   const { addItem, openCart, count } = useCart()
+  const withColorImage = useColorImage()
 
   const groups = product.variants ?? []
   const colorGroup = groups.find((g) => g.name === COLOR)
@@ -171,7 +173,8 @@ export function StoreCard({
 
     const full: Product = { ...product, description: '' }
     trackAddToCart(full, 1, picked)
-    addItem(full, picked, 1, false)
+    // مصغّرة السلة بلون العميل (مش أول صورة للمنتج)
+    addItem(withColorImage(full, picked), picked, 1, false)
   }
 
   /* الأخضر بيظهر بس بعد ما عدد السلة يزيد فعلًا */

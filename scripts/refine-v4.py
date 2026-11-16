@@ -39,12 +39,24 @@ SET_TEES = {
 SET_PANTS = W + '8.26.51 PM.jpeg'
 SET_KEYS = {'أبيض': 'white', 'اسود': 'black', 'كحلي': 'navy', 'زيتي': 'olive', 'أحمر': 'red', 'أصفر': 'yellow'}
 
-# عينة الشماعة والقماش: (المنتج، اللون، تقوية ظلال الأبيض، نص قطر تنضيف الحافة)
+# تنضيف الحواف لكل القطع المتعلّقة (ملف المراجعة v6 ٨-١):
+# (المنتج، اللون، تقوية ظلال الأبيض، نص قطر تنضيف الحافة، شيل خلفية تحت الديل)
 SAMPLE = [
-    ('loewe-mens-tshirt', 'white', True, 2),
-    ('massimo-dutti-oversize', 'white', True, 2),
-    ('hooded-embroidered-abaya', 'blue', False, 3),
-    ('hooded-embroidered-abaya', 'black', False, 3),
+    ('loewe-mens-tshirt', 'white', True, 2, False),
+    ('massimo-dutti-oversize', 'white', True, 2, False),
+    ('loewe-mens-tshirt', 'black', False, 2, False, True),
+    ('hooded-embroidered-abaya', 'blue', False, 3, True),
+    ('hooded-embroidered-abaya', 'black', False, 3, True),
+    # العبايات الفاتحة: من غير خطوة «تحت الديل» (كانت هتشيل القماش الفاتح نفسه)
+    ('hooded-embroidered-abaya', 'white', False, 3, False),
+    ('hooded-embroidered-abaya', 'beige', False, 3, False),
+]
+
+# الصور اللي صاحب المشروع جهّزها من غير شماعة (٠٧ و٠٨) — بتتعلق على نفس شماعة
+# المشهد زي باقي السكة (ملف v6 ٣-٦: نوع شماعة واحد)
+UNHUNG = [
+    ('massimo-dutti-oversize', 'black', r'E:/شغل/اطلس/مولّد-للمراجعة/من 7 ل 10/WhatsApp Image 2026-11-16 at 8.31.04 PM (2).jpeg'),
+    ('tshirt-1975-print', 'olive', r'E:/شغل/اطلس/مولّد-للمراجعة/من 7 ل 10/WhatsApp Image 2026-11-16 at 8.31.06 PM.jpeg'),
 ]
 
 
@@ -76,6 +88,19 @@ def save_set(img, path, quality=90):
     Image.fromarray(img, 'RGBA').save(path, 'WEBP', quality=quality, method=6, exact=True)
 
 
+def decontaminate(rgb, alpha, depth=3):
+    """لون الحافة (أول كام بكسل + الشفاف) = لون القماش اللي جوه بـ depth بكسل —
+    بكسلات الطرف نفسها متلوثة بالخلفية وضغط JPEG فبتطلع نقط فاتحة على الغامق"""
+    inner = ndi.binary_erosion(alpha > 0.98, disk(depth))
+    if not inner.any():
+        return rgb
+    _, (iy, ix) = ndi.distance_transform_edt(~inner, return_indices=True)
+    out = rgb.copy()
+    rim = ~inner
+    out[rim] = rgb[iy[rim], ix[rim]]
+    return out
+
+
 def smooth_alpha(a):
     """حافة ناعمة (anti-aliased) في نفس مكانها: تمويه خفيف وبعدين منحنى حول ٠٫٥"""
     s = ndi.gaussian_filter(a, 0.9)
@@ -101,21 +126,29 @@ def cut_flat(path):
     border = np.concatenate([rgb[:6].reshape(-1, 3), rgb[-6:].reshape(-1, 3), rgb[:, :6].reshape(-1, 3), rgb[:, -6:].reshape(-1, 3)])
     bg = np.median(border, 0)
     d = np.abs(rgb - bg).max(2)
-    m = ndi.binary_fill_holes(largest(d > 9))
-    m = ndi.binary_opening(ndi.binary_closing(m, disk(2)), disk(1))
+    # هالة الشحذ في صور واتساب: بكسلات أفتح من الخلفية في كل القنوات — مش قماش
+    halo = rgb.min(2) > bg.min() + 3
+    m0 = ndi.binary_fill_holes(largest(d > 9))
+    light = float(np.median(rgb.mean(2)[m0])) > 200
+    # القماش الفاتح فرقه عن الخلفية صغير: عتبة أوطى عشان الحافة ماتبقاش مقطّعة
+    m = ndi.binary_fill_holes(largest((d > (6 if light else 9)) & ~halo))
+    m = ndi.binary_opening(ndi.binary_closing(m, disk(4 if light else 2)), disk(3 if light else 1))
     m = ndi.binary_fill_holes(largest(m))
-    inner = ndi.binary_erosion(m, disk(2))
-    band = ndi.binary_dilation(m, disk(2)) & ~inner
-    # شفافية الحافة = قد إيه البكسل ماشي من لون الخلفية للون القماش اللي جنبه
-    # (مش مجرد بُعده عن الرمادي — ده كان بيدّي القماش الغامق حافة فاتحة مصمتة)
-    _, (iy, ix) = ndi.distance_transform_edt(~inner, return_indices=True)
-    F = rgb[iy, ix]
-    fb = F - bg
-    a_band = np.clip(((rgb - bg) * fb).sum(2) / np.maximum((fb * fb).sum(2), 60.0), 0, 1)
-    a = np.where(inner, 1.0, np.where(band, a_band, 0.0))
-    a = np.maximum(smooth_alpha(a), inner * 1.0)
-    # لون الحافة = لون القماش اللي جنبها (من غير خلطة الرمادي) → مفيش هالة
-    col = np.where(inner[..., None], rgb, F)
+    # الحافة من الشكل كله بعد تنعيمه (مش بكسل بكسل — ده كان بيطلع شرشرة من نويز الـ JPEG)
+    sm = ndi.gaussian_filter(m.astype(np.float32), 2.4 if light else 1.4)
+    t = np.clip((sm - 0.3) / 0.4, 0, 1)
+    a = t * t * (3 - 2 * t)
+    if not light:
+        # نقط بيضا صغيرة على الطرف (بقايا شحذ الصورة) في القماش الملوّن/الغامق
+        L = rgb.mean(2)
+        med = float(np.median(L[a > 0.9]))
+        chroma = rgb.max(2) - rgb.min(2)
+        rim = (a > 0.01) & ~ndi.binary_erosion(a > 0.5, disk(4))
+        bad = rim & (L > med + 60) & (chroma < 60)
+        a = np.where(ndi.binary_dilation(bad, disk(1)) & rim, 0, a)
+        a = smooth_alpha(a)
+    # لون الحافة = لون القماش اللي جوه (من غير خلطة الرمادي) → مفيش هالة
+    col = decontaminate(rgb, a)
     out = np.dstack([col, a * 255]).round().astype(np.uint8)
     ys, xs = np.where(a > 0.02)
     pad = 10
@@ -197,11 +230,11 @@ def set_assets():
 
 
 # ---------------------------------------------------------------- ٢) العينة
-def refine(slug, key, whiten, r):
+def refine(slug, key, whiten, r, hem_fix, dark_rim=False):
     src = ROOM / f'{slug}--{key}.webp'
     a = np.asarray(Image.open(src).convert('RGBA')).astype(np.float32)
     A = a[..., 3] / 255
-    if not whiten:
+    if hem_fix:
         # تحت الديل: بقع رمادي/أبيض فاتح من خلفية الصورة اتقصّت مع القطعة (العباية
         # الغامقة مفيهاش أي جزء فاتح هناك) → بتتشال، والديل نفسه زي ما هو
         L = a[..., :3].mean(2)
@@ -213,6 +246,14 @@ def refine(slug, key, whiten, r):
         light = ndi.binary_dilation(light, disk(1)) & hem
         print(f'  hem background px removed {int((light & (A > 0.5)).sum())}')
         A = np.where(light, 0, A)
+    if dark_rim:
+        # تيشيرت غامق: بكسلات فاتحة مصمتة على الطرف (بقايا خلفية في القص القديم) بتتشال
+        Lr = a[..., :3].mean(2)
+        med = float(np.median(Lr[A > 0.9]))
+        rim = (A > 0.02) & ~ndi.binary_erosion(A > 0.5, disk(4))
+        bad = rim & (Lr > med + 60)
+        print(f'  light rim px removed {int(bad.sum())}')
+        A = np.where(bad, 0, A)
     core = A > 0.5
     # الشرشرة والخيوط الرفيعة اللي على الحافة (أرفع من ٢r بكسل) بتتشال — القطعة نفسها لأ
     kept = largest(ndi.binary_opening(core, disk(r)))
@@ -244,6 +285,7 @@ def refine(slug, key, whiten, r):
         delta = (0.5 * fine + 2.0 * broad) * w
         rgb = np.clip(rgb + delta[..., None], 0, 255)
         print(f'  whiten: fabric L std {np.nanstd(Lf):.1f} -> {np.nanstd(np.where(inner > 0.5, rgb.mean(2), np.nan)):.1f}')
+    rgb = decontaminate(rgb, A2)
     out = bleed(np.dstack([rgb, A2 * 255]).round().astype(np.uint8))
     name = f'{slug}--{key}-v4'
     save_set(out, ROOM / f'{name}.webp')
@@ -253,6 +295,34 @@ def refine(slug, key, whiten, r):
     shadow_of(img.getchannel('A')).save(ROOM / f'{name}-shadow.webp', 'WEBP', quality=70, method=6)
     print(f'{name}: edge px removed {removed}, added {added}')
     return name
+
+
+def unhung(man, slug, key, path):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('room_cutouts', ROOT / 'scripts/room-cutouts.py')
+    rc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(rc)
+    t, _ = cut_flat(path)
+    img = Image.fromarray(bleed(t), 'RGBA')
+    if img.height != 960:
+        img = img.resize((round(img.width * 960 / img.height), 960), Image.LANCZOS)
+    out = bleed(np.asarray(img))
+    name = f'{slug}--{key}-v4'
+    save_set(out, ROOM / f'{name}.webp')
+    img = Image.fromarray(out, 'RGBA')
+    sm = img.resize((round(img.width * 420 / img.height), 420), Image.LANCZOS)
+    save_set(bleed(np.asarray(sm)), ROOM / f'{name}-sm.webp', 86)
+    shadow_of(img.getchannel('A')).save(ROOM / f'{name}-shadow.webp', 'WEBP', quality=70, method=6)
+    for e in man[slug]:
+        if e['src'] in (f'/room/{slug}--{key}.webp', f'/room/{name}.webp'):
+            e.update({
+                'src': f'/room/{name}.webp', 'srcSm': f'/room/{name}-sm.webp', 'shadow': f'/room/{name}-shadow.webp',
+                'from': 'مولّد-للمراجعة/من 7 ل 10/' + Path(path).name,
+                'ownHanger': False, 'w': img.width, 'h': img.height, **rc.anchors(img), 'base': rc.fabric_color(img),
+                'sample': 'v4',
+            })
+            e.pop('depth', None)
+    print(name, img.size)
 
 
 # ---------------------------------------------------------------- ٣) خط الكتف
@@ -274,8 +344,10 @@ def main():
         k = SET_KEYS.get(e.get('color'))
         if k:
             e['foldSet'] = sets[k]
-    for slug, key, whiten, r in SAMPLE:
-        name = refine(slug, key, whiten, r)
+    for slug, key, path in UNHUNG:
+        unhung(man, slug, key, path)
+    for slug, key, whiten, r, hem_fix, *rest in SAMPLE:
+        name = refine(slug, key, whiten, r, hem_fix, *rest)
         for e in man[slug]:
             if e['src'] == f'/room/{slug}--{key}.webp' or e['src'] == f'/room/{name}.webp':
                 e['src'] = f'/room/{name}.webp'

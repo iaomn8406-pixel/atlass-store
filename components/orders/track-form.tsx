@@ -84,7 +84,7 @@ export function TrackForm() {
     } catch (err) {
       setError(
         err instanceof Error && /function/i.test(err.message)
-          ? 'التتبّع مش مفعّل لسه — شغّل ملف supabase/tracking.sql'
+          ? 'التتبّع مش متاح دلوقتي — كلّمنا واتساب ونقولك طلبك فين'
           : 'حصلت مشكلة — جرّب تاني أو كلّمنا واتساب'
       )
     } finally {

@@ -204,13 +204,10 @@ export function LoginPanel({ next = '/checkout' }: { next?: string }) {
     return (
       <div className="card p-8 text-center">
         <AlertIcon className="mx-auto mb-4 h-8 w-8 text-brand-400" />
-        <h1 className="display text-[17px] font-bold">تسجيل الدخول مش مفعّل لسه</h1>
+        {/* رسالة للعميل — من غير أي تفاصيل إعداد داخلية (ملف المراجعة v6 ٥-١) */}
+        <h1 className="display text-[17px] font-bold">تسجيل الدخول مش متاح دلوقتي</h1>
         <p className="mt-3 text-[13px] leading-[1.95] text-mist">
-          محتاج تظبط Supabase الأول. الخطوات بالتفصيل في ملف{' '}
-          <span className="font-[family-name:var(--font-label)] text-brand-300">
-            README.md
-          </span>
-          .
+          تقدر تطلب عادي من غير حساب، ولو محتاج مساعدة في طلبك كلّمنا واتساب.
         </p>
       </div>
     )

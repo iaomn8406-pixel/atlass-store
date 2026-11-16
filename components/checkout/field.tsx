@@ -34,6 +34,27 @@ export function FormBlock({
   )
 }
 
+/* رسائل المتصفح نفسه بالعربي (الخانات المطلوبة بتتمنع قبل أي منطق) */
+type Ctl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+export function arInvalid(e: React.FormEvent<Ctl>) {
+  const el = e.currentTarget
+  const v = el.validity
+  el.setCustomValidity(
+    v.valueMissing
+      ? el.tagName === 'SELECT'
+        ? 'اختار من القائمة'
+        : 'الخانة دي مطلوبة'
+      : v.typeMismatch
+        ? 'اكتب إيميل صحيح زي name@example.com'
+        : v.tooShort
+          ? `اكتب ${el.getAttribute('minlength')} حروف/أرقام على الأقل`
+          : ''
+  )
+}
+export function arClear(e: React.FormEvent<Ctl>) {
+  e.currentTarget.setCustomValidity('')
+}
+
 export function Field({
   id,
   label,
@@ -58,6 +79,7 @@ export function Field({
   required?: boolean
   multiline?: boolean
   type?: string
+  minLength?: number
   placeholder?: string
   autoComplete?: string
   inputMode?: 'tel' | 'text' | 'email'
@@ -78,6 +100,10 @@ export function Field({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={onFocus}
+          required={required}
+          aria-required={required || undefined}
+          onInvalid={arInvalid}
+          onInput={arClear}
           className={`${cls} resize-none`}
           {...rest}
         />
@@ -88,6 +114,10 @@ export function Field({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={onFocus}
+          required={required}
+          aria-required={required || undefined}
+          onInvalid={arInvalid}
+          onInput={arClear}
           className={cls}
           {...rest}
         />

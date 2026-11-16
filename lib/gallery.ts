@@ -22,6 +22,18 @@ type Asset = {
 }
 
 
+/** صورة صغيرة لكل لون عنده صورة حقيقية (للسلة وملخص الطلب): { slug: { لون: src } } */
+export function getColorThumbs(): Record<string, Record<string, string>> {
+  const out: Record<string, Record<string, string>> = {}
+  for (const [slug, list] of Object.entries(assets as Record<string, (Asset & { color?: string | null })[]>)) {
+    for (const a of list) {
+      if (!a.color) continue
+      ;(out[slug] ??= {})[a.color] = a.srcSm
+    }
+  }
+  return out
+}
+
 export function getGalleryAssets(): Record<string, GalleryAsset> {
   const out: Record<string, GalleryAsset> = {}
   for (const [slug, list] of Object.entries(assets as Record<string, Asset[]>)) {

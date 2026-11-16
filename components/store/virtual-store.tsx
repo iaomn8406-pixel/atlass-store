@@ -563,8 +563,8 @@ function InfoPanel({ zones, onClose }: { zones: RoomZone[]; onClose: () => void 
         <CloseIcon className="h-4 w-4" />
       </button>
       <p className="st-info__lead">
-        اختار قسم من تحت والكاميرا هتروح له. دوس على أي قطعة تشوفها من قريب وتختار مقاسك. اسحب يمين
-        وشمال عشان تلف في المكان.
+        اختار قسم من تحت والكاميرا هتروح له. دوس على أي قطعة تشوفها من قريب وتختار مقاسك. اسحب بسرعة
+        يمين أو شمال (أو حرّك عجلة الماوس) عشان تتنقل بين الأقسام.
       </p>
       <div className="st-info__links">
         <Link href="/shop">كل المنتجات</Link>

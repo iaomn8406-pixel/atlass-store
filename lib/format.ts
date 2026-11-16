@@ -18,10 +18,22 @@ export function discountPercent(price: number, compareAt?: number): number | nul
 }
 
 /** صيغة الجمع العربية: 1 منتج · 2 منتجان · 3 منتجات */
-export function pluralize(count: number, one: string, two: string, many: string): string {
+export function pluralize(count: number, one: string, two: string, many: string, single = many): string {
   if (count === 1) return one
   if (count === 2) return two
-  return `${count} ${many}`
+  return `${count} ${arCount(count, single, two, many, single)}`
+}
+
+/**
+ * التمييز بعد العدد (الاسم بس من غير الرقم):
+ * ١ → مفرد، ٢ → مثنى، ٣–١٠ (والصفر) → جمع، ١١ وفوق → مفرد.
+ * مثال: arCount(6, 'قطعة', 'قطعتين', 'قطع') → «قطع» (٦ قطع)
+ */
+export function arCount(count: number, one: string, two: string, few: string, many = one): string {
+  if (count === 1) return one
+  if (count === 2) return two
+  if (count === 0 || (count >= 3 && count <= 10)) return few
+  return many
 }
 
 /** ترقيم الأقسام: 1 → "01" */

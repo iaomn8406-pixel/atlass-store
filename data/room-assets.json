@@ -64,11 +64,11 @@
       ]
     },
     {
-      "src": "/room/loewe-mens-tshirt--black.webp",
-      "srcSm": "/room/loewe-mens-tshirt--black-sm.webp",
+      "src": "/room/loewe-mens-tshirt--black-v4.webp",
+      "srcSm": "/room/loewe-mens-tshirt--black-v4-sm.webp",
       "from": "/img/loewe-2.webp",
       "color": "اسود",
-      "shadow": "/room/loewe-mens-tshirt--black-shadow.webp",
+      "shadow": "/room/loewe-mens-tshirt--black-v4-shadow.webp",
       "ownHanger": false,
       "w": 1100,
       "h": 960,
@@ -110,7 +110,7 @@
         0.0208,
         0.0312,
         0.0406,
-        0.05,
+        0.049,
         0.0604,
         0.0719,
         0.0875,
@@ -118,12 +118,13 @@
         0.1333,
         0.1656,
         0.2,
-        0.2323,
+        0.2333,
         0.2677,
         0.3021,
         0.3365,
         1.0
-      ]
+      ],
+      "sample": "v4"
     }
   ],
   "massimo-dutti-oversize": [
@@ -191,130 +192,130 @@
       ]
     },
     {
-      "src": "/room/massimo-dutti-oversize--black.webp",
-      "srcSm": "/room/massimo-dutti-oversize--black-sm.webp",
-      "from": "/img/massimo-2.webp",
+      "src": "/room/massimo-dutti-oversize--black-v4.webp",
+      "srcSm": "/room/massimo-dutti-oversize--black-v4-sm.webp",
+      "from": "مولّد-للمراجعة/من 7 ل 10/WhatsApp Image 2026-11-16 at 8.31.04 PM (2).jpeg",
       "color": "اسود",
-      "shadow": "/room/massimo-dutti-oversize--black-shadow.webp",
-      "ownHanger": true,
-      "w": 811,
+      "shadow": "/room/massimo-dutti-oversize--black-v4-shadow.webp",
+      "ownHanger": false,
+      "w": 918,
       "h": 960,
-      "hookX": 0.4975,
-      "top": 0.0021,
-      "shoulder": 0.6239,
+      "hookX": 0.5,
+      "top": 0.0094,
+      "shoulder": 0.5904,
       "base": [
-        19,
-        19,
-        19
+        21,
+        21,
+        21
       ],
-      "depth": "/room/massimo-dutti-oversize--black-depth.png",
       "rim": [
         1.0,
-        0.4333,
-        0.3927,
-        0.351,
-        0.3104,
-        0.2708,
-        0.2292,
-        0.2031,
-        0.1917,
-        0.1812,
-        0.1708,
-        0.1594,
-        0.149,
-        0.1365,
-        0.125,
-        0.1115,
-        0.0927,
-        0.0562,
-        0.0365,
-        0.0365,
-        0.0021,
-        0.0365,
-        0.0365,
-        0.0646,
-        0.0958,
-        0.1115,
-        0.1229,
-        0.1365,
-        0.1469,
-        0.1573,
-        0.1677,
-        0.1771,
-        0.1865,
-        0.1979,
-        0.224,
-        0.2615,
+        0.3417,
         0.3021,
-        0.3427,
-        0.3865,
-        0.4271,
+        0.2646,
+        0.2271,
+        0.1896,
+        0.151,
+        0.1167,
+        0.0979,
+        0.0865,
+        0.074,
+        0.0625,
+        0.05,
+        0.0375,
+        0.0229,
+        0.0104,
+        0.0156,
+        0.0229,
+        0.0271,
+        0.0302,
+        0.0312,
+        0.0302,
+        0.0271,
+        0.0229,
+        0.0156,
+        0.0115,
+        0.0219,
+        0.0375,
+        0.05,
+        0.0625,
+        0.074,
+        0.0854,
+        0.0979,
+        0.1156,
+        0.1479,
+        0.1865,
+        0.224,
+        0.2625,
+        0.301,
+        0.3406,
         1.0
-      ]
+      ],
+      "sample": "v4"
     }
   ],
   "tshirt-1975-print": [
     {
-      "src": "/room/tshirt-1975-print--olive.webp",
-      "srcSm": "/room/tshirt-1975-print--olive-sm.webp",
-      "from": "/img/print1975-4.webp",
+      "src": "/room/tshirt-1975-print--olive-v4.webp",
+      "srcSm": "/room/tshirt-1975-print--olive-v4-sm.webp",
+      "from": "مولّد-للمراجعة/من 7 ل 10/WhatsApp Image 2026-11-16 at 8.31.06 PM.jpeg",
       "color": null,
-      "shadow": "/room/tshirt-1975-print--olive-shadow.webp",
-      "ownHanger": true,
-      "w": 627,
-      "h": 821,
-      "hookX": 0.4777,
-      "top": 0.0097,
-      "shoulder": 0.681,
+      "shadow": "/room/tshirt-1975-print--olive-v4-shadow.webp",
+      "ownHanger": false,
+      "w": 921,
+      "h": 960,
+      "hookX": 0.5011,
+      "top": 0.0094,
+      "shoulder": 0.6059,
       "base": [
-        32,
-        41,
-        35
+        33,
+        45,
+        37
       ],
-      "depth": "/room/tshirt-1975-print--olive-depth.png",
       "rim": [
         1.0,
-        0.5189,
-        0.3264,
-        0.1888,
-        0.1803,
-        0.1705,
-        0.1632,
-        0.1535,
-        0.1462,
-        0.1364,
-        0.1279,
-        0.1181,
-        0.1108,
-        0.0962,
-        0.0877,
-        0.084,
-        0.0633,
+        0.3479,
+        0.3052,
+        0.2625,
+        0.2188,
+        0.175,
+        0.1302,
+        0.1021,
+        0.0896,
+        0.0781,
+        0.0667,
+        0.0562,
+        0.0448,
+        0.0333,
+        0.0229,
+        0.0094,
+        0.0167,
+        0.0229,
+        0.0271,
+        0.0302,
+        0.0312,
+        0.0302,
+        0.0271,
+        0.024,
+        0.0177,
+        0.0094,
         0.0219,
-        0.0122,
-        0.0097,
-        0.011,
-        0.0183,
-        0.0499,
-        0.0792,
-        0.0962,
-        0.106,
-        0.1035,
-        0.1157,
-        0.1267,
-        0.134,
-        0.1401,
-        0.1462,
-        0.1535,
-        0.1632,
-        0.1754,
-        0.1937,
-        0.2168,
-        0.2826,
-        0.4032,
-        0.5067,
+        0.0323,
+        0.0438,
+        0.0542,
+        0.0656,
+        0.076,
+        0.0885,
+        0.1021,
+        0.1312,
+        0.175,
+        0.2188,
+        0.2625,
+        0.3052,
+        0.3479,
         1.0
-      ]
+      ],
+      "sample": "v4"
     }
   ],
   "on-cloud-tracksuit": [
@@ -344,32 +345,32 @@
           "src": "/room/set-v4/oncloud-navy-tee.webp",
           "srcSm": "/room/set-v4/oncloud-navy-tee-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.24.12 PM (1).jpeg",
-          "w": 930,
-          "h": 834,
+          "w": 926,
+          "h": 832,
           "cuts": [
-            0.3317,
-            0.6694
+            0.3332,
+            0.67
           ],
           "anchor": 1,
-          "foldV": 0.4988,
-          "top": 0.012,
+          "foldV": 0.4994,
+          "top": 0.0132,
           "bottom": 0.9856,
-          "ppm": 1098.08
+          "ppm": 1090.38
         },
         "pants": {
           "src": "/room/set-v4/oncloud-pants.webp",
           "srcSm": "/room/set-v4/oncloud-pants-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.26.51 PM.jpeg",
-          "w": 602,
-          "h": 1205,
+          "w": 600,
+          "h": 1201,
           "cuts": [
-            0.4975
+            0.4983
           ],
           "anchor": 1,
           "foldV": 0.4996,
-          "top": 0.0091,
+          "top": 0.0092,
           "bottom": 0.99,
-          "ppm": 1281.58
+          "ppm": 1278.95
         }
       }
     },
@@ -399,32 +400,32 @@
           "src": "/room/set-v4/oncloud-black-tee.webp",
           "srcSm": "/room/set-v4/oncloud-black-tee-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.24.13 PM (1).jpeg",
-          "w": 930,
-          "h": 842,
+          "w": 928,
+          "h": 840,
           "cuts": [
-            0.3319,
+            0.333,
             0.6649
           ],
           "anchor": 1,
           "foldV": 0.4994,
           "top": 0.0131,
           "bottom": 0.9857,
-          "ppm": 1082.69
+          "ppm": 1076.92
         },
         "pants": {
           "src": "/room/set-v4/oncloud-pants.webp",
           "srcSm": "/room/set-v4/oncloud-pants-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.26.51 PM.jpeg",
-          "w": 602,
-          "h": 1205,
+          "w": 600,
+          "h": 1201,
           "cuts": [
-            0.4975
+            0.4983
           ],
           "anchor": 1,
           "foldV": 0.4996,
-          "top": 0.0091,
+          "top": 0.0092,
           "bottom": 0.99,
-          "ppm": 1281.58
+          "ppm": 1278.95
         }
       }
     },
@@ -454,32 +455,32 @@
           "src": "/room/set-v4/oncloud-white-tee.webp",
           "srcSm": "/room/set-v4/oncloud-white-tee-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.24.13 PM.jpeg",
-          "w": 930,
-          "h": 838,
+          "w": 927,
+          "h": 839,
           "cuts": [
-            0.3234,
-            0.667
+            0.3249,
+            0.6708
           ],
           "anchor": 1,
           "foldV": 0.4994,
           "top": 0.0131,
           "bottom": 0.9857,
-          "ppm": 1117.31
+          "ppm": 1121.15
         },
         "pants": {
           "src": "/room/set-v4/oncloud-pants.webp",
           "srcSm": "/room/set-v4/oncloud-pants-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.26.51 PM.jpeg",
-          "w": 602,
-          "h": 1205,
+          "w": 600,
+          "h": 1201,
           "cuts": [
-            0.4975
+            0.4983
           ],
           "anchor": 1,
           "foldV": 0.4996,
-          "top": 0.0091,
+          "top": 0.0092,
           "bottom": 0.99,
-          "ppm": 1281.58
+          "ppm": 1278.95
         }
       }
     },
@@ -509,32 +510,32 @@
           "src": "/room/set-v4/oncloud-olive-tee.webp",
           "srcSm": "/room/set-v4/oncloud-olive-tee-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.24.11 PM.jpeg",
-          "w": 931,
-          "h": 844,
+          "w": 927,
+          "h": 841,
           "cuts": [
-            0.3299,
-            0.669
+            0.3298,
+            0.6691
           ],
           "anchor": 1,
-          "foldV": 0.5,
-          "top": 0.013,
-          "bottom": 0.987,
-          "ppm": 1103.85
+          "foldV": 0.4994,
+          "top": 0.0131,
+          "bottom": 0.9857,
+          "ppm": 1100.0
         },
         "pants": {
           "src": "/room/set-v4/oncloud-pants.webp",
           "srcSm": "/room/set-v4/oncloud-pants-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.26.51 PM.jpeg",
-          "w": 602,
-          "h": 1205,
+          "w": 600,
+          "h": 1201,
           "cuts": [
-            0.4975
+            0.4983
           ],
           "anchor": 1,
           "foldV": 0.4996,
-          "top": 0.0091,
+          "top": 0.0092,
           "bottom": 0.99,
-          "ppm": 1281.58
+          "ppm": 1278.95
         }
       }
     },
@@ -564,32 +565,32 @@
           "src": "/room/set-v4/oncloud-red-tee.webp",
           "srcSm": "/room/set-v4/oncloud-red-tee-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.24.12 PM.jpeg",
-          "w": 932,
-          "h": 846,
+          "w": 929,
+          "h": 838,
           "cuts": [
-            0.3307,
-            0.6671
+            0.3313,
+            0.6676
           ],
           "anchor": 1,
           "foldV": 0.4994,
-          "top": 0.013,
-          "bottom": 0.9858,
-          "ppm": 1096.15
+          "top": 0.0131,
+          "bottom": 0.9857,
+          "ppm": 1092.31
         },
         "pants": {
           "src": "/room/set-v4/oncloud-pants.webp",
           "srcSm": "/room/set-v4/oncloud-pants-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.26.51 PM.jpeg",
-          "w": 602,
-          "h": 1205,
+          "w": 600,
+          "h": 1201,
           "cuts": [
-            0.4975
+            0.4983
           ],
           "anchor": 1,
           "foldV": 0.4996,
-          "top": 0.0091,
+          "top": 0.0092,
           "bottom": 0.99,
-          "ppm": 1281.58
+          "ppm": 1278.95
         }
       }
     },
@@ -619,43 +620,43 @@
           "src": "/room/set-v4/oncloud-yellow-tee.webp",
           "srcSm": "/room/set-v4/oncloud-yellow-tee-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.24.21 PM.jpeg",
-          "w": 933,
-          "h": 832,
+          "w": 931,
+          "h": 823,
           "cuts": [
-            0.3232,
-            0.6757
+            0.3234,
+            0.6755
           ],
           "anchor": 1,
-          "foldV": 0.4988,
-          "top": 0.0132,
-          "bottom": 0.9844,
-          "ppm": 1150.0
+          "foldV": 0.5,
+          "top": 0.0134,
+          "bottom": 0.9866,
+          "ppm": 1146.15
         },
         "pants": {
           "src": "/room/set-v4/oncloud-pants.webp",
           "srcSm": "/room/set-v4/oncloud-pants-sm.webp",
           "from": "مولّد-للمراجعة/الطقم ، والبنطلون/WhatsApp Image 2026-11-16 at 8.26.51 PM.jpeg",
-          "w": 602,
-          "h": 1205,
+          "w": 600,
+          "h": 1201,
           "cuts": [
-            0.4975
+            0.4983
           ],
           "anchor": 1,
           "foldV": 0.4996,
-          "top": 0.0091,
+          "top": 0.0092,
           "bottom": 0.99,
-          "ppm": 1281.58
+          "ppm": 1278.95
         }
       }
     }
   ],
   "hooded-embroidered-abaya": [
     {
-      "src": "/room/hooded-embroidered-abaya--white.webp",
-      "srcSm": "/room/hooded-embroidered-abaya--white-sm.webp",
+      "src": "/room/hooded-embroidered-abaya--white-v4.webp",
+      "srcSm": "/room/hooded-embroidered-abaya--white-v4-sm.webp",
       "from": "New folder/ChatGPT Image Jul 28, 2026, 12_24_28 AM.png",
       "color": "أبيض",
-      "shadow": "/room/hooded-embroidered-abaya--white-shadow.webp",
+      "shadow": "/room/hooded-embroidered-abaya--white-v4-shadow.webp",
       "ownHanger": false,
       "w": 530,
       "h": 1100,
@@ -672,9 +673,9 @@
         1.0,
         0.47,
         0.4091,
-        0.3445,
-        0.2836,
-        0.2255,
+        0.3436,
+        0.2827,
+        0.2245,
         0.1709,
         0.1345,
         0.1155,
@@ -690,7 +691,7 @@
         0.0064,
         0.0064,
         0.0055,
-        0.0055,
+        0.0064,
         0.0064,
         0.0073,
         0.0082,
@@ -703,21 +704,22 @@
         0.1055,
         0.1155,
         0.1345,
-        0.17,
-        0.2227,
+        0.1709,
+        0.2218,
         0.28,
         0.34,
-        0.4064,
+        0.4055,
         0.4673,
         1.0
-      ]
+      ],
+      "sample": "v4"
     },
     {
-      "src": "/room/hooded-embroidered-abaya--beige.webp",
-      "srcSm": "/room/hooded-embroidered-abaya--beige-sm.webp",
+      "src": "/room/hooded-embroidered-abaya--beige-v4.webp",
+      "srcSm": "/room/hooded-embroidered-abaya--beige-v4-sm.webp",
       "from": "New folder/ChatGPT Image Jul 28, 2026, 12_26_21 AM.png",
       "color": "بيج",
-      "shadow": "/room/hooded-embroidered-abaya--beige-shadow.webp",
+      "shadow": "/room/hooded-embroidered-abaya--beige-v4-shadow.webp",
       "ownHanger": false,
       "w": 558,
       "h": 1100,
@@ -733,7 +735,7 @@
       "rim": [
         1.0,
         0.4564,
-        0.3673,
+        0.3682,
         0.3236,
         0.2618,
         0.2018,
@@ -767,12 +769,13 @@
         0.0973,
         0.1355,
         0.1891,
-        0.2518,
-        0.3136,
-        0.3791,
+        0.2509,
+        0.3145,
+        0.38,
         0.45,
         1.0
-      ]
+      ],
+      "sample": "v4"
     },
     {
       "src": "/room/hooded-embroidered-abaya--black-v4.webp",

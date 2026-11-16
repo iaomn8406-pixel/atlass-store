@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Shot } from '@/components/product/shot'
 import {
   AlertIcon,
@@ -28,7 +28,7 @@ import { makeEventId, trackInitiateCheckout, trackPurchase } from '@/lib/meta/cl
 import { track as trackActivity, trackOrdered } from '@/lib/activity'
 import { loadProfile, profileToForm } from '@/lib/profile'
 import type { CustomerInfo } from '@/lib/types'
-import { ErrorText, Field, FormBlock, LockedOption } from './field'
+import { arClear, arInvalid, ErrorText, Field, FormBlock, LockedOption } from './field'
 import { SendButton } from './send-button'
 
 type FormErrors = Partial<Record<keyof CustomerInfo, string>>
@@ -244,8 +244,14 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
    * بيرجع true لو الأوردر اتبعت بنجاح — زرار الحركة بيستنى
    * القيمة دي عشان يكمّل أو يرجع ويعرض الخطأ.
    */
+  const formRef = useRef<HTMLFormElement>(null)
   const submit = async (): Promise<boolean> => {
     if (sending) return false
+    // المتصفح نفسه بيمنع الخانات المطلوبة الفاضية الأول (برسالة عربي)، وبعدين تحققنا
+    if (formRef.current && !formRef.current.reportValidity()) {
+      validate()
+      return false
+    }
     if (!validate()) return false
 
     setSending(true)
@@ -465,6 +471,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
       </header>
 
       <form
+        ref={formRef}
         onSubmit={(e) => e.preventDefault()}
         noValidate
         className="shell py-9 lg:py-12"
@@ -485,6 +492,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                 onFocus={() => touch('fullName')}
                 label="الاسم بالكامل"
                 required
+                minLength={3}
                 value={form.fullName}
                 onChange={(v) => update('fullName', v)}
                 error={errors.fullName}
@@ -498,6 +506,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                   onFocus={() => touch('phone')}
                   label="رقم الموبايل"
                   required
+                  minLength={10}
                   type="tel"
                   inputMode="tel"
                   dir="ltr"
@@ -514,6 +523,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                   onFocus={() => touch('phoneAlt')}
                   label="رقم احتياطي"
                   required
+                  minLength={10}
                   type="tel"
                   inputMode="tel"
                   dir="ltr"
@@ -553,6 +563,10 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                   </label>
                   <select
                     id="governorate"
+                    required
+                    aria-required
+                    onInvalid={arInvalid}
+                    onInput={arClear}
                     value={form.governorate}
                     onChange={(e) => update('governorate', e.target.value)}
                     onFocus={() => touch('governorate')}
@@ -574,6 +588,10 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                   </label>
                   <select
                     id="area"
+                    required
+                    aria-required
+                    onInvalid={arInvalid}
+                    onInput={arClear}
                     value={form.area}
                     disabled={!form.governorate || areasLoading}
                     onChange={(e) => update('area', e.target.value)}
@@ -611,6 +629,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                 onFocus={() => touch('address')}
                 label="العنوان بالتفصيل"
                 required
+                minLength={10}
                 multiline
                 value={form.address}
                 onChange={(v) => update('address', v)}
@@ -667,7 +686,7 @@ export function CheckoutFlow({ governorates }: { governorates: GovOption[] }) {
                   <h2 className="display mt-1.5 text-[16px] font-bold">
                     ملخص الطلب
                     <span className="nums mr-2 text-[12.5px] font-semibold text-mist">
-                      ({pluralize(count, 'قطعة واحدة', 'قطعتان', 'قطع')})
+                      ({pluralize(count, 'قطعة واحدة', 'قطعتان', 'قطع', 'قطعة')})
                     </span>
                   </h2>
                 </div>

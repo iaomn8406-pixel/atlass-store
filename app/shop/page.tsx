@@ -1,3 +1,4 @@
+import { arCount } from '@/lib/format'
 import type { Metadata } from 'next'
 import { PageHeader } from '@/components/layout/page-header'
 import { WallSign } from '@/components/layout/wall-sign'
@@ -36,7 +37,7 @@ export default async function ShopPage({
             ? 'القطع اللي عليها خصم دلوقتي — نفس الخامة ونفس القصّة بسعر أقل.'
             : 'المجموعة كاملة. فلتر حسب القسم أو السعر ورتّب زي ما يريحك عشان توصل بسرعة للي بتدوّر عليه.'
         }
-        aside={<WallSign count={products.length} label="قطعة في المجموعة" zone={''} />}
+        aside={<WallSign count={products.length} label={`${arCount(products.length, 'قطعة', 'قطعتين', 'قطع')} في المجموعة`} zone={''} />}
       />
 
       <div className="shell py-10 lg:py-14">

@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/icons'
 import { site } from '@/data/site'
 import { useCart } from '@/lib/cart'
-import { formatPrice } from '@/lib/format'
+import { arCount, formatPrice } from '@/lib/format'
 import type { Category } from '@/lib/types'
 
 type NavLink = {
@@ -224,7 +224,7 @@ export function Header({ categories }: { categories: Category[] }) {
                 <button
                   type="button"
                   onClick={openCart}
-                  aria-label={`السلة — ${count} قطعة`}
+                  aria-label={count ? `السلة — ${count} ${arCount(count, 'قطعة', 'قطعتين', 'قطع')}` : 'السلة فاضية'}
                   className="icon-btn"
                   data-cart-target=""
                 >
@@ -310,7 +310,7 @@ function SearchPanel({ onClose }: { onClose: () => void }) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="دوّر على تيشيرت، بولو، بنطلون، حذاء..."
+            placeholder="دوّر على تيشيرت، عباية، ترينج..."
             className="field pr-12 text-[15px]"
           />
         </div>
@@ -318,7 +318,7 @@ function SearchPanel({ onClose }: { onClose: () => void }) {
         {!typed && (
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="text-[11.5px] text-mist">جرّب:</span>
-            {['تيشرت', 'بولو', 'بنطلون', 'حذاء', 'شورت'].map((word) => (
+            {['تيشرت', 'عباية', 'ترينج', 'بولو', 'قطن'].map((word) => (
               <button
                 key={word}
                 type="button"

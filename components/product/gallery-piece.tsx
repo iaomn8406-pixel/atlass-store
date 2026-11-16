@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useRef, useState } from 'react'
 
 /* ============================================================
    القطعة المتعلّقة في كروت المتجر (نفس عالم المعرض)
@@ -23,19 +23,44 @@ export type GalleryAsset = {
 }
 
 const GalleryContext = createContext<Record<string, GalleryAsset>>({})
+const ThumbContext = createContext<Record<string, Record<string, string>>>({})
 
 export function GalleryProvider({
   assets,
+  thumbs = {},
   children,
 }: {
   assets: Record<string, GalleryAsset>
+  /** صورة لكل لون (للسلة) — { slug: { لون: src } } */
+  thumbs?: Record<string, Record<string, string>>
   children: React.ReactNode
 }) {
-  return <GalleryContext.Provider value={assets}>{children}</GalleryContext.Provider>
+  return (
+    <GalleryContext.Provider value={assets}>
+      <ThumbContext.Provider value={thumbs}>{children}</ThumbContext.Provider>
+    </GalleryContext.Provider>
+  )
 }
 
 export function useGalleryAsset(slug: string) {
   return useContext(GalleryContext)[slug]
+}
+
+/**
+ * المنتج بصورة اللون المختار أول صورة — عشان مصغّرة السلة وملخص الطلب
+ * تبان بنفس اللون اللي العميل اختاره (لو اللون ده ليه صورة حقيقية).
+ * عرض بس: سيرفر الطلب بيحسب بياناته من المنتج نفسه.
+ */
+export function useColorImage() {
+  const thumbs = useContext(ThumbContext)
+  return useCallback(
+    <P extends { slug: string; images: string[] }>(product: P, variants: Record<string, string>): P => {
+      const color = variants['اللون']
+      const src = color ? thumbs[product.slug]?.[color] : undefined
+      return src ? { ...product, images: [src, ...product.images] } : product
+    },
+    [thumbs]
+  )
 }
 
 export function GalleryPiece({ asset, alt, index = 0 }: { asset: GalleryAsset; alt: string; index?: number }) {

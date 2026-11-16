@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ProductGrid } from '@/components/product/product-card'
 import { CloseIcon, FilterIcon, SortIcon } from '@/components/ui/icons'
-import { formatPrice, pluralize } from '@/lib/format'
+import { arCount, formatPrice } from '@/lib/format'
 import type { Category, Product } from '@/lib/types'
 
 type SortKey = 'store' | 'featured' | 'price-asc' | 'price-desc' | 'discount' | 'name'
@@ -223,7 +223,7 @@ export function ShopBrowser({
 
             <p className="nums text-[12.5px] text-mist">
               <span className="font-bold text-foam">{visible.length}</span>{' '}
-              {pluralize(visible.length, 'منتج', 'منتجان', 'منتج')}
+              {arCount(visible.length, 'منتج', 'منتجين', 'منتجات', 'منتج')}
               {visible.length > 0 && (
                 <span className="hidden sm:inline">
                   {' '}
@@ -304,7 +304,7 @@ export function ShopBrowser({
               >
                 <span>
                   عرض {visible.length}{' '}
-                  {pluralize(visible.length, 'منتج', 'منتجان', 'منتج')}
+                  {arCount(visible.length, 'منتج', 'منتجين', 'منتجات', 'منتج')}
                 </span>
               </button>
             </div>

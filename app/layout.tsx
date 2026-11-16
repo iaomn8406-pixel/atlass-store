@@ -13,7 +13,7 @@ import { RevealObserver } from '@/components/ui/reveal'
 import { site } from '@/data/site'
 import { GalleryProvider } from '@/components/product/gallery-piece'
 import { CartProvider } from '@/lib/cart'
-import { getGalleryAssets } from '@/lib/gallery'
+import { getColorThumbs, getGalleryAssets } from '@/lib/gallery'
 import { getCategoryTree } from '@/lib/catalog'
 
 /* ------------------------------------------------------------
@@ -145,7 +145,7 @@ export default async function RootLayout({
 
           <main id="main" className="flex-1">
             {/* القطع المتعلّقة لكروت المتجر — نفس عالم المعرض */}
-            <GalleryProvider assets={getGalleryAssets()}>{children}</GalleryProvider>
+            <GalleryProvider assets={getGalleryAssets()} thumbs={getColorThumbs()}>{children}</GalleryProvider>
           </main>
 
           <Footer categories={categories} />

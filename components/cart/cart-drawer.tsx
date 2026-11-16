@@ -50,7 +50,7 @@ export function CartDrawer() {
               سلة المشتريات
               {count > 0 && (
                 <span className="nums mr-2 text-[13px] font-semibold text-mist">
-                  ({pluralize(count, 'قطعة واحدة', 'قطعتان', 'قطع')})
+                  ({pluralize(count, 'قطعة واحدة', 'قطعتان', 'قطع', 'قطعة')})
                 </span>
               )}
             </h2>
