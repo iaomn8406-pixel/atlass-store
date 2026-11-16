@@ -138,8 +138,10 @@ export async function getRoom(): Promise<Room> {
     if (pieces.length) zones.push({ slug: category.slug, name: category.name, kind: kindOf(pieces), pieces })
   }
 
-  /* أكتر قسم فيه قطع بياخد الحيطة اللي قدام الشعار */
-  zones.sort((a, b) => b.pieces.length - a.pieces.length)
+  /* ترتيب الأماكن (والشريط والسكرول): التيشرتات ← العبايات ← الأطقم،
+     وأي قسم جديد بعدهم حسب عدد قطعه */
+  const rank: Record<ZoneKind, number> = { top: 0, long: 1, set: 2 }
+  zones.sort((a, b) => rank[a.kind] - rank[b.kind] || b.pieces.length - a.pieces.length)
 
   return { zones, products }
 }

@@ -681,7 +681,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
         const pz = tableZ - ((rows - 1) / 2) * cellD + row * cellD
         g.position.x = px
         // الوش اللي لفوق بياخد نور السما والشمس وضوء الكاميرا مع بعض — بنرجّعه للونه الحقيقي
-        const mat = new MeshLambertMaterial({ transparent: true, alphaTest: 0.04, color: '#c4c4c4' })
+        const mat = new MeshLambertMaterial({ alphaTest: 0.5, alphaToCoverage: true, color: '#c4c4c4' })
         const tint = recolorable(mat)
         const tableGeo = track(new PlaneGeometry(fw, fd, 110, Math.round(110 * (fd / fw))))
         const mesh = new Mesh(tableGeo, mat)
@@ -752,9 +752,11 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       // الجسم
       const bend = Math.min(0.06, mw * 0.1)
       const geo = track(bodyGeometry(mw, mh, bend))
-      const mat = new MeshLambertMaterial({ transparent: true, alphaTest: 0.04, side: DoubleSide, color: '#eaeaea' })
+      // حافة متقصوصة ناعمة (alpha-to-coverage) مش نص شفافة: من بعيد أو بزاوية مافيش إطار ولا خلط
+      const mat = new MeshLambertMaterial({ alphaTest: 0.5, alphaToCoverage: true, side: DoubleSide, color: '#eaeaea' })
       if (p.depth) {
-        const amount = long ? 0.09 : 0.07
+        // العباية الطويلة بروزها أقل — من الجنب كانت بتبان منفوخة
+        const amount = long ? 0.045 : 0.07
         void loadDepth(p.depth).then((d) => {
           if (!d || disposed) return
           inflate(geo, mw, mh, d, amount)
@@ -781,14 +783,27 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       const smat = new MeshBasicMaterial({ transparent: true, depthWrite: false, opacity: 0.0 })
       shadowMats.push(smat)
       const shadow = new Mesh(track(new PlaneGeometry(sw, sh)), smat)
-      shadow.position.set(body.position.x + 0.05, body.position.y - 0.07, 0.006)
-      if (!slot.free) g.add(shadow)
+      // على الحيطة الجانبية: كل قطعة لافّة على شماعتها ناحية المحل (زي المحلات
+      // الحقيقية) — من الكادر العام بتبان من قدّام مش من الجنب
+      const turn = !slot.free && Math.abs(slot.normal.z) < 0.5 ? 0.44 : 0
+      if (turn) {
+        g.rotation.y = turn
+        // الضل يفضل لازق في الحيطة على قد عرض القطعة بعد اللف
+        shadow.scale.x = Math.cos(turn)
+        shadow.position.set(x + body.position.x * Math.cos(turn) + 0.02, body.position.y - 0.05, 0.006)
+        smat.userData.max = 0.26
+        shadow.visible = false
+        group.add(shadow)
+      } else {
+        shadow.position.set(body.position.x + 0.05, body.position.y - 0.07, 0.006)
+        if (!slot.free) g.add(shadow)
+      }
       if (!slot.free) loader.load(p.shadow, (t) => {
         if (disposed) return t.dispose()
         track(t)
         t.colorSpace = SRGBColorSpace
         smat.map = t
-        smat.opacity = 0.42
+        smat.opacity = smat.userData.max ?? 0.42
         smat.needsUpdate = true
         invalidate()
       })
@@ -873,6 +888,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
           mat.needsUpdate = true
           lp.ready = true
           g.visible = true
+          shadow.visible = true
           opts.onPieceReady(p.id)
           invalidate()
         },
