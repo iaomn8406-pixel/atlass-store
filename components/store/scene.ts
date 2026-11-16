@@ -176,6 +176,10 @@ type LaidPiece = ScenePiece & {
   /** متحطّة على ترابيزة (الكاميرا من فوق) */
   onTable: boolean
   tint: Tint
+  /** الجيران بيغمقوا شوية وقت اختيار قطعة */
+  dim: number
+  dimTo: number
+  baseColor: Color
   tintTo: number
 }
 
@@ -693,8 +697,18 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
             invalidate()
           })
         }
-        mesh.rotation.x = -Math.PI / 2 // الياقة ناحية الحيطة
-        mesh.position.set(0, TABLE_Y + 0.004 + i * 0.0004, pz)
+        // ستاند عرض مايل (~١٧°) زي ترابيزات المحلات: الطقم بيتقري من بعيد ومن
+        // زاوية واطية بدل ما يبقى خط رفيع على السطح
+        const lean = 0.3
+        mesh.rotation.x = -Math.PI / 2 + lean // الياقة ناحية الحيطة والطرف اللي قدّام واطي
+        mesh.position.set(0, TABLE_Y + 0.02 + (fd / 2) * Math.sin(lean) + i * 0.0004, pz)
+        const board = new Mesh(
+          track(new BoxGeometry(fw + 0.06, fd + 0.06, 0.016)),
+          track(new MeshLambertMaterial({ color: '#ddd5c8' }))
+        )
+        board.rotation.x = -Math.PI / 2 + lean
+        board.position.set(0, mesh.position.y - 0.012, pz + 0.004)
+        g.add(board)
         const sh = new Mesh(
           track(new PlaneGeometry(fw * 1.06, fd * 1.05)),
           track(new MeshBasicMaterial({ map: softShadow(), transparent: true, depthWrite: false, opacity: 0.24 }))
@@ -720,6 +734,9 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
           onTable: true,
           tint,
           tintTo: 0,
+          dim: 0,
+          dimTo: 0,
+          baseColor: mat.color.clone(),
         }
         loader.load(
           p.srcSm,
@@ -870,6 +887,9 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
         onTable: false,
         tint,
         tintTo: 0,
+        dim: 0,
+        dimTo: 0,
+        baseColor: mat.color.clone(),
       }
       g.position.x = x
       laid.push(lp)
@@ -1048,14 +1068,16 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
   function shotZone(z: LaidZone): Shot {
     if (z.kind === 'set') {
       const fov = portrait() ? 60 : 46
-      const w = portrait() ? Math.min(z.width, 1.5) : z.width + 0.4
+      // الفون: الترابيزة كلها جوه الكادر (مش جزء منها)
+      const w = portrait() ? z.width + 0.25 : z.width + 0.4
       return shotTable(z, pan.zone === z.slug ? pan.x : 0, w, z.depth + 1.1, fov, 1.12, true)
     }
     const fov = portrait() ? 58 : 44
     // مساحة تحت لشريط الأقسام (~١٢٪ من الكادر) عشان طرف القطعة مايستخبّاش وراه
     const bottom = z.bottom - (z.top - z.bottom) * 0.16
     const h = z.top - bottom
-    const visW = portrait() ? Math.min(z.width, 1.6) : z.width
+    // الفون: القسم كله جوه الكادر — القطع الطرفية باينة مش مقصوصة
+    const visW = portrait() ? z.width * 1.04 : z.width
     const dist = Math.min(ROOM_D * 0.82, fit(visW, h, fov, 1.08))
     const c = toWorld(z, pan.zone === z.slug ? pan.x : 0, (z.top + bottom) / 2, 0)
     // الكاميرا في مستوى نص الكادر (من غير ميل) — زي ما بتقف قدام الحيطة
@@ -1087,7 +1109,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     const h = p.box.y1 - p.box.y0
     // الفون والبطاقة مفتوحة: القطعة كلها لازم تدخل في الـ ٤٠٪ اللي فوق الدرج
     const sheet = withCard && portrait()
-    const dist = sheet ? fit(p.mw * 1.4, h / 0.38, fov, 1) : fit(p.mw * 1.6, h, fov, portrait() ? 1.4 : 1.6)
+    const dist = sheet ? fit(p.mw * 1.4, h / 0.44, fov, 1) : fit(p.mw * 1.35, h, fov, portrait() ? 1.35 : 1.3)
     const center = toWorld(z, cx, cy, p.box.z)
     const pos = center.clone().addScaledVector(z.slot.normal, dist)
     const target = center.clone()
@@ -1096,13 +1118,15 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       const visH = 2 * dist * Math.tan(v / 2)
       if (portrait()) {
         // البطاقة تحت كشيت — القطعة تطلع فوق
-        target.y -= visH * 0.28
-        pos.y -= visH * 0.28
+        target.y -= visH * 0.24
+        pos.y -= visH * 0.24
       } else {
         // البطاقة يمين (زي المرجع) — القطعة تروح شمال
+        // القطعة في نص المساحة اللي شمال البطاقة بالظبط (البطاقة ~٤٣٠px + هامش)
         const visW = visH * aspect
-        target.addScaledVector(z.slot.right, visW * 0.2)
-        pos.addScaledVector(z.slot.right, visW * 0.2)
+        const k = Math.min(0.26, 235 / width)
+        target.addScaledVector(z.slot.right, visW * k)
+        pos.addScaledVector(z.slot.right, visW * k)
       }
     }
     return { pos, target, fov }
@@ -1196,6 +1220,14 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
         p.tint.uTint.value = p.tintTo
         dirty = true
       }
+      const dd = p.dimTo - p.dim
+      if (Math.abs(dd) > 0.003) {
+        p.dim += dd * (opts.reducedMotion ? 1 : 0.14)
+        const m = p.body.material as MeshLambertMaterial
+        m.color.copy(p.baseColor).multiplyScalar(1 - 0.32 * p.dim)
+        moving = true
+        dirty = true
+      }
       const ds = p.spreadTo - p.spread
       const dl = p.liftTo - p.lift
       if (Math.abs(ds) > 0.0005 || Math.abs(dl) > 0.0002) {
@@ -1282,6 +1314,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
   let withCard = false
 
   function setSpread(id: string | null) {
+    for (const p of all) p.dimTo = 0
     for (const p of all) p.spreadTo = 0
     if (!id) return
     const p = all.find((x) => x.id === id)
@@ -1292,6 +1325,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     z.pieces.forEach((q, j) => {
       if (j === i) return
       q.spreadTo = 0 // القطع بتفضل مكانها — الكاميرا بس اللي بتتحرك
+      q.dimTo = 1 // بس بتغمق شوية عشان القطعة المختارة تبقى البطل
     })
   }
 
@@ -1352,6 +1386,16 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       setSpread(id)
       go(shotPiece(p, card))
     },
+    /** القطعة اللي بعدها/قبلها في نفس القسم (للأزرار والسحب) */
+    sibling(dir: 1 | -1): string | null {
+      const p = focusId ? all.find((x) => x.id === focusId) : null
+      if (!p) return null
+      const z = zones.find((zz) => zz.slug === p.zone)!
+      const list = z.pieces.filter((q) => q.ready)
+      const i = list.indexOf(p)
+      if (i < 0 || list.length < 2) return null
+      return list[(i + dir + list.length) % list.length].id
+    },
     hover(id: string | null) {
       for (const p of all) p.liftTo = p.id === id && id !== focusId && !p.onTable ? 0.012 : 0
       invalidate()
@@ -1364,7 +1408,9 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       const metersPerPx = (2 * dist * Math.tan(v / 2)) / height
       const z = zoneSlug ? zones.find((zz) => zz.slug === zoneSlug) : zones[0]
       if (!z) return
-      const limit = Math.max(0, z.width / 2 - 0.5)
+      // حد السحب = الجزء اللي مش باين من القسم بس — القسم وعنوانه مايخرجوش برّه
+      const visW = 2 * dist * Math.tan(v / 2) * aspect
+      const limit = Math.max(0, (z.width - visW) / 2 + 0.05)
       const dx = -dxPx * metersPerPx
       const prev = pan.zone === z.slug ? pan.x : 0
       const next = Math.max(-limit, Math.min(limit, prev + dx))

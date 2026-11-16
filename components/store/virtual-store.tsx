@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRightIcon, CloseIcon, InfoIcon } from '@/components/ui/icons'
+import { ArrowLeftIcon, ArrowRightIcon, CloseIcon, InfoIcon } from '@/components/ui/icons'
 import { site } from '@/data/site'
 import { colorOf } from '@/lib/colors'
 import type { Room, RoomPiece, RoomZone } from '@/lib/room'
@@ -205,16 +205,46 @@ export function VirtualStore({ room, governorates }: { room: Room; governorates:
     goStore()
   }, [zone, goZone, goStore])
 
+  /* القطعة اللي بعدها/قبلها في نفس القسم — RTL: التالية ناحية الشمال */
+  const stepPiece = useCallback(
+    (dir: 1 | -1) => {
+      const id = store.current?.sibling(dir)
+      if (id) open(id)
+    },
+    [open]
+  )
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (info) return setInfo(false)
         if (modeRef.current !== 'store') back()
       }
+      // الأسهم وقت فتح قطعة — بس لو التركيز مش جوه خانة كتابة
+      const typing = (e.target as HTMLElement)?.closest?.('input, select, textarea')
+      if (modeRef.current === 'product' && !typing) {
+        if (e.key === 'ArrowLeft') stepPiece(1)
+        if (e.key === 'ArrowRight') stepPiece(-1)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [back, info])
+  }, [back, info, stepPiece])
+
+  /* إشارة السحب على الفون — أول مرة بس في الجلسة */
+  const [hint, setHint] = useState(false)
+  useEffect(() => {
+    if (!mobile || gl !== 'on') return
+    try {
+      if (sessionStorage.getItem('atlas_swipe_hint')) return
+      sessionStorage.setItem('atlas_swipe_hint', '1')
+    } catch {
+      /* مش مهم */
+    }
+    setHint(true)
+    const t = window.setTimeout(() => setHint(false), 4200)
+    return () => window.clearTimeout(t)
+  }, [mobile, gl])
 
   /* ---------------- سكرول الماوس / سحب الصباع = التنقل بين الأماكن ----------------
      الترتيب: المتجر ← الأقسام بنفس ترتيب الشريط. الكاميرا بتمشي للمكان
@@ -411,6 +441,24 @@ export function VirtualStore({ room, governorates }: { room: Room; governorates:
           </div>
         ))}
 
+        {/* القطعة السابقة / التالية — ظاهرين على كل الشاشات */}
+        {mode === 'product' && (
+          <div className="st-steps" role="group" aria-label="التنقل بين القطع">
+            <button type="button" onClick={() => stepPiece(-1)} aria-label="القطعة السابقة">
+              <ArrowRightIcon className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={() => stepPiece(1)} aria-label="القطعة التالية">
+              <ArrowLeftIcon className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {hint && mode === 'store' && (
+          <p className="st-hint" role="status">
+            اسحب يمين وشمال أو اختار قسم من تحت
+          </p>
+        )}
+
         {/* رجوع (من القسم أو المنتج) */}
         {mode !== 'store' && (
           <button type="button" className="st-back" onClick={back}>
@@ -436,6 +484,9 @@ export function VirtualStore({ room, governorates }: { room: Room; governorates:
               {z.name}
             </button>
           ))}
+          <Link href="/shop" className="st-pills__all">
+            كل المنتجات
+          </Link>
           <span className="st-pills__sep" aria-hidden="true" />
           <button
             type="button"

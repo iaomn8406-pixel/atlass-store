@@ -78,6 +78,13 @@ export function StoreCard({
     if (piece.color && colorGroup?.options.includes(piece.color)) start[COLOR] = piece.color
     return start
   })
+  /* القطعة اتغيّرت لنفس المنتج بلون تاني (السابق/التالي أو صورة اللون) → اللون المختار يتبعها */
+  useEffect(() => {
+    const c = piece.color
+    if (!c || !colorGroup?.options.includes(c)) return
+    setPicked((prev) => (prev[COLOR] === c ? prev : { ...prev, [COLOR]: c }))
+  }, [piece.color, colorGroup])
+
   const [phase, setPhase] = useState<Phase>('idle')
   /* options → leaving (أنيميشن خروج) → checkout */
   const [stage, setStage] = useState<'options' | 'leaving' | 'checkout'>('options')

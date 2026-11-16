@@ -7,6 +7,7 @@ import { revealDelay } from '@/lib/motion'
 import { colorOf } from '@/lib/colors'
 import { discountPercent, formatPrice } from '@/lib/format'
 import type { Product } from '@/lib/types'
+import { GalleryPiece, useGalleryAsset } from './gallery-piece'
 import { Shot } from './shot'
 
 /* ============================================================
@@ -33,6 +34,8 @@ export function ProductCard({
   priority?: boolean
   sizes?: string
 }) {
+  /* قطعة معلّقة من المعرض (لو ليها صورة مفرّغة أمينة) — غير كده الصورة الحقيقية */
+  const hung = useGalleryAsset(product.slug)
   const [active, setActive] = useState(0)
   const [hover, setHover] = useState(false)
   /**
@@ -88,8 +91,10 @@ export function ProductCard({
       <Link href={`/product/${product.slug}`} className="block">
         <div className="pcard rim">
           {/* ---------- اللوح والصور ---------- */}
-          <div className="plate aspect-[3/4] w-full">
-            {(warm ? gallery : gallery.slice(0, 1)).map((src, i) => (
+          <div className="plate aspect-[3/4] w-full" data-gallery={!!hung}>
+            {hung ? (
+              <GalleryPiece asset={hung} alt={product.name} index={index} />
+            ) : (warm ? gallery : gallery.slice(0, 1)).map((src, i) => (
               <div
                 key={i}
                 aria-hidden={i !== active}

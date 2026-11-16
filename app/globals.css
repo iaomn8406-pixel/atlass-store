@@ -2396,3 +2396,203 @@ body:has(.st[data-mode='product']) .wa {
 .addbtn:not([data-state='busy']):not([data-state='done']) .addbtn__wave {
   opacity: 0;
 }
+
+/* ============================================================
+   الفون والتنقل بين القطع
+   ============================================================ */
+/* السابقة / التالية — كبسولتين زجاج فوق الكانفاس */
+.st-steps {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 16px;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  transform: translateY(-50%);
+}
+
+.st-steps button {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 24px -16px rgba(16, 20, 28, 0.5);
+  color: #14171f;
+}
+
+@media (max-width: 767px) {
+  /* فوق الدرج على طول، على الجانب البعيد عن زرار الرجوع */
+  .st-steps {
+    top: auto;
+    bottom: calc(52% + 12px);
+    inset-inline-end: 12px;
+    transform: none;
+  }
+}
+
+.st-hint {
+  position: absolute;
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 66px);
+  left: 50%;
+  z-index: 5;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(20, 23, 31, 0.86);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  animation: st-rise 0.4s var(--ease-atlas) both;
+}
+
+.st-pills__all {
+  flex-shrink: 0;
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0b5fc4;
+  white-space: nowrap;
+}
+
+/* بطاقة الفون: مساحة أكبر للقطعة، ومؤشر إن فيه محتوى تحت */
+.st-card[data-sheet='true'] {
+  max-height: 52%;
+}
+
+.st-card[data-sheet='true']::after {
+  content: '';
+  position: sticky;
+  bottom: calc(-18px - env(safe-area-inset-bottom));
+  display: block;
+  height: 30px;
+  margin: 0 -18px calc(-18px - env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.92));
+  pointer-events: none;
+}
+
+/* ============================================================
+   كروت المتجر: القطعة معلّقة على شماعة المعرض (عينة)
+   ============================================================ */
+.plate[data-gallery='true'] {
+  /* نفس حيطة المعرض بضوء هادي من فوق */
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(255, 255, 255, 0.75), transparent 62%),
+    linear-gradient(to bottom, #ece9e4, #e2ded7);
+}
+
+.gp {
+  position: absolute;
+  inset: 0;
+  perspective: 800px;
+  touch-action: pan-y; /* السحب الرأسي للصفحة مايتحجزش */
+}
+
+.gp-rig {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 0.5s var(--ease-atlas);
+}
+
+.gp-swing {
+  position: absolute;
+  inset: 0;
+  /* بتتأرجح من الخطاف (فوق في النص) */
+  transform-origin: 50% 6%;
+  animation: gp-hang 0.9s var(--ease-atlas) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+.gp-swing[data-swing='true'] {
+  animation: gp-swing 1.7s cubic-bezier(0.3, 0.6, 0.35, 1) both;
+}
+
+/* الأرجحة بتهدى تدريجي */
+@keyframes gp-swing {
+  0% { transform: rotate(0deg); }
+  14% { transform: rotate(2.6deg); }
+  32% { transform: rotate(-1.9deg); }
+  50% { transform: rotate(1.15deg); }
+  68% { transform: rotate(-0.6deg); }
+  84% { transform: rotate(0.25deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* دخول: القطعة بتتعلّق بنزلة قصيرة وأرجحة صغيرة */
+@keyframes gp-hang {
+  0% { opacity: 0; transform: translateY(-14px) rotate(-1.6deg); }
+  55% { opacity: 1; transform: translateY(2px) rotate(0.8deg); }
+  100% { opacity: 1; transform: none; }
+}
+
+.gp-piece {
+  position: absolute;
+  top: 13%;
+  left: 50%;
+  width: auto;
+  max-width: 82%;
+  max-height: 80%;
+  transform: translateX(-50%) translateZ(18px);
+  filter: drop-shadow(0 1px 1px rgba(30, 24, 16, 0.18));
+  user-select: none;
+  pointer-events: none;
+}
+
+.gp[data-tall='true'] .gp-piece {
+  max-height: 84%;
+}
+
+/* ظل القطعة على الحيطة — بيتحرك معاها */
+.gp-shadow {
+  position: absolute;
+  top: 15%;
+  left: 52%;
+  max-width: 92%;
+  max-height: 84%;
+  opacity: 0.5;
+  transform: translateX(-50%) translateZ(-8px);
+  pointer-events: none;
+}
+
+.gp-hanger {
+  /* الشماعة جوه القطعة (ورا القماش) — الخطاف بس اللي طالع فوق الياقة */
+  position: absolute;
+  top: 8.2%;
+  width: 46%;
+  height: auto;
+  transform: translateX(-50%) translateZ(6px);
+  pointer-events: none;
+}
+
+/* الكارت بيترفع شوية مع ظل تماس أوضح */
+.pcard:has(.gp) {
+  transition:
+    transform 0.4s var(--ease-atlas),
+    box-shadow 0.4s var(--ease-atlas);
+}
+
+.group:hover .pcard:has(.gp) {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 50px -34px rgba(16, 20, 28, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gp-swing,
+  .gp-swing[data-swing='true'] {
+    animation: none;
+  }
+  .gp-rig {
+    transform: none !important;
+  }
+}

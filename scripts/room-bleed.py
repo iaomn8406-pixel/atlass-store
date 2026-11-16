@@ -41,7 +41,12 @@ def bleed(path):
 
 
 def main():
-    files = [p for p in (ROOT / 'public/room').rglob('*.webp') if not p.stem.endswith('-shadow')]
+    # بيشتغل على الملفات اللي تتبعتله بس (أو الكل لو مفيش) — كل حفظ WebP بيخسر جودة شوية
+    import sys
+    if len(sys.argv) > 1:
+        files = [Path(a).resolve() for a in sys.argv[1:]]
+    else:
+        files = [p for p in (ROOT / 'public/room').rglob('*.webp') if not p.stem.endswith('-shadow')]
     for p in sorted(files):
         n = bleed(p)
         print(f'{p.relative_to(ROOT).as_posix():<60} {n:>8} px')
