@@ -60,7 +60,7 @@ SOURCES = [
      'own_hanger': True, 'crop': (0.15, 0.135, 0.88, 0.85), 'bg_holes': True, 'bg_holes_top': 0.22},
     # الطقم (on-cloud-tracksuit) اتشال من هنا: صورة 1 كانت بتتقص كقصاصة واحدة
     # (تيشيرت + بنطلون ملزوقين) وده مرفوض. الطقم بقى بيتجهّز في
-    # scripts/set-sample.py — شغّله بعد السكربت ده.
+    # scripts/set-cutouts.py (من صور الطقم بألوانه) — شغّله بعد السكربت ده.
     {'slug': 'hooded-embroidered-abaya', 'key': 'white', 'src': 'public/img/abaya-2.webp', 'color': 'أبيض',
      'bg_holes': True},
     {'slug': 'hooded-embroidered-abaya', 'key': 'beige', 'src': 'public/img/abaya-3.webp', 'color': 'بيج',
@@ -208,6 +208,13 @@ def cutout(path, opts):
     return crop, max_diff, lighter
 
 
+def fabric_color(img):
+    """لون القماش الأساسي (الوسيط جوه القطعة) — للمعاينة بلون مالوش صورة"""
+    a = np.asarray(img)
+    px = a[..., :3][a[..., 3] > 250].astype(float)
+    return [int(v) for v in np.median(px, 0)]
+
+
 def anchors(img):
     """نقطة تعليق الشماعة: نص الياقة من فوق، وعرض الكتاف"""
     a = np.asarray(img)[..., 3] > 128
@@ -273,6 +280,7 @@ def main():
             'w': img.width,
             'h': img.height,
             **anchors(img),
+            'base': fabric_color(img),
         }
         manifest.setdefault(s['slug'], []).append(entry)
 

@@ -57,6 +57,10 @@ export type ScenePiece = {
   top: number
   shoulder: number
   fold?: { src: string; w: number; h: number; clipY: number; clipX0: number; clipX1: number }
+  /** متصوّرة من فوق (طقم متطبّق) — بتتحط نايمة على ترابيزة بعرضها الحقيقي */
+  flat?: { span: number }
+  /** لون القماش الأساسي — للمعاينة بلون مالوش صورة */
+  base?: number[]
 }
 
 export type SceneZone = {
@@ -96,8 +100,6 @@ const GAP = 0.09 // مسافة بين القطع على القضيب
 const SET_GAP = 0.08 // بين تيشيرت الطقم وبنطلونه
 /* ترابيزة الطقم */
 const TABLE_Y = 0.86
-const TABLE_Z = 1.0 // بُعد نص الترابيزة عن الحيطة
-const TABLE_D = 0.82
 
 /* ---------------- ألوان (مأخوذة من كادر المرجع: أوضة فاتحة دافية) ---------------- */
 const WALL = '#e7e3dd'
@@ -106,6 +108,8 @@ const FLOOR = '#d5d0c8'
 /* ============================================================ */
 
 type Slot = {
+  /** واقف في الأوضة (مش على حيطة): ستاند أو ترابيزة */
+  free?: boolean
   /** نقطة على الحيطة عند الأرض */
   origin: Vector3
   /** يمين الواقف قدام الحيطة */
@@ -116,7 +120,21 @@ type Slot = {
   yaw: number
 }
 
+/** مكان واقف في الأوضة متلفّ بزاوية yaw ناحية نص المحل */
+function freeSlot(x: number, z: number, yaw: number): Slot {
+  return {
+    origin: new Vector3(x, 0, z),
+    right: new Vector3(Math.cos(yaw), 0, -Math.sin(yaw)),
+    normal: new Vector3(Math.sin(yaw), 0, Math.cos(yaw)),
+    yaw,
+    free: true,
+  }
+}
+
 const SLOTS: Record<string, Slot> = {
+  // ستاند العبايات يمين، وترابيزة الأطقم شمال — الاتنين واقفين على الأرض ومتلفّين ناحيتك
+  rack: freeSlot(2.75, -2.35, -0.6),
+  island: freeSlot(-3.25, -3.0, 0.6),
   back: { origin: new Vector3(0, 0, BACK_Z), right: new Vector3(1, 0, 0), normal: new Vector3(0, 0, 1), yaw: 0 },
   right: { origin: new Vector3(ROOM_W / 2, 0, -3.15), right: new Vector3(0, 0, 1), normal: new Vector3(-1, 0, 0), yaw: -Math.PI / 2 },
   left: { origin: new Vector3(-ROOM_W / 2, 0, -3.15), right: new Vector3(0, 0, -1), normal: new Vector3(1, 0, 0), yaw: Math.PI / 2 },
@@ -127,8 +145,8 @@ const SLOTS: Record<string, Slot> = {
 /** كل نوع عنده حيطة مفضّلة؛ لو اتاخدت بياخد اللي بعدها */
 const PREFER: Record<SceneZone['kind'], string[]> = {
   top: ['back', 'backRight', 'front', 'right', 'left'],
-  long: ['right', 'backRight', 'front', 'left', 'back'],
-  set: ['left', 'backRight', 'front', 'right', 'back'],
+  long: ['rack', 'right', 'backRight', 'front', 'left', 'back'],
+  set: ['island', 'left', 'backRight', 'front', 'right', 'back'],
 }
 
 type Shot = { pos: Vector3; target: Vector3; fov: number }
@@ -154,10 +172,14 @@ type LaidPiece = ScenePiece & {
   /** الأجسام اللي بيتحسب منها مكان الزرار على الشاشة */
   hits: Object3D[]
   /** متحطّة على ترابيزة (الكاميرا من فوق) */
-  flat: boolean
+  onTable: boolean
+  tint: Tint
+  tintTo: number
 }
 
 type LaidZone = Omit<SceneZone, 'pieces'> & {
+  depth: number
+  tableZ: number
   slot: Slot
   group: Group
   pieces: LaidPiece[]
@@ -317,6 +339,61 @@ function bodyGeometry(w: number, h: number, bend: number) {
   geo.setAttribute('color', new BufferAttribute(colors, 3))
   geo.computeVertexNormals()
   return geo
+}
+
+/* ---------------- معاينة لون مالوش صورة ----------------
+   القماش بس هو اللي بيتلوّن: كل بكسل بنقارن «درجة لونه» (اللون بعد
+   ما نشيل الإضاءة) بلون القماش الأساسي. اللي شبهه بياخد اللون الجديد
+   بنفس إضاءته وظله وكسراته (اللون × نسبة الإضاءة). الطباعة والتطريز
+   واللوجو مختلفين في الدرجة أو أفتح/أغمق بكتير → بيفضلوا زي ما هم. */
+/* تحويل sRGB خطي ⇄ CIE Lab (D65) جوه الشيدر */
+const LAB_GLSL = `
+vec3 atlasLab(vec3 c) {
+  vec3 x = mat3(0.4124, 0.2126, 0.0193, 0.3576, 0.7152, 0.1192, 0.1805, 0.0722, 0.9505) * c;
+  x /= vec3(0.95047, 1.0, 1.08883);
+  vec3 f = mix(7.787 * x + 16.0 / 116.0, pow(max(x, vec3(1e-6)), vec3(1.0 / 3.0)), step(vec3(0.008856), x));
+  return vec3(116.0 * f.y - 16.0, 500.0 * (f.x - f.y), 200.0 * (f.y - f.z));
+}
+vec3 atlasRgb(vec3 l) {
+  float fy = (l.x + 16.0) / 116.0;
+  vec3 f = vec3(fy + l.y / 500.0, fy, fy - l.z / 200.0);
+  vec3 x = mix((f - 16.0 / 116.0) / 7.787, f * f * f, step(vec3(0.206893), f));
+  x *= vec3(0.95047, 1.0, 1.08883);
+  return mat3(3.2406, -0.9689, 0.0557, -1.5372, 1.8758, -0.2040, -0.4986, 0.0415, 1.0570) * x;
+}
+`
+
+type Tint = { uTint: { value: number }; uBase: { value: Color }; uTarget: { value: Color } }
+
+function recolorable(mat: MeshBasicMaterial): Tint {
+  const u: Tint = { uTint: { value: 0 }, uBase: { value: new Color() }, uTarget: { value: new Color() } }
+  mat.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, u)
+    sh.fragmentShader =
+      'uniform float uTint;\nuniform vec3 uBase;\nuniform vec3 uTarget;\n' +
+      LAB_GLSL +
+      sh.fragmentShader.replace(
+        '#include <map_fragment>',
+        `#include <map_fragment>
+        if (uTint > 0.001) {
+          vec3 c = diffuseColor.rgb;
+          vec3 L = atlasLab(c);
+          vec3 B = atlasLab(uBase);
+          vec3 T = atlasLab(uTarget);
+          // القماش = نفس درجة لون القماش وفي حدود ظلاله (مش طباعة ولا تطريز)
+          float dab = length(L.yz - B.yz);
+          float dl = abs(L.x - B.x);
+          float w = (1.0 - smoothstep(10.0, 24.0, dab)) * (1.0 - smoothstep(26.0, 44.0, dl));
+          // الكسرات والظل بيتنقلوا زي ما هم (فرق الإضاءة)، واللون بس اللي بيتغيّر
+          float gain = mix(0.55, 1.0, clamp(T.x / 70.0, 0.0, 1.0));
+          vec3 N = vec3(clamp(T.x + (L.x - B.x) * gain, 0.0, 100.0), T.yz + (L.yz - B.yz) * 0.35);
+          vec3 rec = max(atlasRgb(N), 0.0);
+          diffuseColor.rgb = mix(c, rec, w * uTint);
+        }`
+      )
+  }
+  mat.customProgramCacheKey = () => 'atlas-recolor'
+  return u
 }
 
 /* ---------------- شماعة خشب ثلاثية الأبعاد ---------------- */
@@ -500,22 +577,32 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     const width = step * (sized.length - 1)
     const laid: LaidPiece[] = []
 
-    // ترابيزة الطقم: بلوك فاتح زي اللي في صورة المنتج نفسها
+    // ترابيزة العرض: الأطقم نايمة عليها زي ما اتصوّرت — ٣ جنب بعض في صفوف
+    const flatSize = (p: ScenePiece) => {
+      const fw = p.flat ? p.flat.span : p.w / ((p.shoulder * p.w) / SHOULDER_M)
+      return { fw, fd: fw * (p.h / p.w) }
+    }
+    const cols = Math.min(3, z.pieces.length)
+    const rows = Math.ceil(z.pieces.length / cols)
+    const cellW = Math.max(...z.pieces.map((p) => flatSize(p).fw)) + 0.1
+    const cellD = Math.max(...z.pieces.map((p) => flatSize(p).fd)) + 0.08
+    const tableLen = cols * cellW + 0.3
+    const tableD = rows * cellD + 0.26
+    const tableZ = tableD / 2 + 0.25
     if (z.kind === 'set') {
-      const len = width + unitMax + 0.4
-      const top = new Mesh(track(new BoxGeometry(len, 0.05, TABLE_D)), track(new MeshLambertMaterial({ color: '#f1ebe1' })))
-      top.position.set(0, TABLE_Y - 0.025, TABLE_Z)
+      const top = new Mesh(track(new BoxGeometry(tableLen, 0.05, tableD)), track(new MeshLambertMaterial({ color: '#f1ebe1' })))
+      top.position.set(0, TABLE_Y - 0.025, tableZ)
       const base = new Mesh(
-        track(new BoxGeometry(len - 0.1, TABLE_Y - 0.05, TABLE_D - 0.1)),
+        track(new BoxGeometry(tableLen - 0.1, TABLE_Y - 0.05, tableD - 0.1)),
         track(new MeshLambertMaterial({ color: '#e2dacd' }))
       )
-      base.position.set(0, (TABLE_Y - 0.05) / 2, TABLE_Z)
+      base.position.set(0, (TABLE_Y - 0.05) / 2, tableZ)
       const contact = new Mesh(
-        track(new PlaneGeometry(len + 0.3, TABLE_D + 0.3)),
+        track(new PlaneGeometry(tableLen + 0.3, tableD + 0.3)),
         track(new MeshBasicMaterial({ map: softShadow(), transparent: true, depthWrite: false, opacity: 0.3 }))
       )
       contact.rotation.x = -Math.PI / 2
-      contact.position.set(0, 0.002, TABLE_Z)
+      contact.position.set(0, 0.002, tableZ)
       group.add(top, base, contact)
     }
 
@@ -525,75 +612,73 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       g.visible = false
       group.add(g)
 
-      // الطقم على الترابيزة: التيشيرت والبنطلون متطبّقين زي ما اتصوّروا بالظبط
+      // على الترابيزة: الطقم كله (تيشيرت + بنطلون فوقه) زي الصورة بالظبط
       if (z.kind === 'set') {
-        const fw = p.fold ? p.fold.w / ppm : 0
-        const fh = p.fold ? p.fold.h / ppm : 0
-        const total = mw + (p.fold ? SET_GAP + fw : 0)
-        g.position.x = x
-        const flatMat = (src: string, onReady?: () => void) => {
-          const m = new MeshBasicMaterial({ transparent: true, alphaTest: 0.02 })
-          loader.load(
-            src,
-            (t) => {
-              if (disposed) return t.dispose()
-              track(t)
-              t.colorSpace = SRGBColorSpace
-              t.anisotropy = maxAniso
-              m.map = t
-              m.needsUpdate = true
-              onReady?.()
-              invalidate()
-            },
-            undefined,
-            () => {}
-          )
-          return m
-        }
-        const lay = (mesh: Mesh, w: number, d: number, px: number, y: number) => {
-          mesh.rotation.x = -Math.PI / 2 // الياقة/الوسط ناحية الحيطة
-          mesh.position.set(px, y, TABLE_Z)
-          const sh = new Mesh(
-            track(new PlaneGeometry(w * 1.1, d * 1.08)),
-            track(new MeshBasicMaterial({ map: softShadow(), transparent: true, depthWrite: false, opacity: 0.22 }))
-          )
-          sh.rotation.x = -Math.PI / 2
-          sh.position.set(px + 0.012, TABLE_Y + 0.001, TABLE_Z + 0.012)
-          g.add(sh, mesh)
-        }
+        const { fw, fd } = flatSize(p)
+        const col = i % cols
+        const row = Math.floor(i / cols)
+        // أول قطعة يمين (RTL)، والصف الأول ناحية الحيطة
+        const px = (cols - 1) / 2 * cellW - col * cellW
+        const pz = tableZ - ((rows - 1) / 2) * cellD + row * cellD
+        g.position.x = px
+        const mat = new MeshBasicMaterial({ transparent: true, alphaTest: 0.02 })
+        const tint = recolorable(mat)
+        const mesh = new Mesh(track(new PlaneGeometry(fw, fd)), mat)
+        mesh.rotation.x = -Math.PI / 2 // الياقة ناحية الحيطة
+        mesh.position.set(0, TABLE_Y + 0.004 + i * 0.0004, pz)
+        const sh = new Mesh(
+          track(new PlaneGeometry(fw * 1.06, fd * 1.05)),
+          track(new MeshBasicMaterial({ map: softShadow(), transparent: true, depthWrite: false, opacity: 0.24 }))
+        )
+        sh.rotation.x = -Math.PI / 2
+        sh.position.set(0.012, TABLE_Y + 0.001, pz + 0.014)
+        // سُمك القماش: نفس الشكل تحتها بـ ١٫٤ سم وأغمق — بيبان كحرف القماش من الجنب
+        const edgeMat = new MeshBasicMaterial({ color: '#5d5853', transparent: true, alphaTest: 0.3 })
+        const edge = new Mesh(mesh.geometry, edgeMat)
+        edge.rotation.x = -Math.PI / 2
+        edge.position.set(0.004, TABLE_Y + 0.004 - 0.0001 + i * 0.0004, pz + 0.004)
+        edge.scale.setScalar(1.006)
+        mesh.position.y += 0.014
+        sh.position.y = TABLE_Y + 0.001
+        g.add(sh, edge, mesh)
         const lp: LaidPiece = {
           ...p,
           zone: z.slug,
-          x,
-          mw,
-          mh,
+          x: px,
+          mw: fw,
+          mh: fd,
           group: g,
-          body: null as unknown as Mesh,
+          body: mesh,
           ready: false,
           spread: 0,
           spreadTo: 0,
           lift: 0,
           liftTo: 0,
-          box: { x0: -total / 2, x1: total / 2, y0: TABLE_Y, y1: TABLE_Y, z: TABLE_Z },
-          hits: [],
-          flat: true,
+          box: { x0: -fw / 2, x1: fw / 2, y0: TABLE_Y, y1: TABLE_Y, z: pz },
+          hits: [mesh],
+          onTable: true,
+          tint,
+          tintTo: 0,
         }
-        const tee = new Mesh(
-          track(new PlaneGeometry(mw, mh)),
-          flatMat(p.srcSm, () => {
+        loader.load(
+          p.srcSm,
+          (t) => {
+            if (disposed) return t.dispose()
+            track(t)
+            t.colorSpace = SRGBColorSpace
+            t.anisotropy = maxAniso
+            mat.map = t
+            mat.needsUpdate = true
+            edgeMat.map = t
+            edgeMat.needsUpdate = true
             lp.ready = true
             g.visible = true
             opts.onPieceReady(p.id)
-          })
+            invalidate()
+          },
+          undefined,
+          () => {}
         )
-        lay(tee, mw, mh, total / 2 - mw / 2, TABLE_Y + 0.004)
-        lp.body = tee
-        lp.hits.push(tee)
-        if (p.fold) {
-          const pants = new Mesh(track(new PlaneGeometry(fw, fh)), flatMat(p.fold.src))
-          lay(pants, fw, fh, -total / 2 + fw / 2, TABLE_Y + 0.005)
-          lp.hits.push(pants)
-        }
         laid.push(lp)
         all.push(lp)
         return
@@ -609,6 +694,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       const bend = Math.min(0.06, mw * 0.1)
       const geo = track(bodyGeometry(mw, mh, bend))
       const mat = new MeshBasicMaterial({ transparent: true, vertexColors: true, alphaTest: 0.04, side: DoubleSide })
+      const tint = recolorable(mat)
       const body = new Mesh(geo, mat)
       // الخطاف (hookX, top) لازم ييجي على كتف الشماعة
       const hookLocalX = (p.hookX - 0.5) * mw
@@ -629,8 +715,8 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       shadowMats.push(smat)
       const shadow = new Mesh(track(new PlaneGeometry(sw, sh)), smat)
       shadow.position.set(body.position.x + 0.05, body.position.y - 0.07, 0.006)
-      g.add(shadow)
-      loader.load(p.shadow, (t) => {
+      if (!slot.free) g.add(shadow)
+      if (!slot.free) loader.load(p.shadow, (t) => {
         if (disposed) return t.dispose()
         track(t)
         t.colorSpace = SRGBColorSpace
@@ -699,7 +785,9 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
           z: RAIL_Z + bend,
         },
         hits: [body],
-        flat: false,
+        onTable: false,
+        tint,
+        tintTo: 0,
       }
       g.position.x = x
       laid.push(lp)
@@ -730,7 +818,39 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
 
     // القضيب + الكوابيل (مش للترابيزة)
     const railLen = width + unitMax + 0.7
-    if (z.kind !== 'set') {
+    if (z.kind !== 'set' && slot.free) {
+      // ستاند هدوم معدن واقف على الأرض: عمودين + رجلين + القضيب + لوحة الاسم
+      const rail = new Mesh(track(new CylinderGeometry(0.012, 0.012, railLen, 16)), metalRail)
+      rail.rotation.z = Math.PI / 2
+      rail.position.set(0, railY, RAIL_Z)
+      group.add(rail)
+      const topY = railY + 0.42
+      for (const sx of [-railLen / 2, railLen / 2]) {
+        const post = new Mesh(track(new CylinderGeometry(0.016, 0.016, topY, 14)), metalRail)
+        post.position.set(sx, topY / 2, RAIL_Z)
+        const foot = new Mesh(track(new CylinderGeometry(0.014, 0.014, 0.62, 12)), metalRail)
+        foot.rotation.x = Math.PI / 2
+        foot.position.set(sx, 0.02, RAIL_Z)
+        group.add(post, foot)
+        for (const fz of [-0.31, 0.31]) {
+          const cap = new Mesh(track(new CylinderGeometry(0.022, 0.022, 0.025, 12)), metalRail)
+          cap.position.set(sx, 0.012, RAIL_Z + fz)
+          group.add(cap)
+        }
+      }
+      const head = new Mesh(track(new CylinderGeometry(0.012, 0.012, railLen, 16)), metalRail)
+      head.rotation.z = Math.PI / 2
+      head.position.set(0, topY, RAIL_Z)
+      group.add(head)
+      // ظل الستاند والهدوم على الأرض
+      const floorSh = new Mesh(
+        track(new PlaneGeometry(railLen + 0.5, 0.95)),
+        track(new MeshBasicMaterial({ map: softShadow(), transparent: true, depthWrite: false, opacity: 0.42 }))
+      )
+      floorSh.rotation.x = -Math.PI / 2
+      floorSh.position.set(0.06, 0.003, RAIL_Z + 0.08)
+      group.add(floorSh)
+    } else if (z.kind !== 'set') {
       const rail = new Mesh(track(new CylinderGeometry(0.011, 0.011, railLen, 16)), metalRail)
       rail.rotation.z = Math.PI / 2
       rail.position.set(0, railY, RAIL_Z)
@@ -754,9 +874,31 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       track(new PlaneGeometry(labelW, labelW / lt.aspect)),
       track(new MeshBasicMaterial({ map: lt.texture, transparent: true, depthWrite: false }))
     )
-    const signY = z.kind === 'set' ? TABLE_Y + 0.62 : railY + 0.42
-    label.position.set(0, signY, 0.012)
-    group.add(label)
+    let signY = railY + 0.42
+    if (z.kind === 'set' && slot.free) {
+      // لافتة صغيرة واقفة على طرف الترابيزة اللي ورا
+      signY = TABLE_Y + 0.16
+      const board = new Mesh(track(new BoxGeometry(0.7, 0.24, 0.025)), track(new MeshLambertMaterial({ color: '#fbfaf7' })))
+      const bz = tableZ - tableD / 2 + 0.06
+      board.position.set(0, signY, bz)
+      board.rotation.x = -0.18
+      label.scale.setScalar(0.66)
+      label.position.set(0, signY + 0.004, bz + 0.016)
+      label.rotation.x = -0.18
+      group.add(board, label)
+    } else if (slot.free) {
+      // لوحة الاسم فوق الستاند
+      signY = railY + 0.42 + 0.17
+      const board = new Mesh(track(new BoxGeometry(0.9, 0.26, 0.02)), track(new MeshLambertMaterial({ color: '#fbfaf7' })))
+      board.position.set(0, signY, RAIL_Z)
+      label.scale.setScalar(0.78)
+      label.position.set(0, signY + 0.004, RAIL_Z + 0.012)
+      group.add(board, label)
+    } else {
+      if (z.kind === 'set') signY = TABLE_Y + 0.62
+      label.position.set(0, signY, 0.012)
+      group.add(label)
+    }
 
     const heights = sized.map((s) => Math.max(s.mh, s.p.fold ? s.p.fold.h / s.ppm + 0.02 : 0))
     zones.push({
@@ -764,7 +906,9 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       slot,
       group,
       pieces: laid,
-      width: z.kind === 'set' ? width + unitMax + 0.4 : railLen,
+      width: z.kind === 'set' ? tableLen : railLen,
+      depth: z.kind === 'set' ? tableD : 0,
+      tableZ,
       top: signY + 0.2,
       bottom: z.kind === 'set' ? TABLE_Y : railY - HOOK_DROP - Math.max(...heights) - 0.05,
     })
@@ -809,12 +953,12 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
   }
 
   /** الترابيزة: الكاميرا من فوق بزاوية (~٦٠°) والاسم على الحيطة باين */
-  function shotTable(z: LaidZone, cx: number, w: number, d: number, fov: number, margin: number, wall = false) {
+  function shotTable(z: LaidZone, cx: number, w: number, d: number, fov: number, margin: number, wall = false, cz = z.tableZ) {
     const up = new Vector3(0, 1, 0)
     const dir = z.slot.normal.clone().multiplyScalar(wall ? 0.9 : 0.58).add(up).normalize()
     const dist = fit(w, d, fov, margin)
     // مكان القسم: بنرفع النظرة شوية عشان اسم القسم على الحيطة يدخل الكادر
-    const target = wall ? toWorld(z, cx, TABLE_Y + 0.3, TABLE_Z - 0.5) : toWorld(z, cx, TABLE_Y + 0.08, TABLE_Z - 0.12)
+    const target = wall ? toWorld(z, cx, TABLE_Y + 0.3, cz - 0.35) : toWorld(z, cx, TABLE_Y + 0.04, cz - 0.08)
     return { pos: target.clone().addScaledVector(dir, dist), target, fov }
   }
 
@@ -822,7 +966,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     if (z.kind === 'set') {
       const fov = portrait() ? 60 : 46
       const w = portrait() ? Math.min(z.width, 1.5) : z.width + 0.4
-      return shotTable(z, pan.zone === z.slug ? pan.x : 0, w, TABLE_D + 1.3, fov, 1.15, true)
+      return shotTable(z, pan.zone === z.slug ? pan.x : 0, w, z.depth + 1.1, fov, 1.12, true)
     }
     const fov = portrait() ? 58 : 44
     // مساحة تحت لشريط الأقسام (~١٢٪ من الكادر) عشان طرف القطعة مايستخبّاش وراه
@@ -838,13 +982,13 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
 
   function shotPiece(p: LaidPiece, withCard: boolean): Shot {
     const z = zones.find((zz) => zz.slug === p.zone)!
-    if (p.flat) {
+    if (p.onTable) {
       const fov = portrait() ? 52 : 40
       const w = p.box.x1 - p.box.x0
       const sheet = withCard && portrait()
       const s = sheet
-        ? shotTable(z, p.x, w * 1.1, p.mh / 0.4, fov, 1)
-        : shotTable(z, p.x, w * 1.45, p.mh * 1.6, fov, 1.3)
+        ? shotTable(z, p.x, w * 1.1, p.mh / 0.4, fov, 1, false, p.box.z)
+        : shotTable(z, p.x, w * 1.45, p.mh * 1.6, fov, 1.3, false, p.box.z)
       if (withCard) {
         const v = (fov * Math.PI) / 180
         const visH = 2 * s.pos.distanceTo(s.target) * Math.tan(v / 2)
@@ -958,6 +1102,15 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     }
 
     for (const p of all) {
+      const dt = p.tintTo - p.tint.uTint.value
+      if (Math.abs(dt) > 0.002) {
+        p.tint.uTint.value += dt * (opts.reducedMotion ? 1 : 0.18)
+        moving = true
+        dirty = true
+      } else if (dt !== 0) {
+        p.tint.uTint.value = p.tintTo
+        dirty = true
+      }
       const ds = p.spreadTo - p.spread
       const dl = p.liftTo - p.lift
       if (Math.abs(ds) > 0.0005 || Math.abs(dl) > 0.0002) {
@@ -1022,7 +1175,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       for (const h of p.hits) bx.expandByObject(h)
       const center = bx.getCenter(new Vector3())
       const look = center.sub(camPos).normalize()
-      const facing = (p.flat ? up : z.slot.normal).dot(look)
+      const facing = (p.onTable ? up : z.slot.normal).dot(look)
       if (facing > -0.12) {
         rects.set(p.id, null)
         continue
@@ -1053,7 +1206,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     // المجاورين بيبعدوا عشان القطعة تبان لوحدها (زي المرجع)
     z.pieces.forEach((q, j) => {
       if (j === i) return
-      q.spreadTo = (j < i ? 1 : -1) * (0.75 + p.mw * 0.45)
+      q.spreadTo = 0 // القطع بتفضل مكانها — الكاميرا بس اللي بتتحرك
     })
   }
 
@@ -1115,7 +1268,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       go(shotPiece(p, card))
     },
     hover(id: string | null) {
-      for (const p of all) p.liftTo = p.id === id && id !== focusId ? 0.03 : 0
+      for (const p of all) p.liftTo = p.id === id && id !== focusId && !p.onTable ? 0.012 : 0
       invalidate()
     },
     /** سحب أفقي: بيمشي على الحيطة في حدود القسم/الأوضة */
@@ -1137,6 +1290,17 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       cur.pos.addScaledVector(z.slot.right, delta)
       cur.target.addScaledVector(z.slot.right, delta)
       goal = cur
+      invalidate()
+    },
+    /** معاينة القطعة بلون مالوش صورة (hex) — null يرجّعها لصورتها */
+    recolor(id: string | null, hex: string | null) {
+      for (const p of all) {
+        if (p.id === id && hex && p.base) {
+          p.tint.uBase.value.setRGB(p.base[0] / 255, p.base[1] / 255, p.base[2] / 255, SRGBColorSpace)
+          p.tint.uTarget.value.set(hex)
+          p.tintTo = 1
+        } else p.tintTo = 0
+      }
       invalidate()
     },
     /** صورة أوضح لقطعة (النسخة الكاملة) — بتتبدّل لما تجهز */

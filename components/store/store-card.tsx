@@ -42,6 +42,7 @@ export function StoreCard({
   onClose,
   onPickColor,
   pieceRect,
+  preview,
 }: {
   product: RoomProduct
   piece: RoomPiece
@@ -50,6 +51,8 @@ export function StoreCard({
   onPickColor: (color: string) => void
   /** مكان القطعة على الشاشة دلوقتي — من المشهد (للطيران للسلة) */
   pieceRect: () => { x: number; y: number; w: number; h: number } | null
+  /** اللون المختار مالوش صورة — القطعة معروضة بمعاينة للون */
+  preview?: string | null
 }) {
   const { addItem, openCart, count } = useCart()
 
@@ -158,6 +161,9 @@ export function StoreCard({
       </div>
 
       {colorLine && <p className="st-card__line">{colorLine}</p>}
+      {preview && (
+        <p className="st-card__note">معاينة للون «{preview}» على نفس القطعة — الصورة الحقيقية بلون تاني</p>
+      )}
 
       {/* ---------- الألوان ---------- */}
       {colorGroup && (

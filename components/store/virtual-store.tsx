@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRightIcon, CloseIcon, InfoIcon } from '@/components/ui/icons'
 import { site } from '@/data/site'
+import { colorOf } from '@/lib/colors'
 import type { Room, RoomPiece, RoomZone } from '@/lib/room'
 import type { Rect, Store } from './scene'
 
@@ -39,6 +40,8 @@ export function VirtualStore({ room }: { room: Room }) {
   const [sel, setSel] = useState<string | null>(null)
   const [ready, setReady] = useState<Set<string>>(() => new Set())
   const [info, setInfo] = useState(false)
+  /** لون بيتعرض كمعاينة (مالوش صورة) */
+  const [preview, setPreview] = useState<string | null>(null)
   const [mobile, setMobile] = useState(false)
 
   const stage = useRef<HTMLDivElement>(null)
@@ -143,6 +146,8 @@ export function VirtualStore({ room }: { room: Room }) {
   }, [])
 
   const goZone = useCallback((slug: string) => {
+    setPreview(null)
+    store.current?.recolor(null, null)
     setMode('zone')
     setZone(slug)
     setSel(null)
@@ -154,6 +159,8 @@ export function VirtualStore({ room }: { room: Room }) {
       const p = byId.get(id)
       if (!p) return
       if (from) returnTo.current = from
+      setPreview(null)
+      store.current?.recolor(null, null)
       setMode('product')
       setZone(p.zone)
       setSel(id)
@@ -266,13 +273,40 @@ export function VirtualStore({ room }: { room: Room }) {
     }
   }
 
-  /* ---------------- لون تاني لنفس المنتج ---------------- */
+  /* ---------------- لون تاني لنفس المنتج ----------------
+     لو اللون ليه صورة حقيقية → القطعة دي. لو مالوش → معاينة: بنلوّن
+     القطعة الأقرب له في الفتاحة/الغمقان (الرمادي من الأبيض مش من الأسود)
+     بنفس تفاصيلها، والبطاقة بتقول إنها معاينة. */
   const pickColor = useCallback(
     (color: string) => {
       const cur = sel ? byId.get(sel) : null
       if (!cur) return
       const twin = pieces.find((p) => p.productId === cur.productId && p.color === color)
-      if (twin && twin.id !== cur.id) open(twin.id)
+      if (twin) {
+        if (twin.id !== cur.id) open(twin.id)
+        else {
+          setPreview(null)
+          store.current?.recolor(null, null)
+        }
+        return
+      }
+      const hex = colorOf(color)
+      const siblings = pieces.filter((p) => p.productId === cur.productId && p.base)
+      if (!hex || !siblings.length) {
+        setPreview(null)
+        store.current?.recolor(null, null)
+        return
+      }
+      // الأقرب في الفتاحة والتشبّع (Lab): الرمادي من الأبيض، البترولي من الأزرق
+      const t = lab([1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)))
+      const score = (c: number[]) => {
+        const l = lab(c)
+        return Math.abs(l[0] - t[0]) + 0.5 * Math.abs(Math.hypot(l[1], l[2]) - Math.hypot(t[1], t[2]))
+      }
+      const src = siblings.reduce((a, b) => (score(b.base!) < score(a.base!) ? b : a))
+      if (src.id !== cur.id) open(src.id)
+      store.current?.recolor(src.id, hex)
+      setPreview(color)
     },
     [sel, byId, pieces, open]
   )
@@ -397,6 +431,7 @@ export function VirtualStore({ room }: { room: Room }) {
           onClose={back}
           onPickColor={pickColor}
           pieceRect={pieceRect}
+          preview={preview}
         />
       )}
 
@@ -473,6 +508,19 @@ function StoreFallback({ room }: { room: Room }) {
       ))}
     </section>
   )
+}
+
+/** sRGB (0–255) → CIE Lab */
+function lab(rgb: number[]) {
+  const lin = rgb.map((v) => {
+    const c = v / 255
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+  })
+  const x = (0.4124 * lin[0] + 0.3576 * lin[1] + 0.1805 * lin[2]) / 0.95047
+  const y = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+  const z = (0.0193 * lin[0] + 0.1192 * lin[1] + 0.9505 * lin[2]) / 1.08883
+  const f = (u: number) => (u > 0.008856 ? Math.cbrt(u) : 7.787 * u + 16 / 116)
+  return [116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z))]
 }
 
 function canvasSupported() {

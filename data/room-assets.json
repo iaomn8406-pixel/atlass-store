@@ -11,7 +11,12 @@
       "h": 960,
       "hookX": 0.5014,
       "top": 0.0083,
-      "shoulder": 0.5731
+      "shoulder": 0.5731,
+      "base": [
+        231,
+        230,
+        233
+      ]
     },
     {
       "src": "/room/loewe-mens-tshirt--black.webp",
@@ -24,7 +29,12 @@
       "h": 960,
       "hookX": 0.5045,
       "top": 0.0073,
-      "shoulder": 0.5764
+      "shoulder": 0.5764,
+      "base": [
+        21,
+        21,
+        22
+      ]
     }
   ],
   "massimo-dutti-oversize": [
@@ -39,7 +49,12 @@
       "h": 960,
       "hookX": 0.5,
       "top": 0.0083,
-      "shoulder": 0.5917
+      "shoulder": 0.5917,
+      "base": [
+        221,
+        221,
+        221
+      ]
     },
     {
       "src": "/room/massimo-dutti-oversize--black.webp",
@@ -52,7 +67,12 @@
       "h": 960,
       "hookX": 0.4975,
       "top": 0.0021,
-      "shoulder": 0.6239
+      "shoulder": 0.6239,
+      "base": [
+        19,
+        19,
+        19
+      ]
     }
   ],
   "tshirt-1975-print": [
@@ -67,32 +87,140 @@
       "h": 821,
       "hookX": 0.4777,
       "top": 0.0097,
-      "shoulder": 0.681
+      "shoulder": 0.681,
+      "base": [
+        32,
+        41,
+        35
+      ]
     }
   ],
   "on-cloud-tracksuit": [
     {
-      "src": "/room/sample/oncloud-navy-tee.webp",
-      "srcSm": "/room/sample/oncloud-navy-tee.webp",
-      "from": "/img/oncloud-2.webp",
+      "src": "/room/set/oncloud-navy.webp",
+      "srcSm": "/room/set/oncloud-navy-sm.webp",
+      "from": "ترينج  NE29 on cloud (مخزن Z13)/NZFblgLkNHLeB9NwGcAfsVyReEub1CQlJcZehGJ8.jpg",
       "color": "كحلي",
-      "shadow": "/room/sample/oncloud-navy-tee-shadow.webp",
+      "shadow": "/room/set/oncloud-navy-shadow.webp",
       "ownHanger": false,
-      "w": 655,
-      "h": 576,
-      "hookX": 0.4863,
-      "top": 0.0017,
-      "shoulder": 0.6107,
-      "fold": {
-        "src": "/room/sample/oncloud-navy-pants.webp",
-        "w": 358,
-        "h": 484,
-        "clipY": 0.0455,
-        "clipX0": 0.4274,
-        "clipX1": 0.9358
+      "w": 663,
+      "h": 586,
+      "hookX": 0.5,
+      "top": 0,
+      "shoulder": 1.0,
+      "flat": {
+        "span": 0.8
       },
-      "sample": true,
-      "note": "تعديل منظور + تصحيح عمق 0.819 متظبّط على نسبة نفس التيشيرت في /img/oncloud-1.webp"
+      "base": [
+        9,
+        20,
+        41
+      ]
+    },
+    {
+      "src": "/room/set/oncloud-black.webp",
+      "srcSm": "/room/set/oncloud-black-sm.webp",
+      "from": "ترينج  NE29 on cloud (مخزن Z13)/vKLS1Fp5wJJCQ8bY29oVjtcfuYlgGgmBV55C79Bn.jpg",
+      "color": "اسود",
+      "shadow": "/room/set/oncloud-black-shadow.webp",
+      "ownHanger": false,
+      "w": 686,
+      "h": 575,
+      "hookX": 0.5,
+      "top": 0,
+      "shoulder": 1.0,
+      "flat": {
+        "span": 0.8
+      },
+      "base": [
+        19,
+        19,
+        23
+      ]
+    },
+    {
+      "src": "/room/set/oncloud-white.webp",
+      "srcSm": "/room/set/oncloud-white-sm.webp",
+      "from": "ترينج  NE29 on cloud (مخزن Z13)/9KfPCo3QgaeymP2BXSSVU0QtqMbcn1lAptXrfTLY.jpg",
+      "color": "أبيض",
+      "shadow": "/room/set/oncloud-white-shadow.webp",
+      "ownHanger": false,
+      "w": 668,
+      "h": 617,
+      "hookX": 0.5,
+      "top": 0,
+      "shoulder": 1.0,
+      "flat": {
+        "span": 0.8
+      },
+      "base": [
+        199,
+        204,
+        223
+      ]
+    },
+    {
+      "src": "/room/set/oncloud-olive.webp",
+      "srcSm": "/room/set/oncloud-olive-sm.webp",
+      "from": "ترينج  NE29 on cloud (مخزن Z13)/JnIx8LPdiIdFeoqVJqetyrkDJszW9qk2TgFtfsCW.jpg",
+      "color": "زيتي",
+      "shadow": "/room/set/oncloud-olive-shadow.webp",
+      "ownHanger": false,
+      "w": 671,
+      "h": 598,
+      "hookX": 0.5,
+      "top": 0,
+      "shoulder": 1.0,
+      "flat": {
+        "span": 0.8
+      },
+      "base": [
+        24,
+        66,
+        56
+      ]
+    },
+    {
+      "src": "/room/set/oncloud-red.webp",
+      "srcSm": "/room/set/oncloud-red-sm.webp",
+      "from": "ترينج  NE29 on cloud (مخزن Z13)/GKGDKsReCTp7oyLlospfeyRIoMWSALsGvWPwzG0W.jpg",
+      "color": "أحمر",
+      "shadow": "/room/set/oncloud-red-shadow.webp",
+      "ownHanger": false,
+      "w": 645,
+      "h": 552,
+      "hookX": 0.5,
+      "top": 0,
+      "shoulder": 1.0,
+      "flat": {
+        "span": 0.8
+      },
+      "base": [
+        160,
+        16,
+        26
+      ]
+    },
+    {
+      "src": "/room/set/oncloud-yellow.webp",
+      "srcSm": "/room/set/oncloud-yellow-sm.webp",
+      "from": "ترينج  NE29 on cloud (مخزن Z13)/0w8mcBkSWFifsJVqZnVHAbHILT1kqEZOMHcauGkG.jpg",
+      "color": "أصفر",
+      "shadow": "/room/set/oncloud-yellow-shadow.webp",
+      "ownHanger": false,
+      "w": 668,
+      "h": 551,
+      "hookX": 0.5,
+      "top": 0,
+      "shoulder": 1.0,
+      "flat": {
+        "span": 0.8
+      },
+      "base": [
+        243,
+        200,
+        23
+      ]
     }
   ],
   "hooded-embroidered-abaya": [
@@ -107,7 +235,12 @@
       "h": 960,
       "hookX": 0.5044,
       "top": 0.0063,
-      "shoulder": 0.4901
+      "shoulder": 0.4901,
+      "base": [
+        231,
+        230,
+        233
+      ]
     },
     {
       "src": "/room/hooded-embroidered-abaya--beige.webp",
@@ -120,7 +253,12 @@
       "h": 960,
       "hookX": 0.5021,
       "top": 0.0063,
-      "shoulder": 0.6296
+      "shoulder": 0.6296,
+      "base": [
+        236,
+        224,
+        207
+      ]
     },
     {
       "src": "/room/hooded-embroidered-abaya--black.webp",
@@ -133,7 +271,12 @@
       "h": 960,
       "hookX": 0.4989,
       "top": 0.0063,
-      "shoulder": 0.6433
+      "shoulder": 0.6433,
+      "base": [
+        29,
+        29,
+        30
+      ]
     },
     {
       "src": "/room/hooded-embroidered-abaya--blue.webp",
@@ -146,7 +289,12 @@
       "h": 960,
       "hookX": 0.5,
       "top": 0.0073,
-      "shoulder": 0.6087
+      "shoulder": 0.6087,
+      "base": [
+        49,
+        88,
+        140
+      ]
     }
   ]
 }

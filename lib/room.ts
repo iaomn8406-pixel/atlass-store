@@ -30,8 +30,10 @@ type Asset = {
   shoulder: number
   /** قطعة تانية من نفس المنتج متطبّقة (بنطلون الطقم) — بتتحط على رف */
   fold?: { src: string; w: number; h: number; clipY: number; clipX0: number; clipX1: number }
-  /** عينة مستنية موافقة صاحب المشروع */
-  sample?: boolean
+  /** متصوّرة من فوق (طقم متطبّق) — بتتحط نايمة على ترابيزة */
+  flat?: { span: number }
+  /** لون القماش الأساسي [r,g,b] — للمعاينة بلون مالوش صورة */
+  base?: number[]
 }
 
 const MANIFEST = assets as Record<string, Asset[]>
@@ -64,7 +66,7 @@ export type RoomProduct = Pick<
 
 /**
  * نوع العرض بيتحدد من القطعة نفسها مش من اسم القسم:
- *  • set  → فيه بنطلون متطبّق → تيشيرت على شماعة + رف
+ *  • set  → متصوّرة من فوق (طقم متطبّق) → ترابيزة عرض والكاميرا من فوق
  *  • long → طولها أكتر من ٢٫٦ مرة عرض كتافها (عباية/جلابية) → قضيب عالي
  *  • top  → تيشيرت/بولو → قضيب عادي
  */
@@ -78,7 +80,7 @@ export type RoomZone = {
 }
 
 function kindOf(pieces: RoomPiece[]): ZoneKind {
-  if (pieces.some((p) => p.fold)) return 'set'
+  if (pieces.some((p) => p.fold || p.flat)) return 'set'
   const long = pieces.filter((p) => p.h / (p.shoulder * p.w) > 2.6).length
   return long > pieces.length / 2 ? 'long' : 'top'
 }
