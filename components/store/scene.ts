@@ -87,6 +87,13 @@ export type SceneOptions = {
   onMotion: (moving: boolean) => void
 }
 
+/* عينة ملف الفحص الجديد — بتتعمّم بعد موافقة صاحب المشروع */
+const SAMPLE_NATURAL = new Set([
+  '/room/massimo-dutti-oversize--white.webp',
+  '/room/loewe-mens-tshirt--white.webp',
+  '/room/tshirt-1975-print--olive.webp',
+])
+
 /* ---------------- أبعاد الأوضة ---------------- */
 const ROOM_W = 9.6
 const ROOM_D = 10
@@ -760,9 +767,14 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       // الجسم
       const bend = Math.min(0.06, mw * 0.1)
       const geo = track(bodyGeometry(mw, mh, bend))
-      // حافة متقصوصة ناعمة (alpha-to-coverage) مش نص شفافة: من بعيد أو بزاوية مافيش إطار ولا خلط
-      const mat = new MeshLambertMaterial({ alphaTest: 0.5, alphaToCoverage: true, side: DoubleSide, color: '#eaeaea' })
-      if (p.depth) {
+      /* عينة الملف (Massimo الأبيض، Loewe الأبيض، 1975): ظلال الصورة الأصلية نفسها —
+         من غير نفخ ولا إضاءة مضافة (كانت بتعمل مساحات مستوية شبه البلاستيك)،
+         وحافة ناعمة متدرّجة (مش alpha-to-coverage اللي بيعمل تسنين) */
+      const natural = SAMPLE_NATURAL.has(p.src)
+      const mat = natural
+        ? new MeshBasicMaterial({ transparent: true, alphaTest: 0.02, side: DoubleSide })
+        : new MeshLambertMaterial({ alphaTest: 0.5, alphaToCoverage: true, side: DoubleSide, color: '#eaeaea' })
+      if (p.depth && !natural) {
         // العباية الطويلة بروزها أقل — من الجنب كانت بتبان منفوخة
         const amount = long ? 0.045 : 0.07
         void loadDepth(p.depth).then((d) => {
@@ -780,8 +792,10 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       g.add(body)
 
       if (!p.ownHanger) {
-        const hg = hanger(Math.max(0.3, Math.min(0.46, p.shoulder * mw * 0.92)))
-        hg.position.set(ox, railY - HOOK_DROP, RAIL_Z + bend + 0.004)
+        // العينة: الشماعة جوه القطعة (ورا القماش) وأضيق من الكتف — الخطاف بس اللي طالع
+        const span = natural ? p.shoulder * mw * 0.74 : Math.max(0.3, Math.min(0.46, p.shoulder * mw * 0.92))
+        const hg = hanger(span)
+        hg.position.set(ox, railY - HOOK_DROP, natural ? RAIL_Z - 0.012 : RAIL_Z + bend + 0.004)
         g.add(hg)
       }
 
@@ -811,7 +825,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
         track(t)
         t.colorSpace = SRGBColorSpace
         smat.map = t
-        smat.opacity = smat.userData.max ?? 0.42
+        smat.opacity = smat.userData.max ?? (natural ? 0.28 : 0.42)
         smat.needsUpdate = true
         invalidate()
       })
@@ -1214,7 +1228,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       const dd = p.dimTo - p.dim
       if (Math.abs(dd) > 0.003) {
         p.dim += dd * (opts.reducedMotion ? 1 : 0.14)
-        const m = p.body.material as MeshLambertMaterial
+        const m = p.body.material as MeshLambertMaterial | MeshBasicMaterial
         m.color.copy(p.baseColor).multiplyScalar(1 - 0.32 * p.dim)
         moving = true
         dirty = true

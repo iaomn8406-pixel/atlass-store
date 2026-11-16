@@ -21,14 +21,21 @@ type Asset = {
   depth?: string
 }
 
+const SAMPLE_NATURAL = new Set([
+  '/room/massimo-dutti-oversize--white.webp',
+  '/room/loewe-mens-tshirt--white.webp',
+  '/room/tshirt-1975-print--olive.webp',
+])
+
 export function getGalleryAssets(): Record<string, GalleryAsset> {
   const out: Record<string, GalleryAsset> = {}
   for (const [slug, list] of Object.entries(assets as Record<string, Asset[]>)) {
-    const a = list.find((x) => !x.flat && x.depth)
+    const a = list.find((x) => SAMPLE_NATURAL.has(x.src)) ?? list.find((x) => !x.flat && x.depth)
     if (!a) continue
     const s = Math.min(1, 420 / a.h)
     out[slug] = {
-      src: a.srcSm.replace('-sm.webp', '-lit.webp'),
+      // عينة الملف: صورة القطعة الأصلية من غير إضاءة مضافة (كانت بتطلّعها شبه البلاستيك)
+      src: SAMPLE_NATURAL.has(a.src) ? a.srcSm : a.srcSm.replace('-sm.webp', '-lit.webp'),
       shadow: a.shadow,
       w: Math.round(a.w * s),
       h: Math.round(a.h * s),
