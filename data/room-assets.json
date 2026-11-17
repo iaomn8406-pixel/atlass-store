@@ -19,6 +19,13 @@
       ],
       "depth": "/room/loewe-mens-tshirt--white-depth.png",
       "sample": "v4",
+      "volume": true,
+      "folded": {
+        "src": "/room/loewe-mens-tshirt--white-folded.webp",
+        "w": 593,
+        "h": 743,
+        "span": 0.3
+      },
       "rim": [
         1.0,
         0.3479,

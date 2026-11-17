@@ -38,6 +38,10 @@ type Asset = {
   depth?: string
   /** خط القماش من فوق — الشماعة بتترسم تحته (scripts/refine-v4.py) */
   rim?: number[]
+  /** عينة «قماش مجسّم» (وش وضهر وسُمك) — scene.ts */
+  volume?: boolean
+  /** عينة: نفس القطعة متطبّقة — بتتحط على الترابيزة (scene.ts) */
+  folded?: { src: string; w: number; h: number; span: number }
   /** الطقم: تيشيرت وبنطلون مفرودين بخطوط طيّهم (scripts/refine-v4.py) */
   foldSet?: { tee: FoldSpec; pants: FoldSpec }
 }

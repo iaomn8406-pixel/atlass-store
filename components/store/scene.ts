@@ -69,6 +69,10 @@ export type ScenePiece = {
   rim?: number[]
   /** طقم من قطعتين مفرودين (تيشيرت + بنطلون) بيتطبقوا على الترابيزة ويتفردوا عند الاختيار */
   foldSet?: { tee: FoldSpec; pants: FoldSpec }
+  /** عينة «قماش مجسّم»: القطعة المتعلّقة ليها وش وضهر وسُمك بيلفّ عند الحواف */
+  volume?: boolean
+  /** عينة: نفس القطعة متطبّقة (صورة من فوق) — بتتحط على الترابيزة. span = عرضها بالمتر */
+  folded?: { src: string; w: number; h: number; span: number }
 }
 
 /** قطعة مفرودة متصوّرة من فوق + خطوط طيّها (نِسَب من الصورة) */
@@ -484,6 +488,227 @@ function inflate(geo: PlaneGeometry, w: number, h: number, depth: { w: number; h
   geo.computeVertexNormals()
   geo.computeBoundingBox()
   geo.computeBoundingSphere()
+}
+
+/* ---------------- قماش مجسّم (عينة على قطعة واحدة) ----------------
+   الشكل من القطعة نفسها (شفافية صورتها): المسافة من حرف القماش هي
+   اللي بتحدد السُمك — عند الحرف القماش بيلفّ لورا ويرفع، وفي الجسم
+   مليان. وش لقدّام وضهر لورا بيتقفلوا عند الحرف، فمن الجنب القطعة ليها
+   سُمك حقيقي ومش ورقة، والكُم (أضيق من الجسم) بيبان لوحده. تحت الصدر
+   ثنيات سقوط خفيفة ومش منتظمة. الضل متخزّن في ألوان الرؤوس (اللي بيلفّ
+   لورا أغمق، وجناب الثنيات بتاخد نور وضل) — والصورة نفسها (اللون
+   واللوجو) زي ما هي بالظبط في الأماكن المستوية. */
+type Img = CanvasImageSource & { width: number; height: number }
+
+function fabricDistance(img: Img, gw: number, gh: number) {
+  const c = document.createElement('canvas')
+  c.width = gw
+  c.height = gh
+  const g = c.getContext('2d', { willReadFrequently: true })!
+  g.drawImage(img, 0, 0, gw, gh)
+  const a = g.getImageData(0, 0, gw, gh).data
+  const d = new Float32Array(gw * gh)
+  for (let i = 0; i < gw * gh; i++) d[i] = a[i * 4 + 3] > 127 ? 1e9 : 0
+  const at = (x: number, y: number) => (x < 0 || y < 0 || x >= gw || y >= gh ? 0 : d[y * gw + x])
+  // مسافة chamfer (٣ للجنب، ٤ للقطري) — باسين قدّام وورا
+  for (let y = 0; y < gh; y++)
+    for (let x = 0; x < gw; x++) {
+      const i = y * gw + x
+      if (!d[i]) continue
+      d[i] = Math.min(d[i], at(x - 1, y) + 3, at(x, y - 1) + 3, at(x - 1, y - 1) + 4, at(x + 1, y - 1) + 4)
+    }
+  for (let y = gh - 1; y >= 0; y--)
+    for (let x = gw - 1; x >= 0; x--) {
+      const i = y * gw + x
+      if (!d[i]) continue
+      d[i] = Math.min(d[i], at(x + 1, y) + 3, at(x, y + 1) + 3, at(x + 1, y + 1) + 4, at(x - 1, y + 1) + 4)
+    }
+  for (let i = 0; i < d.length; i++) d[i] /= 3 // بالبكسل
+  // المسافة لأقرب حرف في نفس الصف بس (يمين/شمال) — للذيل: عشان يفضل ليه سُمك ومايتقفلش
+  const dh = new Float32Array(gw * gh)
+  for (let y = 0; y < gh; y++) {
+    let last = -1e9
+    for (let x = 0; x < gw; x++) {
+      const i = y * gw + x
+      if (a[i * 4 + 3] > 127) dh[i] = x - last
+      else last = x
+    }
+    last = 1e9
+    for (let x = gw - 1; x >= 0; x--) {
+      const i = y * gw + x
+      if (a[i * 4 + 3] > 127) dh[i] = Math.min(dh[i], last - x)
+      else last = x
+    }
+  }
+  // نص عرض الجسم (تحت الأكمام): أعرض صف متصل في الثلث التحتاني
+  let body = 0
+  for (let y = Math.round(gh * 0.6); y < Math.round(gh * 0.85); y++) {
+    let n = 0
+    for (let x = 0; x < gw; x++) if (a[(y * gw + x) * 4 + 3] > 127) n++
+    body = Math.max(body, n)
+  }
+  return { d, dh, bodyHalf: body / 2 / gw }
+}
+
+function shellGeometry(img: Img, w: number, h: number, bend: number, long: boolean) {
+  const gw = 160
+  const gh = Math.max(8, Math.round(gw * (h / w)))
+  const { d: dist, dh, bodyHalf } = fabricDistance(img, gw, gh)
+  const pxM = w / gw
+  const sample = (u: number, v: number, field = dist) => {
+    const x = Math.min(gw - 1, Math.max(0, u * (gw - 1)))
+    const y = Math.min(gh - 1, Math.max(0, v * (gh - 1)))
+    const x0 = Math.floor(x)
+    const y0 = Math.floor(y)
+    const x1 = Math.min(gw - 1, x0 + 1)
+    const y1 = Math.min(gh - 1, y0 + 1)
+    const fx = x - x0
+    const fy = y - y0
+    const q = (xx: number, yy: number) => field[yy * gw + xx]
+    return ((q(x0, y0) * (1 - fx) + q(x1, y0) * fx) * (1 - fy) + (q(x0, y1) * (1 - fx) + q(x1, y1) * fx) * fy) * pxM
+  }
+  const R = long ? 0.05 : 0.04 // عرض لفّة الحرف
+  // تيشيرت متعلّق: وش + ضهر + هوا بينهم ≈ ٤–٥ سم عند الصدر، وأرفع شوية عند الذيل
+  const T = long ? 0.02 : 0.025 // الوش لقدّام (الصدر)
+  const TB = long ? 0.014 : 0.019 // الضهر لورا (الصدر)
+  const seg = 120
+  const rows = Math.max(12, Math.round(seg * (h / w)))
+  const half = bodyHalf * w // نص عرض الجسم بالمتر
+  const make = (sign: 1 | -1) => {
+    const geo = new PlaneGeometry(w, h, seg, rows)
+    const pos = geo.attributes.position as BufferAttribute
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i)
+      const y = pos.getY(i)
+      const u = x / w + 0.5
+      const v = 0.5 - y / h
+      // عند الذيل: السُمك من الجناب بس — الذيل نفسه مفتوح وليه سُمك (مش حرف رفيع)
+      const hem = long ? 0 : Math.max(0, Math.min(1, (v - 0.72) / 0.2))
+      const kFull = Math.min(1, sample(u, v) / R)
+      const kSide = Math.min(1, sample(u, v, dh) / R)
+      const k = kFull + (Math.max(kFull, kSide) - kFull) * hem
+      // السُمك بيقل بالراحة من الصدر للذيل (القماش بيقع بوزنه)
+      const taper = 1 - 0.3 * Math.max(0, Math.min(1, (v - 0.35) / 0.6))
+      const roll = (1 - (1 - k) * (1 - k)) * taper
+      // الكُم: بيطلع لقدّام شوية كل ما يبعد عن الجسم (مش لازق في نفس مستوى الصدر)
+      const out = Math.max(0, Math.abs(x) - half)
+      const sleeve = long ? 0 : Math.min(1, out / 0.03) * Math.min(0.016, out * 0.12) * (v < 0.55 ? 1 : 0)
+      // ثنيات السقوط: بتبدأ تحت الإبط وبتكبر لتحت، وطولها مش منتظم
+      const fall = Math.max(0, Math.min(1, (v - 0.25) / 0.65))
+      const drape =
+        roll *
+        Math.sqrt(fall) *
+        (0.0062 * Math.sin((x / 0.083) * Math.PI * 2 + 0.7 + v * 1.3) + 0.0038 * Math.sin((x / 0.137) * Math.PI * 2 + 2.1 - v * 0.8))
+      const curve = bend * 0.5 * (1 - (2 * x / w) ** 2)
+      pos.setZ(i, curve + drape + sleeve + sign * (sign > 0 ? T : TB) * roll)
+    }
+    pos.needsUpdate = true
+    geo.computeVertexNormals()
+    // ضل متخزّن: نور جاي من فوق شمال وقدّام
+    const nrm = geo.attributes.normal as BufferAttribute
+    const L = new Vector3(-0.32, 0.5, 0.8).normalize()
+    const flat = L.z
+    const col = new Float32Array(pos.count * 3)
+    for (let i = 0; i < pos.count; i++) {
+      const nx = nrm.getX(i) * sign
+      const ny = nrm.getY(i)
+      const nz = nrm.getZ(i) * sign
+      const s = Math.max(0, nx * L.x + ny * L.y + nz * L.z) / flat
+      const shade = Math.max(0.6, Math.min(1, 0.5 + 0.5 * s)) * (sign > 0 ? 1 : 0.86)
+      col.set([shade, shade, shade], i * 3)
+    }
+    geo.setAttribute('color', new BufferAttribute(col, 3))
+    geo.computeBoundingBox()
+    geo.computeBoundingSphere()
+    return geo
+  }
+  return { front: make(1), back: make(-1) }
+}
+
+/**
+ * قطعة متطبّقة نايمة على الترابيزة: الوش مستوي والحواف بتلفّ لتحت بسُمك
+ * الطيّة (~٢٫٥ سم) — من زاوية الكاميرا بتبان كتلة قماش مش ورقة. الضل
+ * متخزّن في ألوان الرؤوس (النور من فوق)، والصورة نفسها زي ما هي في النص.
+ */
+function foldedGeometry(img: Img, w: number, d: number) {
+  const gw = 120
+  const gh = Math.max(8, Math.round(gw * (d / w)))
+  const { d: dist } = fabricDistance(img, gw, gh)
+  const pxM = w / gw
+  const at = (x: number, y: number) => dist[Math.min(gh - 1, Math.max(0, y)) * gw + Math.min(gw - 1, Math.max(0, x))]
+  const sample = (u: number, v: number) => {
+    const x = Math.min(gw - 1, Math.max(0, u * (gw - 1)))
+    const y = Math.min(gh - 1, Math.max(0, v * (gh - 1)))
+    const x0 = Math.floor(x)
+    const y0 = Math.floor(y)
+    const fx = x - x0
+    const fy = y - y0
+    return ((at(x0, y0) * (1 - fx) + at(x0 + 1, y0) * fx) * (1 - fy) + (at(x0, y0 + 1) * (1 - fx) + at(x0 + 1, y0 + 1) * fx) * fy) * pxM
+  }
+  const R = 0.016 // لفّة حرف الطيّة
+  const T = 0.024 // سُمك الطيّة
+  const seg = 150
+  const rows = Math.max(12, Math.round(seg * (d / w)))
+  const geo = new PlaneGeometry(w, d, seg, rows)
+  const pos = geo.attributes.position as BufferAttribute
+  const uv = geo.attributes.uv as BufferAttribute
+  // لون الجنب = لون القماش اللي جوه الحرف بشوية (مش البكسلات الأخيرة متمطوطة)
+  const uv1 = new Float32Array(uv.count * 2)
+  for (let i = 0; i < pos.count; i++) {
+    const u = pos.getX(i) / w + 0.5
+    const v = 0.5 - pos.getY(i) / d
+    const dm = sample(u, v)
+    const k = Math.min(1, dm / R)
+    pos.setZ(i, T * Math.sqrt(1 - (1 - k) * (1 - k)))
+    let su = uv.getX(i)
+    let sv = uv.getY(i)
+    const shift = Math.max(0, R * 0.8 - dm)
+    if (shift > 0) {
+      const gx0 = Math.round(u * (gw - 1))
+      const gy0 = Math.round(v * (gh - 1))
+      let gx = at(gx0 + 2, gy0) - at(gx0 - 2, gy0)
+      let gy = at(gx0, gy0 + 2) - at(gx0, gy0 - 2)
+      const gl = Math.hypot(gx, gy)
+      if (gl > 1e-6) {
+        gx /= gl
+        gy /= gl
+        su += (gx * shift) / w
+        sv -= (gy * shift) / d
+      }
+    }
+    uv1[i * 2] = su
+    uv1[i * 2 + 1] = sv
+  }
+  geo.setAttribute('uv1', new BufferAttribute(uv1, 2))
+  pos.needsUpdate = true
+  geo.computeVertexNormals()
+  const nrm = geo.attributes.normal as BufferAttribute
+  // النور من فوق وناحية الكاميرا (بإحداثيات القطعة قبل ما تنام: z = لفوق)
+  const L = new Vector3(-0.25, -0.35, 0.9).normalize()
+  const col = new Float32Array(pos.count * 3)
+  for (let i = 0; i < pos.count; i++) {
+    const s = Math.max(0, nrm.getX(i) * L.x + nrm.getY(i) * L.y + nrm.getZ(i) * L.z) / L.z
+    const shade = Math.max(0.58, Math.min(1, 0.45 + 0.55 * s)) * 0.97
+    col.set([shade, shade, shade], i * 3)
+  }
+  geo.setAttribute('color', new BufferAttribute(col, 3))
+  geo.computeBoundingBox()
+  geo.computeBoundingSphere()
+  return geo
+}
+
+/** ضهر القطعة: لون القماش الأساسي بس (من غير اللوجو المعكوس) وبنفس حدودها */
+function shellBackMaterial(map: Texture, base: number[] | undefined) {
+  const m = new MeshBasicMaterial({ map, transparent: true, alphaTest: 0.5, side: DoubleSide, vertexColors: true })
+  const tone = new Color().setRGB(...((base ?? [230, 230, 230]).map((c) => c / 255) as [number, number, number]), SRGBColorSpace)
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uBack = { value: tone }
+    sh.fragmentShader =
+      'uniform vec3 uBack;\n' +
+      sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n  diffuseColor.rgb = uBack;')
+  }
+  m.customProgramCacheKey = () => 'atlas-shell-back'
+  return m
 }
 
 /* ---------------- شماعة خشب ثلاثية الأبعاد ---------------- */
@@ -1021,21 +1246,71 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
     const tableLen = cols * cellW + 0.3
     const tableD = rows * cellD + 0.26
     const tableZ = tableD / 2 + 0.25
+    // عينة: قطع متطبّقة من أقسام تانية (التيشيرت الأبيض) — مكانها على طرف الترابيزة الشمال
+    const samples = z.kind === 'set' ? opts.zones.flatMap((zz) => zz.pieces).filter((p) => p.folded) : []
+    const sampleW = samples.length ? 0.46 : 0
     if (z.kind === 'set') {
-      const top = new Mesh(track(new BoxGeometry(tableLen, 0.05, tableD)), track(new MeshLambertMaterial({ color: '#cfc7ba' })))
-      top.position.set(0, TABLE_Y - 0.025, tableZ)
+      const fullLen = tableLen + sampleW
+      const top = new Mesh(track(new BoxGeometry(fullLen, 0.05, tableD)), track(new MeshLambertMaterial({ color: '#cfc7ba' })))
+      top.position.set(-sampleW / 2, TABLE_Y - 0.025, tableZ)
       const base = new Mesh(
-        track(new BoxGeometry(tableLen - 0.1, TABLE_Y - 0.05, tableD - 0.1)),
+        track(new BoxGeometry(fullLen - 0.1, TABLE_Y - 0.05, tableD - 0.1)),
         track(new MeshLambertMaterial({ color: '#c9c0b2' }))
       )
-      base.position.set(0, (TABLE_Y - 0.05) / 2, tableZ)
+      base.position.set(-sampleW / 2, (TABLE_Y - 0.05) / 2, tableZ)
       const contact = new Mesh(
-        track(new PlaneGeometry(tableLen + 0.3, tableD + 0.3)),
+        track(new PlaneGeometry(fullLen + 0.3, tableD + 0.3)),
         track(new MeshBasicMaterial({ map: softShadow(), transparent: true, depthWrite: false, opacity: 0.3 }))
       )
       contact.rotation.x = -Math.PI / 2
-      contact.position.set(0, 0.002, tableZ)
+      contact.position.set(-sampleW / 2, 0.002, tableZ)
       group.add(top, base, contact)
+
+      samples.forEach((p, k) => {
+        const f = p.folded!
+        const fw = f.span
+        const fd = f.span * (f.h / f.w)
+        const sx = -(cols * cellW) / 2 - sampleW / 2
+        const sz = tableZ + (k - (samples.length - 1) / 2) * (fd + 0.06)
+        // ظل التماس: ضلمة خفيفة لازقة في الترابيزة تحت الحرف
+        const sh = new Mesh(
+          track(new PlaneGeometry(fw * 1.14, fd * 1.1)),
+          track(new MeshBasicMaterial({ map: softShadow(), transparent: true, depthWrite: false, opacity: 0.42 }))
+        )
+        sh.rotation.x = -Math.PI / 2
+        sh.position.set(sx + 0.008, TABLE_Y + 0.0008, sz + 0.012)
+        group.add(sh)
+        loader.load(f.src, (t) => {
+          if (disposed) return t.dispose()
+          track(t)
+          t.colorSpace = SRGBColorSpace
+          t.anisotropy = maxAniso
+          // اللون من uv1 (جوه الحرف)، والقصّ من الشفافية الأصلية (حدود القطعة بالظبط)
+          t.channel = 1
+          const img = t.image as Img
+          const ac = document.createElement('canvas')
+          ac.width = img.width
+          ac.height = img.height
+          const ag = ac.getContext('2d', { willReadFrequently: true })!
+          ag.drawImage(img, 0, 0)
+          const px = ag.getImageData(0, 0, ac.width, ac.height)
+          for (let q = 0; q < px.data.length; q += 4) {
+            const al = px.data[q + 3]
+            px.data[q] = px.data[q + 1] = px.data[q + 2] = al
+            px.data[q + 3] = 255
+          }
+          ag.putImageData(px, 0, 0)
+          const alphaTex = track(new CanvasTexture(ac))
+          const mesh = new Mesh(
+            track(foldedGeometry(img, fw, fd)),
+            track(new MeshBasicMaterial({ map: t, alphaMap: alphaTex, transparent: true, alphaTest: 0.5, vertexColors: true }))
+          )
+          mesh.rotation.x = -Math.PI / 2 // الياقة ناحية الحيطة
+          mesh.position.set(sx, TABLE_Y + 0.0015, sz)
+          group.add(mesh)
+          invalidate()
+        })
+      })
     }
 
     sized.forEach(({ p, mw, mh, ppm }, i) => {
@@ -1189,7 +1464,8 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
           }
         }
         const hg = hanger(span, 0.012, arm)
-        hg.position.set(ox, railY - HOOK_DROP, natural ? RAIL_Z - 0.012 : RAIL_Z + bend + 0.004)
+        // القطعة المجسّمة: الشماعة جوه بين الوش والضهر
+        hg.position.set(ox, railY - HOOK_DROP, p.volume ? RAIL_Z - 0.001 : natural ? RAIL_Z - 0.012 : RAIL_Z + bend + 0.004)
         g.add(hg)
       }
 
@@ -1306,6 +1582,15 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
           t.anisotropy = maxAniso
           t.minFilter = LinearMipmapLinearFilter
           mat.map = t
+          if (p.volume) {
+            // قماش مجسّم: وش وضهر بسُمك من شكل القطعة نفسها
+            const sg = shellGeometry(t.image as Img, mw, mh, bend, long)
+            const flatGeo = body.geometry
+            body.geometry = track(sg.front)
+            flatGeo.dispose()
+            mat.vertexColors = true
+            body.add(new Mesh(track(sg.back), track(shellBackMaterial(t, p.base))))
+          }
           mat.needsUpdate = true
           lp.ready = true
           g.visible = true
@@ -1412,7 +1697,7 @@ export function createStore(canvas: HTMLCanvasElement, opts: SceneOptions) {
       slot,
       group,
       pieces: laid,
-      width: z.kind === 'set' ? tableLen : railLen,
+      width: z.kind === 'set' ? tableLen + sampleW : railLen,
       depth: z.kind === 'set' ? tableD : 0,
       tableZ,
       top: signY + 0.2,
